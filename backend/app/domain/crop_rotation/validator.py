@@ -8,6 +8,8 @@ the UI:
 - V-GROUP-MAX (hard): more than two of three years in one rotation group is
   rejected as family buildup.
 - V-DUP-CROP (hard): a crop appears at most once in the plan horizon.
+- V-FALLOW-MAX (hard): at most one fallow/cover slot per horizon; multi-year
+  rest is a land-use decision, not a crop rotation.
 """
 from __future__ import annotations
 
@@ -106,6 +108,15 @@ def validate_sequence(slots: list[SlotPlan]) -> list[Violation]:
                 ))
             else:
                 seen[s.crop_id] = s
+
+    fallow_slots = [s for s in slots if s.is_fallow]
+    if len(fallow_slots) > 1:
+        violations.append(Violation(
+            rule_id="V-FALLOW-MAX", severity="hard",
+            slot_ids=[s.slot_id for s in fallow_slots],
+            message_en="A rotation plan keeps at most one fallow/cover year; longer rests are a land-use decision, not a rotation.",
+            message_ar="تحتفظ خطة الدورة الزراعية بسنة راحة واحدة كحد أقصى؛ الراحة الأطول قرار استخدام أرض لا دورة زراعية.",
+        ))
 
     return violations
 
