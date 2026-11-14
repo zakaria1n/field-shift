@@ -16,7 +16,7 @@ export default function ConfirmPlan() {
   const { lang, setFieldId } = useWizard()
 
   const adoptEdits = (location.state as { adoptEdits?: { slot_id: string; crop_id: string | null }[] | null } | null)?.adoptEdits ?? null
-  const fieldId = ref?.split(':')[0] ?? null
+  const fieldId = ref?.split('--')[0] ?? null
 
   const mutation = useMutation({
     mutationFn: () => api.post<AdoptedPlan>(`/api/v1/rotations/${ref}/adopt`, adoptEdits ? { edits: adoptEdits } : {}),
@@ -48,7 +48,11 @@ export default function ConfirmPlan() {
     )
   }
 
-  const plan = mutation.data!
+  if (!mutation.isSuccess) {
+    return <p className="text-sm text-ink/60">{t('common.loading')}</p>
+  }
+
+  const plan = mutation.data
 
   return (
     <div className="mx-auto max-w-2xl">

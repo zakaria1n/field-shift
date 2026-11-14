@@ -219,7 +219,7 @@ class ScoreBreakdownOut(BaseModel):
 
 
 class EvidenceRefOut(BaseModel):
-    rule_id: Optional[str] = None
+    rule_ids: list[str] = []
     observation_ids: list[str] = []
     source_ids: list[str] = []
     notes: list[str] = []

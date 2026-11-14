@@ -51,15 +51,16 @@ def score_out(score: dict) -> dict:
 
 
 def _candidate_ref(job_id: str, rank: int) -> str:
-    return f"{job_id}:{rank}"
+    # "--" keeps the reference URL-safe; a colon breaks path handling.
+    return f"{job_id}--{rank}"
 
 
 def parse_candidate_ref(ref: str) -> tuple[str, int]:
     try:
-        job_id, rank_s = ref.rsplit(":", 1)
+        job_id, rank_s = ref.rsplit("--", 1)
         return job_id, int(rank_s)
     except ValueError as exc:
-        raise ValidationFailed("rotation id must look like '<job_id>:<rank>'", code="rotation_id_invalid") from exc
+        raise ValidationFailed("rotation id must look like '<job_id>--<rank>'", code="rotation_id_invalid") from exc
 
 
 def get_analysis_for_field(db: Session, field: Field, job_id: str) -> AnalysisJob:

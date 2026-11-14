@@ -91,22 +91,28 @@ def _score_out(score: dict) -> ScoreBreakdownOut:
 
 
 def _slots_out(slots: list[dict]) -> list[SlotOut]:
-    return [SlotOut(**{
-        "slot_id": s["slot_id"],
-        "year_number": s["year_number"],
-        "crop_id": s.get("crop_id"),
-        "name_en": s.get("name_en"),
-        "name_ar": s.get("name_ar"),
-        "rotation_group": s.get("rotation_group"),
-        "fallow": s.get("fallow", s.get("crop_id") is None),
-        "planting_window": s.get("planting_window"),
-    }) for s in slots]
+    from app.domain.crop_loader import get_crop
+
+    out = []
+    for s in slots:
+        crop = get_crop(s.get("crop_id") or "") if s.get("crop_id") else None
+        out.append(SlotOut(
+            slot_id=s["slot_id"],
+            year_number=s["year_number"],
+            crop_id=s.get("crop_id"),
+            name_en=s.get("name_en") or (crop.name_en if crop else None),
+            name_ar=s.get("name_ar") or (crop.name_ar if crop else None),
+            rotation_group=s.get("rotation_group") or (crop.rotation_group if crop else None),
+            fallow=s.get("fallow", s.get("crop_id") is None),
+            planting_window=s.get("planting_window"),
+        ))
+    return out
 
 
 def _rotation_out(cand: dict) -> RotationOut:
     evidence = cand.get("evidence", {})
     return RotationOut(
-        plan_id=f"{cand['analysis_id']}:{cand['rank']}",
+        plan_id=f"{cand['analysis_id']}--{cand['rank']}",
         rank=cand["rank"],
         label=cand["label"],
         status="candidate",

@@ -23,7 +23,7 @@ export default function PlanDetails() {
   if (isLoading) return <p className="text-sm text-ink/60">{t('common.loading')}</p>
   if (error || !plan) return <p className="text-sm text-red-600">{t('error.generic')}</p>
 
-  const fieldRoute = fieldId ?? plan.plan_id.split(':')[0]
+  const fieldRoute = fieldId ?? plan.plan_id.split('--')[0]
 
   return (
     <div className="mx-auto max-w-4xl">
