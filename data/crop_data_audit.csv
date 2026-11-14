@@ -1,0 +1,97 @@
+﻿crop_id,severity,field,issue,action,source
+bread_wheat,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+bread_wheat,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+durum_wheat,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+durum_wheat,HIGH,season_total_days,"FAO56 example season length 240 days outside ecological growth range [120, 180] days","Do not merge timescales; review location, cultivar and definition; not used for fixed global season",Original team CSV
+durum_wheat,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+barley,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+barley,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+barley,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+oats,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+oats,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+oats,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+maize,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+maize,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+maize,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+sorghum,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+sorghum,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+sorghum,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+pearl_millet,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+pearl_millet,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+faba_bean,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+faba_bean,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+chickpea,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+chickpea,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+lentil,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+lentil,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+lentil,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+pea,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+pea,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+pea,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+green_bean,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+green_bean,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+alfalfa,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+berseem,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+vetch,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+groundnut,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+groundnut,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+sugar_beet,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+sugar_beet,HIGH,season_total_days,"FAO56 example season length 230 days outside ecological growth range [60, 140] days","Do not merge timescales; review location, cultivar and definition; not used for fixed global season",Original team CSV
+sugar_beet,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+potato,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+potato,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+potato,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+sweet_potato,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+sweet_potato,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+carrot,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+carrot,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+carrot,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+onion,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+onion,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+onion,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+garlic,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+garlic,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+tomato,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+tomato,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+tomato,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+pepper,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+pepper,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+pepper,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+eggplant,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+eggplant,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+eggplant,HIGH,season_total_days,"FAO56 example season length 140 days outside ecological growth range [70, 120] days","Do not merge timescales; review location, cultivar and definition; not used for fixed global season",Original team CSV
+eggplant,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+melon,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+melon,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+melon,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+watermelon,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+watermelon,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+watermelon,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+cucumber,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+cucumber,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+cucumber,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+zucchini,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+zucchini,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+zucchini,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+cabbage,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+cabbage,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+cabbage,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+lettuce,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+lettuce,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+lettuce,HIGH,season_total_days,"FAO56 example season length 105 days outside ecological growth range [35, 85] days","Do not merge timescales; review location, cultivar and definition; not used for fixed global season",Original team CSV
+lettuce,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+spinach,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+spinach,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+spinach,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+canola,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+canola,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+sunflower,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+sunflower,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+sunflower,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+safflower,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+safflower,MEDIUM,kc_ini_from,Kc based on crop-group header rather than crop-specific measurement,Require verification for local variety and management before crop water calculations,Original team CSV
+safflower,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+quinoa,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV
+artichoke,HIGH,fao56_plant_month,Region-specific example month incorrectly interpretable as global month,Excluded from globally applicable crop table; retained ONLY in FAO-56 regional reference,Original team CSV
+artichoke,HIGH,season_total_days,"FAO56 example season length 360 days outside ecological growth range [210, 270] days","Do not merge timescales; review location, cultivar and definition; not used for fixed global season",Original team CSV
+artichoke,HIGH,all_agronomic_ranges,Team-supplied reference not independently verified line-by-line,Treat as candidate guidance; require domain review before automated exclusion,Original team CSV

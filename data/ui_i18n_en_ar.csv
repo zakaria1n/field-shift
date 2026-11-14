@@ -1,0 +1,37 @@
+﻿key,en,ar
+app.title,Field Shift,فيلد شيفت
+nav.home,Home,الرئيسية
+nav.fields,My Fields,حقولي
+nav.plan,My Plan,خطتي
+nav.insights,Insights,المؤشرات
+welcome.start,Analyze my field,حلّل أرضي
+field.select,Select your field,حدد أرضك
+field.search,Search for a location,ابحث عن منطقة
+field.draw,Draw field boundary,ارسم حدود الأرض
+field.confirm,Confirm field,تأكيد الأرض
+field.name,Field name,اسم الأرض
+farm.question.water,How is your field irrigated?,كيفاش كتسقي الأرض؟
+farm.rainfed,Rain-fed,بورية
+farm.irrigated,Irrigated,سقوية
+farm.mixed,Mixed,مختلطة
+farm.unknown,I do not know,ما عارفش
+farm.question.history,What crops did you grow over the last three years?,شنو زرعتي فآخر ثلاث سنوات؟
+farm.history.fallow,Fallow / no crop,راحة / ما تزَرع والو
+goals.water,Save water,توفير الماء
+goals.soil,Soil health,صحة التربة
+goals.yield,Yield potential,المردودية الممكنة
+goals.risk,Climate risk,المخاطر المناخية
+goals.money,Selling / income objective (not scored in MVP),هدف البيع / الدخل (خارج التنقيط حالياً)
+analysis.start,Analyze my field,ابدأ تحليل الأرض
+analysis.title,Analyzing your field,جارٍ تحليل الأرض
+plan.title,Rotation plans,الخطط الزراعية
+plan.details,View plan details,عرض تفاصيل الخطة
+plan.use,Use this plan,اعتماد الخطة
+plan.customize,Customize plan,تعديل الخطة
+plan.evaluate,Evaluate changes,تقييم التعديلات
+plan.keep_original,Keep original,الاحتفاظ بالأصلية
+plan.use_modified,Use modified plan,اعتماد الخطة المعدلة
+plan.saved,Your plan was saved,تم حفظ خطتك
+home.welcome,Welcome back,مرحباً بعودتك
+status.estimated,Estimated from external data,تقدير من بيانات خارجية
+status.missing,Data unavailable,البيانات غير متوفرة
