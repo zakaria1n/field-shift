@@ -98,6 +98,7 @@ class AnalysisJob(Base):
     status: Mapped[str] = mapped_column(String, nullable=False, default="queued")  # queued|running|complete|partial|failed
     stages_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     source_status_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    result_json: Mapped[str | None] = mapped_column(Text)  # candidate rotations + baseline
     error_json: Mapped[str | None] = mapped_column(Text)
     started_at: Mapped[str | None] = mapped_column(String)
     finished_at: Mapped[str | None] = mapped_column(String)
