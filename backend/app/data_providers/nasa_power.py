@@ -1,6 +1,6 @@
 """NASA POWER climatology point client — the app's core live NASA integration.
 
-Design notes (docs/04 B.1):
+Design notes:
 - Uses POWER's public Temporal Climatology Point API (20+ year monthly normals,
   no credentials). The Regional Insights polygon endpoint is documented but its
   exact variable codes/quotas are unverified for tiny farm AOIs; the point call

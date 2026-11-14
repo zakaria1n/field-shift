@@ -1,6 +1,6 @@
 """ISRIC SoilGrids adapter.
 
-Status reality (docs/04 B.4): SoilGrids' public REST endpoint has been
+SoilGrids' public REST endpoint has been
 officially marked paused; connectivity may fail outright. This adapter:
 1. attempts the live REST query with a short timeout when enabled,
 2. on failure returns an explicit `unavailable` result — never fabricated soil

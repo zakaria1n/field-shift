@@ -1,6 +1,6 @@
 """FAO GAEZ v5 yield-reference interface.
 
-Reality (docs/04 B.2, docs/09): GAEZ serves precomputed model layers; there is
+GAEZ serves precomputed model layers; there is
 no open POST endpoint that runs the model for arbitrary inputs, and layer
 download/licensing for a demo AOI was not verified by the spec pack. Therefore
 in live mode this provider returns explicit `unavailable` and the scoring

@@ -1,6 +1,6 @@
 """SQLite persistence models (SQLAlchemy 2.0).
 
-Schema follows docs/05_TECH_ARCHITECTURE.md. No users/accounts table:
+No users/accounts table:
 anonymous_clients only stores a hash of the browser capability key.
 """
 import uuid
@@ -205,7 +205,7 @@ class SchemaVersion(Base):
 class CropCalendarRow(Base):
     """Location-specific crop calendar rows loaded from the verified CSV.
 
-    The shipped CSV is intentionally EMPTY (docs/06); adapters may add rows only
+    The shipped CSV is intentionally EMPTY; adapters may add rows only
     from reviewed sources. `is_active=False` rows are never used in placement.
     """
 

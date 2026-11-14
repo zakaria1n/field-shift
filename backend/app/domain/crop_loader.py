@@ -1,6 +1,6 @@
 """Crop knowledge loader for crop_knowledge_global_DRAFT.csv.
 
-Rules from docs/06 (the audit):
+Data rules:
 - blank numeric cells stay None (unknown), never zero;
 - no planting-month field exists here and none is invented;
 - the audit flag columns (agronomic_review_status,

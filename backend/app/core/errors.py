@@ -1,4 +1,4 @@
-"""Consistent error responses per docs/05 route-contract guidance."""
+"""Consistent structured error responses."""
 from fastapi import Request
 from fastapi.responses import JSONResponse
 

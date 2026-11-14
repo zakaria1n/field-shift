@@ -1,8 +1,8 @@
 """Field geometry validation and geodesic area calculation.
 
 - Shapely validates structure/ring closure/self-intersection (documented T02).
-- Area uses pyproj.Geod (WGS84) — geodesic hectares, never a naive degrees²
-  planar formula (docs/02 F02, docs/04 A).
+- Area uses pyproj.Geod (WGS84): geodesic hectares, not a naive planar
+  degrees-squared formula.
 """
 import json
 import math

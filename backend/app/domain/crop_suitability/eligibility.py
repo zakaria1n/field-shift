@@ -1,7 +1,7 @@
 """Crop eligibility and suitability assessment.
 
-Policy (docs/06 'Safe scientific decision rules', docs/07 'Minimal defensible
-engine'):
+Hard exclusions stay conservative: only farmer constraints and absolute-range
+checks against observed climate; optimal ranges inform suitability only.
 - Hard exclusions use ONLY farmer constraints and the CSV's absolute-range
   columns (temp_abs_*, rain_abs_min) against observed field climate, each
   carrying an explicit provisional-data caveat.
@@ -120,7 +120,7 @@ def evaluate_crop(crop: CropTraits, ctx: FieldContext) -> CropEligibilityResult:
     # Temperature absolute ranges describe conditions DURING the crop's growth
     # period. Without a verified local calendar we cannot map that period to
     # specific months, so annual extremes only raise warnings (severity soft)
-    # and reduce suitability — they never hard-exclude a crop (docs/06).
+    # and reduce suitability — they never hard-exclude a crop.
     if ctx.hottest_month_max_temp_c is not None and crop.temp_abs_max_c is not None \
             and ctx.hottest_month_max_temp_c > crop.temp_abs_max_c:
         exclusions.append(ExclusionReason(
