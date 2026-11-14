@@ -20,6 +20,7 @@ from app.schemas.api import (
 from app.services.field_store import (
     create_field,
     delete_field,
+    field_to_out,
     get_owned_field,
     list_fields,
     replace_crop_history,
@@ -38,6 +39,12 @@ def create_field_route(payload: FieldCreate, db: Session = Depends(get_db), clie
 @router.get("", response_model=FieldListOut)
 def list_fields_route(db: Session = Depends(get_db), client: AnonymousClient = Depends(get_client)):
     return FieldListOut(fields=list_fields(db, client))
+
+
+@router.get("/{field_id}", response_model=FieldOut)
+def get_field_route(field_id: str, db: Session = Depends(get_db), client: AnonymousClient = Depends(get_client)):
+    field = get_owned_field(db, client, field_id)
+    return field_to_out(field)
 
 
 @router.patch("/{field_id}", response_model=FieldOut)
