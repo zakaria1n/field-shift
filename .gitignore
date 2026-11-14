@@ -29,7 +29,7 @@ frontend/dist/
 *.tsbuildinfo
 .npm/
 
-# Local databases (user data must never be committed)
+# Databases
 *.db
 *.db-journal
 *.db-wal
@@ -37,10 +37,16 @@ frontend/dist/
 *.sqlite
 *.sqlite3
 
-# Logs & temp
+# Logs & temp files
 logs/
 *.log
 tmp/
 .cache/
 .DS_Store
 Thumbs.db
+
+# Spec-pack working materials
+ui_reference/
+references/
+make_csvs.py
+render_ui.py
