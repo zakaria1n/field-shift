@@ -46,7 +46,9 @@ tmp/
 Thumbs.db
 
 # Spec-pack working materials
+# Local project documents
 ui_reference/
+docs/
 references/
 make_csvs.py
 render_ui.py

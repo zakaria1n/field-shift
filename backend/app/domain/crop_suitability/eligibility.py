@@ -117,30 +117,36 @@ def evaluate_crop(crop: CropTraits, ctx: FieldContext) -> CropEligibilityResult:
         )
         notes_ar.append("أمطار أقل من المدى الأمثل؛ يُنصح بالحذر في توقعات المردود البوري.")
 
+    # Temperature absolute ranges describe conditions DURING the crop's growth
+    # period. Without a verified local calendar we cannot map that period to
+    # specific months, so annual extremes only raise warnings (severity soft)
+    # and reduce suitability — they never hard-exclude a crop (docs/06).
     if ctx.hottest_month_max_temp_c is not None and crop.temp_abs_max_c is not None \
             and ctx.hottest_month_max_temp_c > crop.temp_abs_max_c:
         exclusions.append(ExclusionReason(
-            rule_id="R-TEMP-ABS-MAX", severity="hard",
+            rule_id="W-TEMP-ABS-MAX", severity="soft",
             message_en=(
-                f"Hottest-month maximum temperature ({ctx.hottest_month_max_temp_c:.0f} °C) exceeds this crop's "
-                f"absolute tolerance ({crop.temp_abs_max_c:.0f} °C)."
+                f"Annual hottest-month maximum ({ctx.hottest_month_max_temp_c:.0f} °C) is outside this crop's "
+                f"reference growth-period tolerance ({crop.temp_abs_max_c:.0f} °C); the crop would need a "
+                "season that avoids peak heat. Warning only — growth-window placement is not verified here."
             ),
             message_ar=(
-                f"أقصى حرارة في أحر شهر ({ctx.hottest_month_max_temp_c:.0f}°س) تتجاوز تحمل المحصول المطلق "
-                f"({crop.temp_abs_max_c:.0f}°س)."
+                f"أقصى حرارة سنوية ({ctx.hottest_month_max_temp_c:.0f}°س) خارج مدى تحمل هذا المحصول "
+                f"({crop.temp_abs_max_c:.0f}°س)؛ يحتاج موسمًا يتجنب ذروة الحرارة. تنبيه فقط دون استبعاد."
             ),
         ))
     if ctx.coldest_month_min_temp_c is not None and crop.temp_abs_min_c is not None \
             and ctx.coldest_month_min_temp_c < crop.temp_abs_min_c:
         exclusions.append(ExclusionReason(
-            rule_id="R-TEMP-ABS-MIN", severity="hard",
+            rule_id="W-TEMP-ABS-MIN", severity="soft",
             message_en=(
-                f"Coldest-month minimum temperature ({ctx.coldest_month_min_temp_c:.0f} °C) is below this crop's "
-                f"absolute tolerance ({crop.temp_abs_min_c:.0f} °C)."
+                f"Annual coldest-month minimum ({ctx.coldest_month_min_temp_c:.0f} °C) is below this crop's "
+                f"reference growth-period tolerance ({crop.temp_abs_min_c:.0f} °C); frost exposure should be "
+                "checked locally. Warning only — growth-window placement is not verified here."
             ),
             message_ar=(
-                f"أدنى حرارة في أبرد شهر ({ctx.coldest_month_min_temp_c:.0f}°س) أقل من تحمل المحصول المطلق "
-                f"({crop.temp_abs_min_c:.0f}°س)."
+                f"أدنى حرارة سنوية ({ctx.coldest_month_min_temp_c:.0f}°س) أقل من مدى تحمل هذا المحصول "
+                f"({crop.temp_abs_min_c:.0f}°س)؛ تحقق محليًا من خطر الصقيع. تنبيه فقط دون استبعاد."
             ),
         ))
 
@@ -154,10 +160,12 @@ def evaluate_crop(crop: CropTraits, ctx: FieldContext) -> CropEligibilityResult:
             ctx.annual_mean_temp_c, crop.temp_opt_min_c, crop.temp_opt_max_c,
             crop.temp_abs_min_c, crop.temp_abs_max_c,
         ),
-        "water_fit": _range_score(
-            ctx.annual_precipitation_mm if ctx.irrigation_type != "irrigated" else None,
+        # Irrigated fields are not judged against rainfall; water fit stays
+        # neutral-positive there and capacity concerns surface as notes.
+        "water_fit": 1.0 if ctx.irrigation_type == "irrigated" else _range_score(
+            ctx.annual_precipitation_mm,
             crop.rain_opt_min_mm, crop.rain_opt_max_mm, crop.rain_abs_min_mm, crop.rain_abs_max_mm,
-        ) if ctx.irrigation_type != "irrigated" else 1.0 if True else None,
+        ),
         "soil_ph_fit": _range_score(ctx.soil_ph, crop.ph_opt_min, crop.ph_opt_max, crop.ph_abs_min, crop.ph_abs_max),
     }
 
