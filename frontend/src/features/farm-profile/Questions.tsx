@@ -12,7 +12,8 @@ const TOTAL = 4
 
 function nextYears(n: number): number[] {
   const y = new Date().getFullYear()
-  return Array.from({ length: n }, (_, i) => y - 1 - i)
+  // oldest first so the history reads chronologically
+  return Array.from({ length: n }, (_, i) => y - n + i)
 }
 
 export default function Questions() {

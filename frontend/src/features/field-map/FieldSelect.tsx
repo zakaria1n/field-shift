@@ -246,9 +246,9 @@ export default function FieldSelect() {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-cream border border-line px-3 py-2">
-              <span className="text-sm font-medium text-ink/70">{t('field.area')}</span>
-              <span className="font-bold text-forest">
+            <div className="rounded-lg bg-cream border border-line px-3 py-2">
+              <span className="block text-xs font-medium text-ink/60">{t('field.area')}</span>
+              <span className="mt-0.5 block font-bold text-forest">
                 {areaHa === null ? t('field.areaPending') : <><bdi>{areaHa.toLocaleString(i18n.language)}</bdi> {t('common.hectare')}</>}
               </span>
             </div>

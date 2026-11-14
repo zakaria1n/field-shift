@@ -32,13 +32,13 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
       </p>
       <p className="mt-1 text-[11px] text-ink/50"><bdi>{obs.source_id}</bdi> · {t('status.regional')}</p>
       {obs.spatial_support && <p className="mt-0.5 text-[11px] text-ink/45"><bdi>{obs.spatial_support}</bdi></p>}
-      {monthly && (
-        <div className="mt-2 flex h-10 items-end gap-0.5" aria-hidden>
+      {monthly && obs.indicator === 'monthly_mean_precipitation' && (
+        <div className="mt-2 flex h-10 items-end gap-0.5 overflow-hidden" aria-hidden>
           {Object.entries(monthly).map(([m, v]) => (
             <div
               key={m}
               className="flex-1 rounded-t bg-sky/60"
-              style={{ height: `${Math.max(6, ((v ?? 0) / 4) * 100)}%` }}
+              style={{ height: `${Math.min(100, Math.max(6, ((v ?? 0) / 4) * 100))}%` }}
               title={`${m}: ${v ?? '–'}`}
             />
           ))}
