@@ -1,7 +1,7 @@
 """Pydantic API schemas (v1 contract)."""
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # ---------------------------------------------------------------- fields
 
@@ -55,12 +55,11 @@ class CropHistoryEntryIn(BaseModel):
     planted_at: Optional[str] = None
     harvested_at: Optional[str] = None
 
-    @field_validator("crop_id")
-    @classmethod
-    def crop_id_required_if_planted(cls, v, info):
-        if info.data.get("status") == "planted" and not v:
+    @model_validator(mode="after")
+    def planted_requires_crop(self):
+        if self.status == "planted" and not self.crop_id:
             raise ValueError("crop_id is required when status is 'planted'")
-        return v
+        return self
 
 
 class PrioritiesIn(BaseModel):
@@ -301,8 +300,7 @@ class EvaluationOut(BaseModel):
 
 
 class AdoptIn(BaseModel):
-    version_id: Optional[str] = None  # None => adopt base/original
-    sequence: Optional[list[EditSlotIn]] = None  # provided when adopting modified draft
+    edits: Optional[list[EditSlotIn]] = None  # None/empty => adopt the original candidate
 
 
 class AdoptedPlanOut(BaseModel):

@@ -146,6 +146,8 @@ def substitute_candidates(
     candidate in place and confirming documented tolerances hold.
     """
     others = {s.crop_id for s in base.slots if s.slot_id != slot_id}
+    current = next((s.crop_id for s in base.slots if s.slot_id == slot_id), None)
+    others.add(current)  # keeping the current crop is not a substitution
     candidates: list[dict] = []
     for res in eligible:
         cid = res.crop.crop_id
