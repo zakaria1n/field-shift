@@ -165,7 +165,7 @@ export default function Welcome() {
               <p className="text-xs font-bold text-forest">
                 {isArabic ? 'لديك حقل محفوظ في هذا المتصفح:' : 'You have an active farm saved in this browser:'}{' '}
                 <span className="font-extrabold text-forest underline"><bdi>{savedFarm.field_name || 'My field'}</bdi></span>
-                {savedFarm.area_ha != null && ` (${savedFarm.area_ha.toFixed(1)} ha)`}
+                {savedFarm.area_ha != null && ` (${savedFarm.area_ha.toFixed(1)} ${isArabic ? 'هكتار' : 'ha'})`}
               </p>
             </div>
           </div>

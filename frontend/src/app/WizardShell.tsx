@@ -50,7 +50,7 @@ export default function WizardShell() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-line shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-6">
-            <Link to="/welcome" className="group flex items-center gap-2.5">
+            <Link to={hasSavedPlan ? '/home' : '/welcome'} className="group flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-forest to-forest-surface text-white shadow-sm group-hover:bg-leaf transition-colors">
                 <Sprout size={20} />
               </span>
@@ -104,8 +104,8 @@ export default function WizardShell() {
         )}
       </header>
 
-      {/* Main Content Area with atmospheric spacing */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+      {/* Main Content Area with atmospheric spacing (compact on analysis telemetry view) */}
+      <main className={`mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6 ${isAnalysisRoute ? 'py-3 sm:py-4' : 'py-8 sm:py-10'}`}>
         <Outlet />
       </main>
 
