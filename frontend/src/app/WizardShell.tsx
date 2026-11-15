@@ -1,7 +1,9 @@
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sprout, Satellite, Home, MapPin, Compass, BarChart2, Settings } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 
+import { api, type DashboardItem } from '../api/client'
 import LanguageSwitch from './components/LanguageSwitch'
 import WizardStepper from './components/WizardStepper'
 
@@ -10,6 +12,15 @@ export default function WizardShell() {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+
+  // Only display navigation links if a saved farm exists in this browser
+  const { data: dashboard } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => api.get<DashboardItem[]>('/api/v1/dashboard'),
+    staleTime: 10_000,
+    retry: 0,
+  })
+  const hasFarm = (dashboard?.length ?? 0) > 0
 
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home },
@@ -35,7 +46,7 @@ export default function WizardShell() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-line shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-6">
-            <Link to="/home" className="group flex items-center gap-2.5">
+            <Link to={hasFarm ? '/home' : '/welcome'} className="group flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-forest to-forest-surface text-white shadow-sm group-hover:bg-leaf transition-colors">
                 <Sprout size={20} />
               </span>
@@ -49,27 +60,29 @@ export default function WizardShell() {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
-              {nav.map((item) => {
-                const active = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
-                      active
-                        ? 'bg-forest text-white shadow-sm ring-1 ring-forest/20'
-                        : 'text-ink-muted hover:text-forest hover:bg-forest/5'
-                    }`}
-                  >
-                    <Icon size={14} className={active ? 'text-mint' : 'text-ink-light'} />
-                    <span>{item.label}</span>
-                  </Link>
-                )
-              })}
-            </nav>
+            {/* Desktop Navigation Links ONLY when the farmer has an active saved farm */}
+            {hasFarm && (
+              <nav className="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
+                {nav.map((item) => {
+                  const active = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+                  const Icon = item.icon
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                        active
+                          ? 'bg-forest text-white shadow-sm ring-1 ring-forest/20'
+                          : 'text-ink-muted hover:text-forest hover:bg-forest/5'
+                      }`}
+                    >
+                      <Icon size={14} className={active ? 'text-mint' : 'text-ink-light'} />
+                      <span>{item.label}</span>
+                    </Link>
+                  )
+                })}
+              </nav>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
