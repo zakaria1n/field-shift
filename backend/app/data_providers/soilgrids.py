@@ -236,6 +236,38 @@ def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None =
                         if v != NODATA:
                             values.append(v)
             n_valid = len(values)
+
+            # Mosaic-gap fallback: a polygon that lands fully inside a gap
+            # still gets the bounded centroid-neighborhood estimate, clearly
+            # labelled — the neighborhood IS valid data (verified per pixel),
+            # it is just not inside the drawn boundary.
+            fallback_note = None
+            if not values and mode == "polygon":
+                col_c, row_c = _pixel_of(index, transformer, lon, lat)
+                nb_cols = [int(col_c) + d for d in range(-NEIGHBORHOOD_HALF_WIDTH, NEIGHBORHOOD_HALF_WIDTH + 1)]
+                nb_rows = [int(row_c) + d for d in range(-NEIGHBORHOOD_HALF_WIDTH, NEIGHBORHOOD_HALF_WIDTH + 1)]
+                for entry in index.entries:
+                    tile_path, xo, yo, tw, th = entry
+                    if xo > max(nb_cols) or xo + tw <= min(nb_cols) or \
+                       yo > max(nb_rows) or yo + th <= min(nb_rows):
+                        continue
+                    touched_tiles.add(tile_path)
+                    with _load_tile(property_stem, tile_path) as tsrc:
+                        band = tsrc.read(1)
+                    for row in sorted(set(nb_rows) & set(range(int(yo), int(yo + th)))):
+                        for col in sorted(set(nb_cols) & set(range(int(xo), int(xo + tw)))):
+                            n_total += 1
+                            v = float(band[row - int(yo), col - int(xo)])
+                            if v != NODATA:
+                                values.append(v)
+                if values:
+                    mode = "polygon_gap_neighborhood_fallback"
+                    fallback_note = (
+                        "the drawn polygon falls fully within a SoilGrids mosaic "
+                        "gap; the estimate uses the nearest valid pixels in a "
+                        "bounded neighborhood around the field centroid"
+                    )
+            n_valid = len(values)
             common_meta = {
                 "depth": DEPTH,
                 "statistic": STATISTIC,
@@ -245,6 +277,7 @@ def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None =
                 "docs_url": "https://www.isric.org/explore/soilgrids",
             }
             if n_valid:
+                extra = {"fallback_note": fallback_note} if fallback_note else {}
                 observations.append(obs(
                     indicator, round(sum(values) / n_valid / divisor, 2), unit,
                     source_id=SOURCE_ID,
@@ -253,7 +286,8 @@ def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None =
                     period_start="2020",
                     spatial_support="global_model_grid (~250 m pixels; regional "
                                     "estimate, not a laboratory test)",
-                    meta={**common_meta, "scale_divisor": divisor,
+                    meta={**common_meta, "sample_mode": mode, **extra,
+                          "scale_divisor": divisor,
                           "note": "modeled ISRIC SoilGrids prediction, not a field soil test"},
                 ))
             else:
