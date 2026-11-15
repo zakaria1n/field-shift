@@ -236,13 +236,17 @@ def run_analysis(job_id: str, field_id: str) -> None:
         yield_status = "unavailable"
         if n_resolved:
             yield_status = "live" if any(r.status == STATUS_LIVE for r in yield_results) else "demo_fixture"
+        detail_line = (
+            f"attainable-yield references resolved for {n_resolved}/{len(pool_ids)} "
+            f"eligible crops ({n_unmapped} crops have no GAEZ v5 layer)"
+            if yield_results else "not evaluated"
+        )
+        first_detail = next((r.detail for r in yield_results if r.detail), None)
+        if first_detail:
+            detail_line += f" — {first_detail[:160]}"
         sources["gaez_v5"] = {
             "source_id": "gaez_v5", "status": yield_status,
-            "detail": (
-                f"attainable-yield references resolved for {n_resolved}/{len(pool_ids)} "
-                f"eligible crops ({n_unmapped} crops have no GAEZ v5 layer)"
-                if yield_results else "not evaluated"
-            ),
+            "detail": detail_line,
             "data_period": next((r.data_period for r in yield_results if r.data_period), None),
         }
         tracker.set("yield_reference", "complete" if yield_status != "unavailable" else "skipped",
