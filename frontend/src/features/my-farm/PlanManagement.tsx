@@ -10,7 +10,8 @@ import {
   Calendar,
   SlidersHorizontal,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Satellite
 } from 'lucide-react'
 
 import { api, type AdoptedPlan } from '../../api/client'
@@ -31,6 +32,7 @@ interface VersionRow {
 export default function PlanManagement() {
   const { t, i18n } = useTranslation()
   const { fieldId } = useParams()
+  const isArabic = i18n.language === 'ar'
 
   const { data: plan, isLoading: planLoading } = useQuery({
     queryKey: ['active-plan', fieldId],
@@ -44,7 +46,7 @@ export default function PlanManagement() {
 
   if (planLoading) {
     return (
-      <div className="mx-auto max-w-4xl py-12 text-center">
+      <div className="mx-auto max-w-4xl py-20 text-center">
         <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-forest border-t-transparent" />
         <p className="mt-3 text-sm font-medium text-ink/70">{t('common.loading')}</p>
       </div>
@@ -52,38 +54,42 @@ export default function PlanManagement() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-12">
-      {/* Navigation Breadcrumb */}
-      <div>
+    <div className="mx-auto max-w-4xl space-y-8 pb-16">
+      {/* Editorial Header (No duplicate AI dark banner!) */}
+      <div className="border-b border-line pb-6">
         <Link
           to="/home"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-forest hover:text-leaf transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-forest/70 hover:text-forest transition-colors mb-3"
         >
-          <ArrowLeft size={14} className="rtl:rotate-180" />
+          <ArrowLeft size={13} className="rtl:rotate-180" />
           <span>{t('nav.home')}</span>
         </Link>
-      </div>
 
-      {/* Editorial Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-forest via-forest to-forest-surface p-6 sm:p-8 text-white shadow-xl">
-        <div className="absolute -top-16 -end-16 h-48 w-48 rounded-full bg-leaf/20 blur-3xl pointer-events-none" />
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-leaf/40 bg-leaf/15 px-3 py-1 text-xs font-semibold text-mint backdrop-blur-md">
-            <Layers size={13} className="text-leaf" />
-            <span>{i18n.language === 'ar' ? 'معمارية وسجل خطط الدورات' : t('plans.manage.title')}</span>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-forest/20 bg-forest/5 px-3 py-0.5 text-xs font-semibold text-forest">
+              <Layers size={13} className="text-leaf" />
+              <span>{isArabic ? 'معمارية وسجل خطط الدورات' : 'Plan Architecture & Version History'}</span>
+            </div>
+            <h1 className="mt-2 font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              {t('plans.manage.title')}
+            </h1>
+            <p className="mt-1 text-sm text-ink/70 max-w-xl">
+              {t('plans.manage.subtitle')}
+            </p>
           </div>
-          <h1 className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-            {t('plans.manage.title')}
-          </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/80">
-            {t('plans.manage.subtitle')}
-          </p>
+
+          <div className="flex items-center gap-2 font-mono text-xs text-ink/60">
+            <span className="rounded-lg border border-line bg-cream/70 px-3 py-1.5">
+              {versions?.versions.length ?? 0} {versions?.versions.length === 1 ? 'Snapshot' : 'Snapshots'}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* ACTIVE PLAN HERO CARD */}
+      {/* ACTIVE PLAN SHOWCASE */}
       {plan ? (
-        <div className="card overflow-hidden border border-leaf/40 bg-white shadow-md">
+        <div className="card overflow-hidden border border-leaf/40 bg-white shadow-sm">
           {/* Header ribbon */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-forest/5 p-4 sm:px-6">
             <div className="flex items-center gap-2.5">
@@ -92,14 +98,14 @@ export default function PlanManagement() {
               </div>
               <div>
                 <h2 className="font-display text-lg font-bold text-forest">
-                  <bdi>{i18n.language === 'ar' ? t('home.activePlan') : plan.label}</bdi>
+                  <bdi>{isArabic ? t('home.activePlan') : plan.label}</bdi>
                 </h2>
                 <span className="text-[11px] font-mono text-ink/50">
                   Ref: <bdi>{plan.plan_id.slice(0, 12)}</bdi>
                 </span>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-leaf/30 bg-leaf/15 px-3 py-1 text-xs font-bold text-forest shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-leaf/30 bg-leaf/15 px-3 py-1 text-xs font-bold text-forest">
               <span className="h-2 w-2 rounded-full bg-leaf animate-pulse" />
               {t('plans.manage.active')}
             </span>
@@ -109,38 +115,28 @@ export default function PlanManagement() {
             {/* 3-Year Botanical Crop Strip */}
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-ink/40">
-                {i18n.language === 'ar' ? 'تسلسل الدورة لـ 3 سنوات' : '3-Year Rotation Sequence'}
+                {isArabic ? 'تسلسل الدورة لـ 3 سنوات' : '3-Year Rotation Sequence'}
               </span>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                {plan.slots.map((slot, index) => (
+                {plan.slots.map((slot) => (
                   <div
                     key={slot.slot_id}
-                    className="group relative flex items-center gap-3 rounded-2xl border border-line bg-cream/50 p-3 hover:border-forest/40 hover:bg-white transition-all shadow-2xs"
+                    className="flex flex-col items-center justify-between rounded-2xl border border-line bg-cream/50 p-4 transition-all hover:border-forest/40 hover:bg-white"
                   >
-                    <div className="shrink-0">
+                    <span className="font-mono text-[10px] font-bold text-ink/40 uppercase self-start">
+                      {t('timeline.year', { n: slot.year_number })}
+                    </span>
+                    <div className="my-1">
                       <CropVisual
                         slot={slot}
                         size="sm"
                         showBadge={false}
-                        className="rounded-xl border border-line"
+                        className="!bg-transparent !border-0 !shadow-none"
                       />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="font-mono text-[10px] font-bold text-ink/40 uppercase">
-                        {t('timeline.year', { n: slot.year_number })}
-                      </span>
-                      <h4 className="truncate font-display text-sm font-bold text-forest">
-                        {i18n.language === 'ar' ? (slot.name_ar ?? slot.crop_id) : (slot.name_en ?? slot.crop_id)}
-                      </h4>
-                      {slot.crop_id && (
-                        <p className="truncate font-mono text-[10px] text-ink/40">
-                          <bdi>{slot.crop_id}</bdi>
-                        </p>
-                      )}
-                    </div>
-                    {index < plan.slots.length - 1 && (
-                      <span className="hidden sm:inline-block text-ink/20 absolute -end-2 text-xs font-bold" aria-hidden>
-                        →
+                    {slot.rotation_group && (
+                      <span className="text-[10px] font-mono text-ink/45 capitalize truncate max-w-full">
+                        {slot.rotation_group}
                       </span>
                     )}
                   </div>
@@ -151,13 +147,13 @@ export default function PlanManagement() {
             {/* Agronomic Performance Indicators */}
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-ink/40">
-                {i18n.language === 'ar' ? 'نقاط التقييم الزراعي' : 'Agronomic Evaluation Score'}
+                {isArabic ? 'نقاط التقييم الزراعي' : 'Agronomic Evaluation Score'}
               </span>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {plan.score.indicators.map((ind) => (
                   <IndicatorRow
                     key={ind.key}
-                    label={i18n.language === 'ar' ? ind.label_ar : ind.label_en}
+                    label={isArabic ? ind.label_ar : ind.label_en}
                     value={ind.value}
                     status={ind.status}
                   />
@@ -185,7 +181,7 @@ export default function PlanManagement() {
                 to={`/fields/${fieldId}/insights`}
                 className="btn-secondary !py-2.5 text-xs inline-flex items-center gap-1.5"
               >
-                <Layers size={14} />
+                <Satellite size={14} className="text-sky-700" />
                 <span>{t('home.reevaluate')}</span>
               </Link>
               <Link
@@ -200,7 +196,7 @@ export default function PlanManagement() {
           </div>
         </div>
       ) : (
-        <div className="card border-dashed border-forest/20 p-8 text-center">
+        <div className="card border-dashed border-forest/20 p-8 text-center space-y-3">
           <p className="text-sm font-medium text-ink/70">{t('home.noPlan')}</p>
           <Link
             to={fieldId ? `/fields/${fieldId}/rotations` : '/fields/new'}
@@ -212,8 +208,8 @@ export default function PlanManagement() {
         </div>
       )}
 
-      {/* PLAN VERSION HISTORY */}
-      <div className="card border border-line bg-white/95 p-5 sm:p-6 shadow-sm">
+      {/* PLAN VERSION ARCHIVE */}
+      <div className="card border border-line bg-white p-5 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-line/60 pb-3">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-forest/5 text-forest">
@@ -285,7 +281,7 @@ export default function PlanManagement() {
       <div className="rounded-2xl border border-line bg-cream/60 p-4 text-xs text-ink/70">
         <div className="flex items-center gap-2 font-bold text-forest">
           <ShieldCheck size={16} className="text-leaf" />
-          <span>{t('disclaimer.anon')}</span>
+          <span>Scientific Governance</span>
         </div>
         <p className="mt-1 leading-relaxed text-ink/60">
           {t('disclaimer.yield')} · {t('disclaimer.soil')}

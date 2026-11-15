@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -9,10 +9,9 @@ import {
   Thermometer,
   Droplets,
   Satellite,
-  Info,
   ShieldCheck,
-  Compass,
-  CheckCircle2
+  ArrowLeft,
+  Info
 } from 'lucide-react'
 
 import { api, type InsightsOut, type ObservationOut } from '../../api/client'
@@ -35,30 +34,15 @@ function referencePeriod(o: { source_id: string; period_start: string | null; pe
   return null
 }
 
-function bdiSafe(v: number | undefined): string {
-  return v === undefined ? '–' : String(v)
-}
-
-const LABELS: Record<string, string> = {
-  monthly_mean_air_temperature: 'insights.annualTemp',
-  monthly_mean_daily_max_temperature: 'insights.hottestMax',
-  monthly_mean_daily_min_temperature: 'insights.coldestMin',
-  monthly_mean_precipitation: 'insights.annualPrecip',
-  monthly_mean_relative_humidity: 'insights.humidity',
-  soil_ph: 'insights.soilPh',
-  soil_organic_carbon: 'insights.soilOc',
-  soil_sand_fraction: 'insights.soilSand',
-  soil_silt_fraction: 'insights.soilSilt',
-  soil_clay_fraction: 'insights.soilClay',
-  soil_total_nitrogen: 'insights.soilN',
-}
-
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const DAYS_IN_MONTHS = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+const MONTH_KEYS_UPPER = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
 export default function FieldInsights() {
   const { t, i18n } = useTranslation()
   const { fieldId } = useParams()
   const [activeMonth, setActiveMonth] = useState<number | null>(null)
+  const isArabic = i18n.language === 'ar'
 
   const { data, isLoading } = useQuery({
     queryKey: ['insights', fieldId],
@@ -67,7 +51,7 @@ export default function FieldInsights() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-5xl py-12 text-center">
+      <div className="mx-auto max-w-5xl py-16 text-center">
         <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-forest border-t-transparent" />
         <p className="mt-3 text-sm font-medium text-ink/70">{t('common.loading')}</p>
       </div>
@@ -76,7 +60,7 @@ export default function FieldInsights() {
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-lg py-12 text-center">
+      <div className="mx-auto max-w-lg py-16 text-center">
         <div className="card p-8">
           <p className="text-sm font-medium text-ink/70">{t('insights.noData')}</p>
         </div>
@@ -100,48 +84,70 @@ export default function FieldInsights() {
 
   const monthlyPrecip = precipObs?.meta?.monthly as Record<string, number | null> | undefined
 
-  return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12">
-      {/* Cinematic Telemetry Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-forest via-forest to-forest-surface p-6 sm:p-8 text-white shadow-xl">
-        <div className="absolute -top-24 -end-24 h-64 w-64 rounded-full bg-sky/20 blur-3xl pointer-events-none" />
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky/40 bg-sky/15 px-3 py-1 text-xs font-semibold text-sky backdrop-blur-md">
-            <Satellite size={13} className="text-sky" />
-            <span>{i18n.language === 'ar' ? 'رصد الأرض والاستشعار عن بعد' : 'Earth Observation Intelligence'}</span>
-          </div>
-          <h1 className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-            {t('insights.title')}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">
-            {t('insights.subtitle')}
-          </p>
+  // Scientific Precipitation Conversion:
+  // NASA POWER PRECTOTCORR is mm/day.
+  // Aggregate daily rates by monthly days to get accurate annual rainfall (mm/year).
+  let annualPrecipMm: number | null = null
+  if (monthlyPrecip) {
+    let sum = 0
+    let validCount = 0
+    for (let i = 0; i < 12; i++) {
+      const v = monthlyPrecip[MONTH_KEYS_UPPER[i]] ?? monthlyPrecip[String(i + 1)] ?? monthlyPrecip[String(i + 1).padStart(2, '0')]
+      if (typeof v === 'number') {
+        sum += v * DAYS_IN_MONTHS[i]
+        validCount++
+      }
+    }
+    if (validCount > 0) annualPrecipMm = sum
+  }
+  if (annualPrecipMm === null && precipObs?.value !== null && precipObs?.value !== undefined) {
+    annualPrecipMm = precipObs.value * 365.25
+  }
 
-          {/* Provenance strip */}
-          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4 text-xs text-white/70">
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              NASA POWER (0.5° × 0.5°)
+  return (
+    <div className="mx-auto max-w-5xl space-y-8 pb-16">
+      {/* Precision Scientific Header (No repetitive AI dark banner!) */}
+      <div className="border-b border-line pb-6">
+        <Link
+          to="/home"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-forest/70 hover:text-forest transition-colors mb-3"
+        >
+          <ArrowLeft size={13} className="rtl:rotate-180" />
+          <span>{t('nav.home')}</span>
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky/30 bg-sky/10 px-3 py-0.5 text-xs font-semibold text-sky-800">
+              <Satellite size={13} className="text-sky-700" />
+              <span>{isArabic ? 'رصد الأرض والاستشعار عن بعد' : 'Scientific Earth Observation Instrument'}</span>
+            </div>
+            <h1 className="mt-2 font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              {t('insights.title')}
+            </h1>
+            <p className="mt-1 text-sm text-ink/70 max-w-2xl">
+              {t('insights.subtitle')}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-ink/60">
+            <span className="rounded-lg border border-line bg-cream/70 px-2.5 py-1">
+              NASA POWER 0.5°
             </span>
-            <span className="text-white/30">·</span>
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-2 w-2 rounded-full bg-sky-400" />
-              ISRIC SoilGrids 2020 (250m)
+            <span className="rounded-lg border border-line bg-cream/70 px-2.5 py-1">
+              SoilGrids 250m
             </span>
-            <span className="text-white/30">·</span>
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="h-2 w-2 rounded-full bg-amber-400" />
-              FAO GAEZ v5 (AgERA5)
+            <span className="rounded-lg border border-line bg-cream/70 px-2.5 py-1">
+              FAO GAEZ v5
             </span>
           </div>
         </div>
       </div>
 
-      {/* CLIMATE INTELLIGENCE SECTION */}
+      {/* CLIMATE & ATMOSPHERIC INTELLIGENCE (NASA POWER) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky/10 text-sky border border-sky/20">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky/10 text-sky-800 border border-sky/20">
               <CloudRain size={18} />
             </div>
             <div>
@@ -149,7 +155,7 @@ export default function FieldInsights() {
                 {t('insights.climate')}
               </h2>
               <p className="text-xs text-ink/60">
-                NASA POWER Climatology · Spatial support 0.5° × 0.5°
+                NASA POWER Climatology · Spatial Resolution 0.5° × 0.5° (~55 km)
               </p>
             </div>
           </div>
@@ -158,12 +164,12 @@ export default function FieldInsights() {
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {/* Temperature Cluster Card */}
-          <div className="card border border-line bg-white/95 p-5 shadow-sm space-y-4">
+          <div className="card border border-line bg-white p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between text-xs font-semibold text-ink/60">
               <span className="flex items-center gap-1.5">
-                <Thermometer size={15} className="text-amber" />
+                <Thermometer size={15} className="text-amber-700" />
                 {t('insights.annualTemp')}
               </span>
               <span className="font-mono text-[11px] text-ink/40">°C</span>
@@ -172,7 +178,7 @@ export default function FieldInsights() {
             <div className="flex items-baseline gap-2">
               <span className="font-display text-3xl font-extrabold text-forest">
                 {meanTempObs?.value !== null && meanTempObs?.value !== undefined ? (
-                  <bdi>{meanTempObs.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}</bdi>
+                  <bdi>{meanTempObs.value.toFixed(1)}</bdi>
                 ) : (
                   <span className="text-sm text-ink/40">{t('common.unknown')}</span>
                 )}
@@ -180,10 +186,10 @@ export default function FieldInsights() {
               <span className="text-xs font-semibold text-ink/50">°C annual mean</span>
             </div>
 
-            {/* Min / Max Range */}
+            {/* Min / Max Thermal Envelope */}
             <div className="grid grid-cols-2 gap-2 rounded-2xl bg-cream/70 p-3 text-xs border border-line/60">
               <div>
-                <span className="text-[10px] font-semibold text-sky uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-sky-800 uppercase tracking-wider">
                   {t('insights.coldestMin')}
                 </span>
                 <p className="mt-0.5 font-display text-sm font-bold text-forest">
@@ -193,7 +199,7 @@ export default function FieldInsights() {
                 </p>
               </div>
               <div className="border-s border-line/70 ps-3">
-                <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-amber-800 uppercase tracking-wider">
                   {t('insights.hottestMax')}
                 </span>
                 <p className="mt-0.5 font-display text-sm font-bold text-forest">
@@ -208,7 +214,7 @@ export default function FieldInsights() {
             {humidityObs?.value !== null && humidityObs?.value !== undefined && (
               <div className="flex items-center justify-between border-t border-line/50 pt-2 text-xs text-ink/70">
                 <span className="flex items-center gap-1.5">
-                  <Droplets size={13} className="text-sky" />
+                  <Droplets size={13} className="text-sky-700" />
                   {t('insights.humidity')}
                 </span>
                 <span className="font-bold text-forest">
@@ -218,60 +224,81 @@ export default function FieldInsights() {
             )}
           </div>
 
-          {/* Precipitation & Monthly Histogram Card */}
-          <div className="card border border-line bg-white/95 p-5 shadow-sm space-y-3 sm:col-span-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Precipitation & Monthly Histogram Card with Corrected Units */}
+          <div className="card border border-line bg-white p-5 shadow-sm space-y-3 sm:col-span-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Droplets size={16} className="text-sky" />
-                <span className="text-xs font-semibold text-ink/70">
-                  {t('insights.annualPrecip')}
-                </span>
+                <Droplets size={16} className="text-sky-700" />
+                <div>
+                  <span className="text-xs font-bold text-forest">
+                    {t('insights.annualPrecip')}
+                  </span>
+                  <p className="text-[11px] text-ink/50">
+                    NASA POWER 30-year agroclimatology baseline
+                  </p>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-display text-2xl font-extrabold text-forest">
-                  {precipObs?.value !== null && precipObs?.value !== undefined ? (
-                    <bdi>{precipObs.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}</bdi>
-                  ) : '–'}
-                </span>
-                <span className="text-xs font-semibold text-ink/50">mm/yr</span>
+
+              {/* Verified Annual Precipitation Display */}
+              <div className="text-end">
+                <div className="flex items-baseline gap-1 justify-end">
+                  <span className="font-display text-2xl font-extrabold text-forest">
+                    {annualPrecipMm !== null ? (
+                      <bdi>{annualPrecipMm.toLocaleString(undefined, { maximumFractionDigits: 0 })}</bdi>
+                    ) : '–'}
+                  </span>
+                  <span className="text-xs font-semibold text-ink/60">mm/yr</span>
+                </div>
+                {precipObs?.value !== null && precipObs?.value !== undefined && (
+                  <span className="text-[10px] font-mono text-ink/50">
+                    Daily normal: <bdi>{precipObs.value.toFixed(2)}</bdi> mm/day
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Monthly Precipitation Histogram */}
+            {/* Monthly Precipitation Histogram (Jan-Dec) */}
             {monthlyPrecip ? (
               <div className="pt-2">
-                <div className="flex items-center justify-between text-[11px] text-ink/50 mb-1">
-                  <span>{i18n.language === 'ar' ? 'توزيع هطول الأمطار الشهري' : 'Monthly Precipitation Distribution'}</span>
-                  {activeMonth !== null && (
-                    <span className="font-mono text-xs font-bold text-forest">
-                      {MONTH_NAMES[activeMonth]}:{' '}
-                      {monthlyPrecip[String(activeMonth + 1)] ?? '–'} mm/day
-                    </span>
-                  )}
+                <div className="flex items-center justify-between text-[11px] text-ink/60 mb-1">
+                  <span className="font-medium">
+                    {isArabic ? 'توزيع هطول الأمطار الشهري' : 'Monthly Precipitation Distribution'}
+                  </span>
+                  {activeMonth !== null && (() => {
+                    const monthKeyUpper = MONTH_KEYS_UPPER[activeMonth]
+                    const daily = monthlyPrecip[monthKeyUpper] ?? monthlyPrecip[String(activeMonth + 1)] ?? 0
+                    const monthlyTotal = typeof daily === 'number' ? daily * DAYS_IN_MONTHS[activeMonth] : 0
+                    return (
+                      <span className="font-mono text-xs font-bold text-forest">
+                        {MONTH_NAMES[activeMonth]}: {monthlyTotal.toFixed(0)} mm/mo ({typeof daily === 'number' ? daily.toFixed(2) : '–'} mm/day)
+                      </span>
+                    )
+                  })()}
                 </div>
+
                 <div
                   className="flex h-24 items-end gap-1.5 rounded-2xl bg-cream/50 p-2.5 border border-line/60"
                   aria-label="Monthly Precipitation Chart"
                 >
                   {Array.from({ length: 12 }, (_, i) => {
-                    const monthKey = String(i + 1)
-                    const val = monthlyPrecip[monthKey] ?? 0
-                    // Max typical daily rain in mm/day ~ 5mm
-                    const heightPercent = Math.min(100, Math.max(8, (val / 4.5) * 100))
+                    const monthKeyUpper = MONTH_KEYS_UPPER[i]
+                    const val = monthlyPrecip[monthKeyUpper] ?? monthlyPrecip[String(i + 1)] ?? 0
+                    const dailyVal = typeof val === 'number' ? val : 0
+                    const heightPercent = Math.min(100, Math.max(8, (dailyVal / 4.5) * 100))
                     const isHovered = activeMonth === i
 
                     return (
                       <div
-                        key={monthKey}
-                        className="group relative flex flex-1 flex-col items-center h-full justify-end"
+                        key={monthKeyUpper}
+                        className="group relative flex flex-1 flex-col items-center h-full justify-end cursor-pointer"
                         onMouseEnter={() => setActiveMonth(i)}
                         onMouseLeave={() => setActiveMonth(null)}
                       >
                         <div
                           className={`w-full rounded-t-lg transition-all ${
                             isHovered
-                              ? 'bg-sky shadow-md scale-y-105'
-                              : 'bg-gradient-to-t from-sky/40 to-sky/80 hover:bg-sky'
+                              ? 'bg-sky-600 shadow-md scale-y-105'
+                              : 'bg-gradient-to-t from-sky/50 to-sky/90 group-hover:bg-sky-700'
                           }`}
                           style={{ height: `${heightPercent}%` }}
                         />
@@ -287,14 +314,17 @@ export default function FieldInsights() {
               <p className="text-xs text-ink/40">No monthly distribution data available.</p>
             )}
 
-            <p className="text-[11px] text-ink/45">
-              NASA POWER 30-year agroclimatology baseline · Regional gridded estimate
-            </p>
+            <div className="flex items-center gap-1.5 text-[10px] text-ink/50 pt-1">
+              <Info size={12} className="text-sky-700 shrink-0" />
+              <span>
+                NASA POWER reports precipitation as daily rate (mm/day); annual values reflect monthly weighted totals.
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PEDOLOGICAL & SOIL INTELLIGENCE SECTION */}
+      {/* PEDOLOGICAL & SOIL INTELLIGENCE (ISRIC SOILGRIDS) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -322,7 +352,7 @@ export default function FieldInsights() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Soil pH Card */}
-            <div className="card border border-line bg-white/95 p-5 shadow-sm space-y-3">
+            <div className="card border border-line bg-white p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-ink/60">
                 <span>{t('insights.soilPh')}</span>
                 <span className="font-mono text-[10px] text-ink/40">pH</span>
@@ -335,11 +365,11 @@ export default function FieldInsights() {
                 </span>
                 <span className="text-xs text-ink/50">
                   {phObs?.value !== null && phObs?.value !== undefined ? (
-                    phObs.value < 6.0 ? 'Acidic' : phObs.value > 7.5 ? 'Alkaline' : 'Neutral/Optimal'
+                    phObs.value < 6.0 ? (isArabic ? 'حمضي' : 'Acidic') : phObs.value > 7.5 ? (isArabic ? 'قلوي' : 'Alkaline') : (isArabic ? 'متعادل / مثالي' : 'Neutral / Optimal')
                   ) : ''}
                 </span>
               </div>
-              {/* Visual pH Bar */}
+              {/* Visual pH Scale Bar */}
               <div className="relative h-2 w-full rounded-full bg-gradient-to-r from-amber-400 via-leaf to-sky/70">
                 {phObs?.value !== null && phObs?.value !== undefined && (
                   <div
@@ -351,14 +381,14 @@ export default function FieldInsights() {
                 )}
               </div>
               <div className="flex justify-between text-[9px] font-mono text-ink/40">
-                <span>{i18n.language === 'ar' ? 'حمضي 4.0' : '4.0 Acid'}</span>
+                <span>{isArabic ? 'حمضي 4.0' : '4.0 Acid'}</span>
                 <span>7.0</span>
-                <span>{i18n.language === 'ar' ? 'قلوي 9.0' : '9.0 Alk'}</span>
+                <span>{isArabic ? 'قلوي 9.0' : '9.0 Alk'}</span>
               </div>
             </div>
 
             {/* Soil Organic Carbon */}
-            <div className="card border border-line bg-white/95 p-5 shadow-sm space-y-3">
+            <div className="card border border-line bg-white p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-ink/60">
                 <span>{t('insights.soilOc')}</span>
                 <span className="font-mono text-[10px] text-ink/40">g/kg</span>
@@ -372,12 +402,12 @@ export default function FieldInsights() {
                 <span className="text-xs text-ink/50">g/kg SOC</span>
               </div>
               <p className="text-[11px] text-ink/50">
-                {i18n.language === 'ar' ? 'محتوى الكربون العضوي للتربة 0-30 سم' : '0–30 cm soil organic carbon content (SoilGrids 2020)'}
+                {isArabic ? 'محتوى الكربون العضوي للتربة 0-30 سم' : '0–30 cm soil organic carbon (SoilGrids 2020)'}
               </p>
             </div>
 
             {/* Total Nitrogen */}
-            <div className="card border border-line bg-white/95 p-5 shadow-sm space-y-3">
+            <div className="card border border-line bg-white p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-ink/60">
                 <span>{t('insights.soilN')}</span>
                 <span className="font-mono text-[10px] text-ink/40">cg/kg</span>
@@ -391,17 +421,17 @@ export default function FieldInsights() {
                 <span className="text-xs text-ink/50">cg/kg total N</span>
               </div>
               <p className="text-[11px] text-ink/50">
-                {i18n.language === 'ar' ? 'النيتروجين الكلي بدقة شبكية 250 متر' : 'Total soil nitrogen at 250m gridded resolution'}
+                {isArabic ? 'النيتروجين الكلي بدقة 250 متر' : 'Total soil nitrogen at 250m gridded resolution'}
               </p>
             </div>
 
-            {/* Soil Texture Trio (Sand / Silt / Clay) */}
-            <div className="card border border-line bg-white/95 p-5 shadow-sm space-y-3">
+            {/* Soil Texture Fraction Trio */}
+            <div className="card border border-line bg-white p-5 shadow-sm space-y-3">
               <div className="flex items-center justify-between text-xs font-semibold text-ink/60">
-                <span>{i18n.language === 'ar' ? 'قوام التربة' : 'Soil Texture'}</span>
+                <span>{isArabic ? 'قوام التربة' : 'Soil Texture'}</span>
                 <span className="font-mono text-[10px] text-ink/40">Fraction %</span>
               </div>
-              {/* Stacked Bar for Texture */}
+              {/* Stacked Composition Bar */}
               <div className="flex h-3 w-full overflow-hidden rounded-full border border-line bg-cream/70">
                 <div
                   className="bg-amber-300"
@@ -422,15 +452,15 @@ export default function FieldInsights() {
               <div className="grid grid-cols-3 gap-1 text-[10px] font-medium text-ink/70">
                 <span className="flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-amber-300" />
-                  {i18n.language === 'ar' ? 'رمل' : 'Sand'}: {sandObs?.value?.toFixed(0) ?? '–'}%
+                  {isArabic ? 'رمل' : 'Sand'}: {sandObs?.value?.toFixed(0) ?? '–'}%
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-leaf" />
-                  {i18n.language === 'ar' ? 'طمي' : 'Silt'}: {siltObs?.value?.toFixed(0) ?? '–'}%
+                  {isArabic ? 'طمي' : 'Silt'}: {siltObs?.value?.toFixed(0) ?? '–'}%
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-forest" />
-                  {i18n.language === 'ar' ? 'طين' : 'Clay'}: {clayObs?.value?.toFixed(0) ?? '–'}%
+                  {isArabic ? 'طين' : 'Clay'}: {clayObs?.value?.toFixed(0) ?? '–'}%
                 </span>
               </div>
             </div>
@@ -440,9 +470,9 @@ export default function FieldInsights() {
 
       {/* SCIENTIFIC LIMITATIONS & HONESTY DISCLOSURE */}
       {data.limitations.length > 0 && (
-        <section className="rounded-3xl border border-amber/30 bg-amber-50/60 p-6 shadow-sm space-y-3">
+        <section className="rounded-2xl border border-amber/30 bg-amber-50/60 p-5 shadow-sm space-y-3">
           <div className="flex items-center gap-2 text-sm font-bold text-amber-900">
-            <TriangleAlert size={18} className="text-amber-600" />
+            <TriangleAlert size={18} className="text-amber-700" />
             <span>{t('insights.limitations')}</span>
           </div>
 
@@ -454,7 +484,7 @@ export default function FieldInsights() {
             ))}
           </ul>
 
-          <div className="mt-4 border-t border-amber-200/60 pt-3 space-y-1 text-xs text-amber-900/70">
+          <div className="mt-3 border-t border-amber-200/60 pt-3 space-y-1 text-xs text-amber-900/70">
             <p className="font-semibold text-amber-950">Scientific Integrity Notice:</p>
             <p>{t('disclaimer.soil')}</p>
             <p>{t('disclaimer.yield')}</p>

@@ -5,38 +5,48 @@ import {
   ArrowRight,
   CircleCheck,
   MapPin,
-  RefreshCcw,
-  Ruler,
-  CalendarClock,
-  Sparkles,
-  Layers,
+  Calendar,
   Satellite,
   Compass,
-  Calendar,
-  BarChart2,
-  Sliders,
+  Sparkles,
+  Layers,
+  SlidersHorizontal,
+  ChevronRight,
   Plus,
+  Droplets,
+  Sprout,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-import { api, type DashboardItem } from '../../api/client'
+import { api, type DashboardItem, type FieldOut } from '../../api/client'
 import { CropVisual } from '../../app/components/CropVisual'
-import { useWizard } from '../../state/wizard'
+import { FieldPolygonThumbnail } from '../../app/components/FieldPolygonThumbnail'
+import { IndicatorRow } from '../../app/components/ui'
 
 export default function HomeDashboard() {
   const { t, i18n } = useTranslation()
-  const { lang } = useWizard()
   const isArabic = i18n.language === 'ar'
 
-  const { data, isLoading, error } = useQuery({
+  const { data: dashboard, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api.get<DashboardItem[]>('/api/v1/dashboard'),
   })
 
+  const firstFarm = dashboard?.[0]
+
+  // Fetch full field details including polygon geometry for vector boundary thumbnail
+  const { data: fieldDetail } = useQuery({
+    queryKey: ['field-detail', firstFarm?.field_id],
+    queryFn: () => api.get<FieldOut>(`/api/v1/fields/${firstFarm?.field_id}`),
+    enabled: Boolean(firstFarm?.field_id),
+  })
+
   if (isLoading) {
     return (
-      <div className="card p-12 text-center max-w-xl mx-auto space-y-3">
-        <div className="h-10 w-10 mx-auto rounded-full border-2 border-leaf border-t-transparent animate-spin" />
+      <div className="py-20 text-center max-w-md mx-auto space-y-3">
+        <div className="h-8 w-8 mx-auto rounded-full border-2 border-forest border-t-transparent animate-spin" />
         <p className="text-sm font-bold text-forest">{t('common.loading')}</p>
       </div>
     )
@@ -44,25 +54,25 @@ export default function HomeDashboard() {
 
   if (error) {
     return (
-      <div className="card p-8 text-center max-w-xl mx-auto space-y-3">
+      <div className="card p-8 text-center max-w-md mx-auto space-y-3">
         <p className="text-sm font-bold text-red-600">{t('error.network')}</p>
       </div>
     )
   }
 
-  if (!data || data.length === 0) {
+  if (!dashboard || dashboard.length === 0) {
     return (
-      <div className="card-elevated mx-auto max-w-md p-10 text-center bg-white border border-line shadow-lg space-y-4">
-        <div className="h-14 w-14 mx-auto rounded-2xl bg-leaf-soft flex items-center justify-center text-leaf shadow-sm">
+      <div className="mx-auto max-w-md py-16 text-center space-y-4">
+        <div className="h-14 w-14 mx-auto rounded-2xl bg-forest/5 border border-forest/15 flex items-center justify-center text-forest shadow-sm">
           <MapPin size={28} />
         </div>
-        <h2 className="text-xl font-extrabold text-forest">{t('home.noFields')}</h2>
-        <p className="text-xs text-ink-muted leading-relaxed">
+        <h2 className="text-2xl font-extrabold text-forest">{t('home.noFields')}</h2>
+        <p className="text-sm text-ink/70 leading-relaxed max-w-sm mx-auto">
           {isArabic
             ? 'ابدأ برسم حدود حقلك الزراعي لتحليل بيانات الأقمار الصناعية واقتراح دورات زراعية ملائمة.'
             : 'Select and draw your field boundary on the satellite map to generate scientific crop rotation plans.'}
         </p>
-        <Link to="/fields/new" className="btn-leaf inline-flex items-center gap-2 px-6 py-3">
+        <Link to="/fields/new" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
           <Plus size={16} />
           <span>{t('home.startFirst')}</span>
         </Link>
@@ -70,199 +80,311 @@ export default function HomeDashboard() {
     )
   }
 
-  const farm = data[0]
+  const farm = dashboard[0]
+  const activePlan = farm.active_plan
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
+      transition={{ duration: 0.35 }}
+      className="space-y-8 pb-16"
     >
-      {/* Dashboard Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Editorial Farm Header (Clean, authentic, uncluttered) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <p className="kicker">{t('nav.home')}</p>
-            <span className="badge-glow text-[10px] font-mono flex items-center gap-1">
-              <Satellite size={11} className="text-leaf" /> Earth Observation Synced
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-forest/20 bg-forest/5 px-2.5 py-0.5 text-[11px] font-bold text-forest">
+              <span className="h-1.5 w-1.5 rounded-full bg-leaf" />
+              {t('nav.home')}
+            </span>
+            <span className="text-ink/30">·</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-ink/60">
+              <Satellite size={12} className="text-sky-700" />
+              <span>NASA POWER & SoilGrids Synced</span>
             </span>
           </div>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+
+          <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
             {t('home.welcome')}
           </h1>
-          <p className="mt-0.5 text-sm text-ink-muted">{t('home.subtitle')}</p>
+          <p className="mt-0.5 text-xs sm:text-sm text-ink/60">
+            {t('home.subtitle')}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Link
             to="/fields/new"
-            className="btn-secondary !py-2 !px-4 text-xs font-bold flex items-center gap-1.5"
+            className="btn-secondary !py-2 !px-3.5 text-xs font-bold inline-flex items-center gap-1.5"
           >
-            <Plus size={14} className="text-leaf" />
+            <Plus size={14} />
             <span>{t('home.addField')}</span>
           </Link>
         </div>
       </div>
 
-      {/* Main Command Grid */}
-      <div className="grid gap-6 lg:grid-cols-12 items-start">
-        {/* Field Card (7 Cols) */}
-        <div className="lg:col-span-7 card-elevated overflow-hidden bg-white border border-line shadow-card-hover">
-          {/* Subtle Aerial Banner */}
-          <div className="relative h-28 overflow-hidden bg-forest-dark">
-            <img
-              src="/assets/hero_earth_fields.jpg"
-              alt=""
-              className="w-full h-full object-cover opacity-60"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
-            <div className="absolute bottom-3 start-5 flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest text-white shadow-md">
-                <MapPin size={18} />
-              </span>
-              <div>
-                <h2 className="text-lg font-extrabold text-forest">
-                  <bdi>{farm.field_name}</bdi>
-                </h2>
-                <span className="chip text-[10px] py-0.5 px-2 bg-white/90 font-mono">
-                  <Ruler size={11} /> <bdi>{farm.area_ha.toLocaleString(i18n.language)}</bdi> {t('common.hectare')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-5 sm:p-6 space-y-4">
-            {/* Metadata Pills */}
-            <div className="flex flex-wrap gap-2 text-xs">
-              {farm.profile_summary && (
-                <span className="chip font-semibold text-forest bg-cream-warm">
-                  {t(`q.irrigation.${farm.profile_summary.irrigation_type}`)}
-                </span>
-              )}
-              {farm.last_analysis && (
-                <span className="chip font-mono text-ink-muted">
-                  <CalendarClock size={12} className="text-leaf" />
-                  <span>{t('home.lastAnalysis')}: {farm.last_analysis.finished_at?.slice(0, 10) ?? farm.last_analysis.created_at.slice(0, 10)}</span>
-                </span>
-              )}
-            </div>
-
-            {/* Profile summary details */}
-            <dl className="space-y-2.5 text-xs border-t border-line/70 pt-3">
-              {farm.profile_summary && (
-                <div className="flex items-center justify-between gap-2">
-                  <dt className="font-bold text-ink-light font-mono uppercase text-[10px]">
-                    {t('q.purposes.title')}
-                  </dt>
-                  <dd className="font-semibold text-forest text-end">
-                    {farm.profile_summary.purposes.map((p) => t(`q.purposes.${p}`)).join(' · ') || '—'}
-                  </dd>
-                </div>
-              )}
-              {farm.profile_summary && (
-                <div className="flex items-center justify-between gap-2">
-                  <dt className="font-bold text-ink-light font-mono uppercase text-[10px]">
-                    {t('mixer.title')}
-                  </dt>
-                  <dd className="font-mono font-bold text-forest text-end text-[11px]">
-                    {Object.entries(farm.profile_summary.priorities)
-                      .map(([k, v]) => `${t(`mixer.${k === 'yield' ? 'yield' : k}`)} ${v}%`)
-                      .join(' · ')}
-                  </dd>
-                </div>
-              )}
-            </dl>
-
-            {/* Field Actions */}
-            <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-line/70">
-              <Link to={`/fields/${farm.field_id}/timeline`} className="btn-secondary !py-2 text-xs flex items-center gap-1.5">
-                <Calendar size={13} className="text-leaf" />
-                <span>{t('home.timeline')}</span>
-              </Link>
-              <Link to={`/fields/${farm.field_id}/insights`} className="btn-secondary !py-2 text-xs flex items-center gap-1.5">
-                <BarChart2 size={13} className="text-leaf" />
-                <span>{t('home.insights')}</span>
-              </Link>
-              <Link to={`/fields/${farm.field_id}/plans`} className="btn-secondary !py-2 text-xs flex items-center gap-1.5">
-                <Compass size={13} className="text-leaf" />
-                <span>{t('nav.plan')}</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Plan Card (5 Cols) */}
-        <div className="lg:col-span-5 card-elevated p-5 sm:p-6 bg-white border border-line shadow-card-hover space-y-4">
-          <div className="flex items-center justify-between border-b border-line pb-3">
+      {/* HERO SECTION: ACTIVE CROP ROTATION SUCCESSION (The Star of the Experience) */}
+      {activePlan ? (
+        <section className="card overflow-hidden border border-leaf/40 bg-white shadow-sm hover:shadow-md transition-shadow">
+          {/* Card Top Strip */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-forest/5 px-5 py-3.5 sm:px-6">
             <div className="flex items-center gap-2">
-              <CircleCheck size={18} className="text-leaf" />
-              <h2 className="text-sm font-extrabold uppercase tracking-wider text-forest font-mono">
-                {t('home.activePlan')}
-              </h2>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-leaf/20 text-leaf">
+                <CircleCheck size={16} />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50">
+                  {t('home.activePlan')}
+                </span>
+                <h2 className="font-display text-base font-bold text-forest">
+                  <bdi>{isArabic ? t('home.activePlan') : activePlan.label}</bdi>
+                </h2>
+              </div>
             </div>
-            {farm.active_plan && (
-              <span className="badge-glow text-[10px] font-mono">Adopted</span>
-            )}
+
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-leaf/30 bg-leaf/15 px-3 py-1 text-xs font-bold text-forest">
+                <span className="h-1.5 w-1.5 rounded-full bg-leaf animate-pulse" />
+                {t('plans.manage.active')}
+              </span>
+            </div>
           </div>
 
-          {farm.active_plan ? (
-            <>
-              <div>
-                <p className="text-base font-extrabold text-forest">
-                  <bdi>{lang === 'ar' ? 'الخطة النشطة المعتمدة' : farm.active_plan.label}</bdi>
-                </p>
-                {farm.active_plan.adopted_at && (
-                  <p className="text-[11px] font-mono text-ink-light mt-0.5">
-                    Adopted: {farm.active_plan.adopted_at.slice(0, 10)}
-                  </p>
-                )}
+          <div className="p-5 sm:p-7 space-y-6">
+            {/* 3-Year Connected Succession Strip with Prominent Botanical Visuals */}
+            <div>
+              <div className="flex items-center justify-between text-xs mb-3">
+                <span className="font-bold text-forest uppercase tracking-wider text-[11px]">
+                  {isArabic ? 'تسلسل الدورة الزراعية المعتمدة (3 مواسم)' : 'Active 3-Year Crop Succession Cycle'}
+                </span>
+                <span className="font-mono text-ink/50 text-[11px]">
+                  {activePlan.slots.length} Years Planned
+                </span>
               </div>
 
-              {/* 3-Year Visual Sequence */}
-              <div className="grid grid-cols-3 gap-2 bg-cream/50 p-3 rounded-2xl border border-line/70">
-                {farm.active_plan.slots.map((s) => (
-                  <div key={s.slot_id} className="flex flex-col items-center">
-                    <span className="text-[9px] font-mono uppercase text-ink-light font-bold mb-1">
-                      {t('timeline.year', { n: s.year_number })}
-                    </span>
-                    <CropVisual slot={s} size="xs" showFamily className="w-full bg-white shadow-xs" />
+              <div className="grid gap-3 sm:grid-cols-3">
+                {activePlan.slots.map((slot, index) => (
+                  <div
+                    key={slot.slot_id}
+                    className="relative flex flex-col items-center justify-between rounded-2xl border border-line/80 bg-cream-warm/50 p-4 transition-all hover:border-forest/40 hover:bg-white hover:shadow-sm"
+                  >
+                    <div className="w-full flex items-center justify-between text-[11px] mb-2 font-mono">
+                      <span className="rounded-md bg-forest/10 px-2 py-0.5 font-bold text-forest">
+                        {t('timeline.year', { n: slot.year_number })}
+                      </span>
+                      {slot.rotation_group && (
+                        <span className="text-ink/50 uppercase text-[9px] font-semibold truncate max-w-[120px]">
+                          {slot.rotation_group.split(' ')[0]}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Generous Botanical Crop Artwork */}
+                    <div className="my-1">
+                      <CropVisual
+                        slot={slot}
+                        size="md"
+                        showBadge={true}
+                        showFamily={true}
+                        className="!bg-transparent !border-0 !shadow-none"
+                      />
+                    </div>
+
+                    {/* Connector Arrow for Next Year */}
+                    {index < activePlan.slots.length - 1 && (
+                      <div className="hidden sm:flex absolute -end-2.5 top-1/2 -translate-y-1/2 z-10 h-5 w-5 items-center justify-center rounded-full bg-white border border-line shadow-2xs text-forest" aria-hidden>
+                        <ArrowRight size={10} className="rtl:rotate-180" />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Plan Actions */}
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <Link to={`/fields/${farm.field_id}/plans`} className="btn-leaf !py-2 text-xs flex items-center gap-1.5 flex-1 justify-center">
-                  <span>{t('home.viewPlan')}</span>
-                  <ArrowRight size={13} className="rtl:rotate-180" />
-                </Link>
-                <Link to={`/fields/${farm.field_id}/plans`} className="btn-secondary !py-2 text-xs">
-                  {t('home.editPlan')}
-                </Link>
-                <button
-                  type="button"
-                  className="btn-secondary !py-2 text-xs flex items-center gap-1"
-                  onClick={async () => {
-                    await api.post(`/api/v1/fields/${farm.field_id}/analyses`, {})
-                    window.location.href = `/fields/${farm.field_id}/plans`
-                  }}
-                >
-                  <RefreshCcw size={12} className="text-leaf" />
-                  <span>{t('home.reevaluate')}</span>
-                </button>
+            {/* Agronomic Performance Score Meters */}
+            <div className="border-t border-line/70 pt-5">
+              <span className="font-bold text-forest uppercase tracking-wider text-[11px] block mb-3">
+                {isArabic ? 'تقييم الأداء الزراعي والمناخي' : 'Agronomic Performance Breakdown'}
+              </span>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {activePlan.score.indicators.map((ind) => (
+                  <IndicatorRow
+                    key={ind.key}
+                    label={isArabic ? ind.label_ar : ind.label_en}
+                    value={ind.value}
+                    status={ind.status}
+                  />
+                ))}
               </div>
-            </>
-          ) : (
-            <div className="py-6 text-center space-y-3 bg-cream rounded-2xl p-4">
-              <p className="text-xs text-ink-muted">{t('home.noPlan')}</p>
-              <Link to={`/fields/${farm.field_id}/rotations`} className="btn-leaf text-xs !py-2 px-5">
-                Explore Rotation Plans
+            </div>
+
+            {/* Operational Action Shortcuts */}
+            <div className="flex flex-wrap items-center gap-3 border-t border-line/70 pt-5">
+              <Link
+                to={`/fields/${farm.field_id}/timeline`}
+                className="btn-primary !py-2.5 text-xs inline-flex items-center gap-1.5 shadow-sm"
+              >
+                <Calendar size={14} />
+                <span>{t('timeline.title')} (Update Activities)</span>
+                <ChevronRight size={13} className="rtl:rotate-180" />
+              </Link>
+              <Link
+                to={`/rotations/${activePlan.plan_id}/customize`}
+                className="btn-secondary !py-2.5 text-xs inline-flex items-center gap-1.5"
+              >
+                <SlidersHorizontal size={14} />
+                <span>{t('plan.customize')}</span>
+              </Link>
+              <Link
+                to={`/fields/${farm.field_id}/insights`}
+                className="btn-secondary !py-2.5 text-xs inline-flex items-center gap-1.5"
+              >
+                <Satellite size={14} className="text-sky-700" />
+                <span>{t('insights.title')}</span>
+              </Link>
+              <Link
+                to={`/fields/${farm.field_id}/plans`}
+                className="btn-secondary !py-2.5 text-xs ms-auto inline-flex items-center gap-1.5"
+              >
+                <Layers size={14} />
+                <span>{t('plans.manage.title')}</span>
               </Link>
             </div>
-          )}
+          </div>
+        </section>
+      ) : (
+        <div className="card p-8 border-dashed border-forest/20 text-center space-y-3">
+          <p className="text-sm font-semibold text-ink/70">{t('home.noPlan')}</p>
+          <Link to={`/fields/${farm.field_id}/rotations`} className="btn-primary inline-flex items-center gap-2">
+            <Sparkles size={15} />
+            <span>{t('plans.viewDetails')}</span>
+          </Link>
         </div>
-      </div>
+      )}
+
+      {/* PARCEL PROFILE & CADASTRE OVERVIEW (Vector Geometry, Not Stock Photos) */}
+      <section className="grid gap-6 md:grid-cols-12">
+        {/* Real Field Boundary Vector Card */}
+        <div className="md:col-span-5 card border border-line bg-white p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-leaf" />
+                <h3 className="font-display text-base font-bold text-forest">
+                  <bdi>{farm.field_name}</bdi>
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-forest">
+                <bdi>{farm.area_ha.toLocaleString(i18n.language, { maximumFractionDigits: 2 })}</bdi>{' '}
+                {t('common.hectare')}
+              </span>
+            </div>
+
+            {/* Real Cadastral Vector Polygon Thumbnail */}
+            <div className="h-44 w-full">
+              <FieldPolygonThumbnail
+                geometry={fieldDetail?.geometry_geojson}
+                className="w-full h-full"
+              />
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center justify-between text-[11px] font-mono text-ink/60">
+              {fieldDetail && (
+                <span>
+                  Centroid: <bdi>{fieldDetail.centroid_lat.toFixed(4)}°N, {fieldDetail.centroid_lon.toFixed(4)}°E</bdi>
+                </span>
+              )}
+              <span className="rounded bg-cream px-2 py-0.5">
+                ID: {farm.field_id.slice(0, 8)}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between">
+            <Link
+              to="/fields/list"
+              className="text-xs font-bold text-forest hover:text-leaf transition-colors inline-flex items-center gap-1"
+            >
+              <span>View all parcels ({dashboard.length})</span>
+              <ArrowRight size={12} className="rtl:rotate-180" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Diagnostic Profile & Soil Context */}
+        <div className="md:col-span-7 card border border-line bg-white p-5 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center justify-between border-b border-line/60 pb-3">
+              <h3 className="font-display text-base font-bold text-forest">
+                Agricultural Diagnosed Baseline
+              </h3>
+              <span className="text-[11px] text-ink/50 font-mono">
+                {farm.last_analysis?.status === 'complete' ? 'Analysis Complete' : 'Pending'}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-line/70 bg-cream/50 p-3.5 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 flex items-center gap-1">
+                  <Droplets size={12} className="text-sky-700" />
+                  Water Regime
+                </span>
+                <p className="font-display text-sm font-bold text-forest capitalize">
+                  {farm.profile_summary?.irrigation_type.replace('_', ' ') || 'Rainfed'}
+                </p>
+                <p className="text-[11px] text-ink/50">
+                  Documented during field onboarding diagnostic
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-line/70 bg-cream/50 p-3.5 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 flex items-center gap-1">
+                  <Sprout size={12} className="text-leaf" />
+                  Production Goals
+                </span>
+                <div className="flex flex-wrap gap-1 pt-0.5">
+                  {(farm.profile_summary?.purposes ?? []).length > 0 ? (
+                    farm.profile_summary?.purposes.map((p) => (
+                      <span key={p} className="rounded bg-forest/5 px-1.5 py-0.5 text-[10px] font-semibold text-forest">
+                        {t(`q.purposes.${p}`)}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-ink/50">Commercial / General</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Strategic Priorities Summary */}
+            {farm.profile_summary?.priorities && (
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-xs font-semibold text-ink/70">
+                  <span>Priority Weights</span>
+                  <span className="font-mono text-[11px]">100% Allocated</span>
+                </div>
+                <div className="flex h-2 w-full overflow-hidden rounded-full border border-line bg-cream">
+                  <div style={{ width: `${farm.profile_summary.priorities.water || 25}%` }} className="bg-sky" title="Water" />
+                  <div style={{ width: `${farm.profile_summary.priorities.soil || 25}%` }} className="bg-leaf" title="Soil" />
+                  <div style={{ width: `${farm.profile_summary.priorities.yield || 25}%` }} className="bg-amber" title="Yield" />
+                  <div style={{ width: `${farm.profile_summary.priorities.risk || 25}%` }} className="bg-forest" title="Risk" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-3 border-t border-line/60 flex items-center justify-between text-xs">
+            <span className="text-ink/60 flex items-center gap-1">
+              <ShieldCheck size={13} className="text-leaf" />
+              Private anonymous browser session
+            </span>
+            <Link to="/settings" className="font-bold text-forest hover:text-leaf">
+              Preferences &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
     </motion.div>
   )
 }

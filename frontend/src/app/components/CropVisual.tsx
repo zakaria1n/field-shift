@@ -49,42 +49,42 @@ export function CropVisual({
       slot.crop_id ||
       t('plan.fallow')
 
-  // Size variations
+  // Generous, prominent botanical sizes
   const sizeMap = {
     xs: {
-      box: 'px-2 py-1 min-w-[4.5rem]',
-      img: 'w-7 h-7',
-      text: 'text-[10px]',
-      subtext: 'text-[8px]',
-      icon: 13,
+      box: 'px-2.5 py-1.5 min-w-[5.25rem]',
+      img: 'w-10 h-10',
+      text: 'text-[11px] font-bold',
+      subtext: 'text-[9px]',
+      icon: 18,
     },
     sm: {
-      box: 'px-2.5 py-1.5 min-w-[5.75rem]',
-      img: 'w-9 h-9',
-      text: 'text-[11px]',
-      subtext: 'text-[9px]',
-      icon: 16,
-    },
-    md: {
-      box: 'px-3.5 py-3 min-w-[7.5rem]',
+      box: 'px-3.5 py-2.5 min-w-[6.75rem]',
       img: 'w-14 h-14',
-      text: 'text-xs',
+      text: 'text-xs font-bold',
       subtext: 'text-[10px]',
       icon: 22,
     },
-    lg: {
-      box: 'px-4 py-4 min-w-[9.5rem]',
+    md: {
+      box: 'px-4 py-3.5 min-w-[8.75rem]',
       img: 'w-20 h-20',
-      text: 'text-sm',
+      text: 'text-sm font-bold',
       subtext: 'text-xs',
-      icon: 28,
+      icon: 26,
+    },
+    lg: {
+      box: 'px-5 py-4.5 min-w-[11rem]',
+      img: 'w-28 h-28',
+      text: 'text-base font-extrabold',
+      subtext: 'text-xs font-mono',
+      icon: 34,
     },
     xl: {
-      box: 'px-5 py-5 min-w-[12rem]',
-      img: 'w-28 h-28',
-      text: 'text-base font-bold',
-      subtext: 'text-xs',
-      icon: 36,
+      box: 'px-6 py-6 min-w-[14rem]',
+      img: 'w-36 h-36',
+      text: 'text-lg font-extrabold',
+      subtext: 'text-xs font-mono',
+      icon: 44,
     },
   }[size]
 

@@ -20,9 +20,24 @@ import FieldInsights from '../features/my-farm/FieldInsights'
 import PlanManagement from '../features/my-farm/PlanManagement'
 import Settings from '../features/settings/Settings'
 
+import { useQuery } from '@tanstack/react-query'
+import { api, type DashboardItem } from '../api/client'
+
+function RootRedirect() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => api.get<DashboardItem[]>('/api/v1/dashboard'),
+    staleTime: 10_000,
+  })
+  if (isLoading) return null
+  if (data && data.length > 0) return <Navigate to="/home" replace />
+  return <Navigate to="/welcome" replace />
+}
+
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<RootRedirect />} />
       <Route element={<WizardShell />}>
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/fields/new" element={<FieldSelect />} />
@@ -45,7 +60,7 @@ export default function App() {
         <Route path="/insights" element={<DashboardRedirect target="insights" />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
-      <Route path="*" element={<Navigate to="/welcome" replace />} />
+      <Route path="*" element={<RootRedirect />} />
     </Routes>
   )
 }

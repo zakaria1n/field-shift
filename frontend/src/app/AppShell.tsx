@@ -110,6 +110,10 @@ export default function AppShell() {
               <span className="font-semibold text-forest">{t('app.title')}</span>
               <span className="text-line-strong">•</span>
               <span className="font-mono text-[11px] text-ink-light">NASA POWER · SoilGrids · GAEZ v5</span>
+              <span className="text-line-strong">•</span>
+              <Link to="/welcome" className="text-[11px] font-semibold text-leaf hover:underline">
+                Overview & Guide
+              </Link>
             </div>
             <p className="text-[11px] text-ink-light">
               {t('app.poweredBy')} · {t('app.noNasaEndorsement')}
