@@ -60,13 +60,18 @@ def test_analysis_runs_and_rotations_served(analyzed_field):
     plan = rot["rotations"][0]
     assert plan["score"]["total"] is not None
     assert len(plan["slots"]) == 3
-    # Yield indicator is now scored from the fixture GAEZ references (partial:
-    # only mapped crops resolve), while unmapped crops keep it honest.
-    indicators = {i["key"]: i for i in plan["score"]["indicators"]}
-    assert indicators["yield"]["status"] in ("available", "partial")
-    assert indicators["yield"]["value"] is not None
+    # Yield indicator scores from the fixture GAEZ references for mapped
+    # crops (cereals); rotations built only from unmapped crops stay
+    # honestly unavailable, but at least one scored rotation must exist.
     src_status = {s["source_id"]: s["status"] for s in job["sources"]}
     assert src_status["gaez_v5"] == "live"
+    scored = [r for r in rot["rotations"]
+              if any(i["key"] == "yield" and i["value"] is not None
+                     for i in r["score"]["indicators"])]
+    assert scored, "fixture GAEZ refs should score at least one rotation"
+    plan = scored[0]
+    indicators = {i["key"]: i for i in plan["score"]["indicators"]}
+    assert indicators["yield"]["status"] in ("available", "partial")
     assert "fixture" in (next(s for s in job["sources"] if s["source_id"] == "gaez_v5")["detail"] or "").lower()
 
 

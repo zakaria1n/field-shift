@@ -73,14 +73,38 @@ def build_field_context(field: Field, profile: dict, observations: list[dict]) -
             annual_mean = o.get("value_num")
 
     soil_ph = next((o["value_num"] for o in observations if o["indicator"] == "soil_ph"), None)
+    soil_provenance: dict = {}
+    for o in observations:
+        if o["indicator"] == "soil_ph" and o.get("meta_json"):
+            soil_meta = json.loads(o["meta_json"])
+            soil_provenance = {
+                "sample_mode": soil_meta.get("sample_mode"),
+                "proxy": soil_meta.get("proxy", False),
+                "confidence": soil_meta.get("confidence"),
+                "valid_coverage": soil_meta.get("valid_coverage"),
+            }
+            break
+
+    monthly_mean: dict[str, float | None] = {}
+    monthly_max: dict[str, float | None] = {}
+    monthly_min: dict[str, float | None] = {}
+    for o in observations:
+        meta = json.loads(o["meta_json"]) if o.get("meta_json") else {}
+        monthly = meta.get("monthly") or {}
+        if o["indicator"] == "monthly_mean_air_temperature":
+            monthly_mean = monthly
+        elif o["indicator"] == "monthly_mean_daily_max_temperature":
+            monthly_max = monthly
+        elif o["indicator"] == "monthly_mean_daily_min_temperature":
+            monthly_min = monthly
 
     ctx = FieldContext(
         centroid_lat=field.centroid_lat,
         centroid_lon=field.centroid_lon,
         annual_precipitation_mm=annual_precip,
-        monthly_mean_temp_c={},
-        monthly_max_temp_c={},
-        monthly_min_temp_c={},
+        monthly_mean_temp_c=monthly_mean,
+        monthly_max_temp_c=monthly_max,
+        monthly_min_temp_c=monthly_min,
         hottest_month_max_temp_c=hottest,
         coldest_month_min_temp_c=coldest,
         annual_mean_temp_c=annual_mean,
@@ -90,6 +114,8 @@ def build_field_context(field: Field, profile: dict, observations: list[dict]) -
         banned_crop_ids=list((profile.get("constraints") or {}).get("banned_crops", [])),
         purposes=list(profile.get("purposes", [])),
         soil_ph=soil_ph,
+        soil_ph_provenance=soil_provenance,
+        monthly_mean_temp_c_filled=bool(monthly_mean),
         country_iso2=profile.get("country_iso2"),
     )
     return ctx, monthly_precip

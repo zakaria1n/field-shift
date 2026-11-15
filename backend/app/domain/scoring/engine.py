@@ -166,43 +166,14 @@ def yield_indicator(
     return sum(values) / len(values), status, rules
 
 
-def climate_indicator(slots: list[SlotPlan], ctx: FieldContext, monthly_precip: dict[str, float | None] | None) -> tuple[float | None, list[str]]:
-    rules: list[str] = []
-    margins: list[float] = []
-    for slot in slots:
-        if slot.is_fallow:
-            margins.append(0.5)  # neutral: no climate exposure, no production
-            continue
-        crop = get_crop(slot.crop_id or "")
-        if crop is None:
-            margins.append(0.5)
-            rules.append("R-CLIMATE-UNKNOWN-CROP")
-            continue
-        heat_margin = _heat_margin(crop, ctx.hottest_month_max_temp_c)
-        cold_margin = _cold_margin(crop, ctx.coldest_month_min_temp_c)
-        parts = [m for m in (heat_margin, cold_margin) if m is not None]
-        if parts:
-            margins.append(min(parts))
-            rules.append("R-CLIMATE-TEMP-MARGIN")
-        else:
-            margins.append(0.5)
-            rules.append("R-CLIMATE-TEMP-UNKNOWN")
-
-    value = sum(margins) / len(margins) if margins else None
-
-    # Rain concentration: precipitation packed into few months stresses
-    # rainfed crops between events; measurable from POWER monthly normals.
-    if monthly_precip and ctx.irrigation_type in ("rainfed", "unknown", "mixed"):
-        vals = [v for v in monthly_precip.values() if v is not None]
-        if len(vals) == 12:
-            ordered = sorted(vals, reverse=True)
-            wet_share = sum(ordered[:4]) / sum(vals)
-            concentration = _clamp01((wet_share - 0.33) / 0.5)  # 0.33 = uniform
-            stress = 1.0 - 0.25 * concentration
-            value = value * stress if value is not None else None
-            rules.append("R-CLIMATE-RAIN-CONCENTRATION")
-
-    return value, sorted(set(rules))
+def climate_indicator(slots: list[SlotPlan], ctx: FieldContext,
+                      monthly_precip: dict[str, float | None] | None) -> tuple[float | None, list[str]]:
+    """Growing-season climate exposure; see climate_season for the verified
+    rationale (POWER T2M_MAX/T2M_MIN behave as extreme envelopes, so the
+    score is driven by monthly mean temperature within each crop's thermal
+    window, with a bounded envelope modifier)."""
+    from app.domain.scoring.climate_season import climate_indicator as _season_indicator
+    return _season_indicator(slots, ctx, monthly_precip)
 
 
 def _heat_margin(crop: CropTraits, hottest_max: float | None) -> float | None:

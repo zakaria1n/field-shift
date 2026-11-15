@@ -115,10 +115,14 @@ def analyzed_field(field_with_profile, monkeypatch):
                               detail="paused service (fixture path)")
 
     def fake_assess_pool(crop_ids, lat, lon, irrigation_type=None):
-        # Clearly-labelled fixture references: only a few mapped crops resolve.
-        fixture_refs = {"bread_wheat": 4500.0, "durum_wheat": 4300.0, "barley": 3800.0}
+        # Clearly-labelled fixture references: deterministic per crop, with a
+        # couple of crops left unresolved so partial status stays testable.
+        resolved = {cid: 2500.0 + (sum(cid.encode("utf-8")) % 40) * 50.0
+                    for cid in crop_ids}
+        resolved["faba_bean"] = None   # has no GAEZ v5 layer (real gap)
+        resolved["lentil"] = None      # has no GAEZ v5 layer (real gap)
         from app.data_providers.interfaces import ProviderResult as PR
-        refs = {cid: fixture_refs.get(cid) for cid in crop_ids}
+        refs = resolved
         results = [PR(source_id="gaez_v5", status="live",
                       detail="FIXTURE references for tests (never shown as live data)")]
         return refs, results
