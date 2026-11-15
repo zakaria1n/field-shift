@@ -323,5 +323,17 @@
   "welcome.yieldBaseline": "مرجع المردودية",
   "welcome.climateRisk": "الصمود المناخي",
   "welcome.rulesPassed": "مطابق للقواعد الزراعية",
-  "welcome.agronomicFit": "الملاءمة الزراعية"
+  "welcome.agronomicFit": "الملاءمة الزراعية",
+  "welcome.stage4.potatoName": "بطاطس (الباذنجانية)",
+  "welcome.stage4.potatoNote": "درنة عميقة الجذور",
+  "welcome.stage4.lentilName": "عدس (البقوليات)",
+  "welcome.stage4.lentilNote": "كفاءة عالية في توفير المياه",
+  "welcome.stage4.sunflowerName": "دوار الشمس (النجمية)",
+  "welcome.stage4.sunflowerNote": "بنية جذرية وتدية عميقة",
+  "welcome.stage4.modifiedSequence": "تسلسلك الزراعي المعدّل لـ 3 سنوات:",
+  "welcome.stage4.eligibleFeasible": "مؤهل وممكن زراعياً",
+  "welcome.stage4.year1": "السنة 1: قمح طري",
+  "welcome.stage4.year2": "السنة 2: حمص (مثبّت للنيتروجين N₂)",
+  "welcome.stage4.year3Customized": "السنة 3: {{crop}} (مخصّص)",
+  "welcome.stage4.selectCandidate": "اختر بديلاً مؤهلاً للسنة الثالثة:"
 }

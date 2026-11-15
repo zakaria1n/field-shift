@@ -15,10 +15,11 @@ import { useWizard } from '../../state/wizard'
 const DEFAULT_CENTER: L.LatLngExpression = [33.89, -5.55] // Meknes agricultural plateau
 
 const DEMO_PRESETS = [
-  { name: 'Meknès Valley, Morocco', lat: 33.89, lon: -5.55, zoom: 14 },
-  { name: 'Gharb Basin, Morocco', lat: 34.26, lon: -5.92, zoom: 14 },
-  { name: 'Nile Delta, Egypt', lat: 30.85, lon: 31.05, zoom: 14 },
-  { name: 'Central Valley, California', lat: 36.74, lon: -119.78, zoom: 14 },
+  { name: 'Meknès Valley, Morocco', nameAr: 'سهل مكناس، المغرب', lat: 33.89, lon: -5.55, zoom: 14 },
+  { name: 'Gharb Basin, Morocco', nameAr: 'حوض الغرب، المغرب', lat: 34.26, lon: -5.92, zoom: 14 },
+  { name: 'Taroudant, Morocco', nameAr: 'تارودانت، المغرب', lat: 30.47, lon: -8.87, zoom: 14 },
+  { name: 'Nile Delta, Egypt', nameAr: 'دلتا النيل، مصر', lat: 30.85, lon: 31.05, zoom: 14 },
+  { name: 'Central Valley, California', nameAr: 'الوادي المركزي، كاليفورنيا', lat: 36.74, lon: -119.78, zoom: 14 },
 ]
 
 type BaseMapKind = 'standard' | 'satellite'
@@ -231,7 +232,7 @@ export default function FieldSelect() {
               onClick={() => flyTo(p.lat, p.lon, p.zoom)}
               className="chip hover:border-leaf hover:text-forest hover:bg-leaf-soft transition-all text-[11px] py-0.5 px-2.5"
             >
-              {p.name.split(',')[0]}
+              {isArabic ? p.nameAr.split('،')[0] : p.name.split(',')[0]}
             </button>
           ))}
         </div>

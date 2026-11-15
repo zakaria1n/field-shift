@@ -306,9 +306,12 @@ export default function FieldInsights() {
                     const monthKeyUpper = MONTH_KEYS_UPPER[activeMonth]
                     const daily = monthlyPrecip[monthKeyUpper] ?? monthlyPrecip[String(activeMonth + 1)] ?? 0
                     const monthlyTotal = typeof daily === 'number' ? daily * DAYS_IN_MONTHS[activeMonth] : 0
+                    const monthLabel = isArabic
+                      ? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'][activeMonth]
+                      : MONTH_NAMES[activeMonth]
                     return (
                       <span className="font-mono text-xs font-bold text-forest">
-                        {MONTH_NAMES[activeMonth]}: {monthlyTotal.toFixed(0)} mm/mo ({typeof daily === 'number' ? daily.toFixed(2) : '–'} mm/day)
+                        {monthLabel}: <bdi>{monthlyTotal.toFixed(0)}</bdi> mm/mo (<bdi>{typeof daily === 'number' ? daily.toFixed(2) : '–'}</bdi> mm/day)
                       </span>
                     )
                   })()}
@@ -335,13 +338,20 @@ export default function FieldInsights() {
                         <div
                           className={`w-full rounded-t-lg transition-all ${
                             isHovered
-                              ? 'bg-sky-600 shadow-md scale-y-105'
-                              : 'bg-gradient-to-t from-sky/50 to-sky/90 group-hover:bg-sky-700'
+                              ? 'shadow-md scale-y-105 ring-2 ring-forest/30'
+                              : 'hover:brightness-95'
                           }`}
-                          style={{ height: `${heightPercent}%` }}
+                          style={{
+                            height: `${heightPercent}%`,
+                            backgroundColor: isHovered ? '#0E2921' : '#3B8EA5',
+                          }}
                         />
-                        <span className="mt-1 font-mono text-[9px] font-bold text-ink/50 group-hover:text-forest">
-                          {MONTH_NAMES[i]}
+                        <span className={`mt-1 font-mono text-[9px] font-bold transition-colors ${
+                          isHovered ? 'text-forest font-extrabold' : 'text-ink/50'
+                        }`}>
+                          {isArabic
+                            ? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'][i]
+                            : MONTH_NAMES[i]}
                         </span>
                       </div>
                     )

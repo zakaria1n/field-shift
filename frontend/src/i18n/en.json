@@ -323,5 +323,17 @@
   "welcome.yieldBaseline": "Yield Baseline",
   "welcome.climateRisk": "Climate Resilience",
   "welcome.rulesPassed": "Agronomic Rules Passed",
-  "welcome.agronomicFit": "Agronomic Fit"
+  "welcome.agronomicFit": "Agronomic Fit",
+  "welcome.stage4.potatoName": "Potato (Solanaceae)",
+  "welcome.stage4.potatoNote": "Deep-root tuber",
+  "welcome.stage4.lentilName": "Lentil (Fabaceae)",
+  "welcome.stage4.lentilNote": "High water conservation",
+  "welcome.stage4.sunflowerName": "Sunflower (Asteraceae)",
+  "welcome.stage4.sunflowerNote": "Deep taproot structure",
+  "welcome.stage4.modifiedSequence": "Your Modified 3-Year Sequence:",
+  "welcome.stage4.eligibleFeasible": "Eligible & Feasible",
+  "welcome.stage4.year1": "Year 1: Bread Wheat",
+  "welcome.stage4.year2": "Year 2: Chickpea (N₂ Fixer)",
+  "welcome.stage4.year3Customized": "Year 3: {{crop}} (Customized)",
+  "welcome.stage4.selectCandidate": "Select an eligible candidate for Year 3:"
 }

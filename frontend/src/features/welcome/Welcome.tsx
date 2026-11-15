@@ -92,6 +92,31 @@ const DEMO_PRESETS: DemoPreset[] = [
     soilType: 'Silky Clay',
     soilTypeAr: 'طيني غريني',
   },
+  {
+    name: 'Taroudant (Souss), Morocco',
+    nameAr: 'تارودانت (سوس)، المغرب',
+    area: 1.85,
+    lat: 30.471,
+    lon: -8.874,
+    geometry: {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [-8.878, 30.468],
+          [-8.871, 30.470],
+          [-8.872, 30.474],
+          [-8.879, 30.473],
+          [-8.878, 30.468],
+        ],
+      ],
+    },
+    temp: 21.8,
+    precipMm: 220,
+    precipDaily: 0.60,
+    ph: 8.0,
+    soilType: 'Sandy Loam',
+    soilTypeAr: 'طمي رملي',
+  },
 ]
 
 export default function Welcome() {
@@ -551,13 +576,13 @@ export default function Welcome() {
                 {/* Candidate Selector buttons */}
                 <div>
                   <span className="text-xs font-bold text-forest uppercase tracking-wider block mb-2">
-                    {isArabic ? 'اختر بديلاً مؤهلاً للسنة الثالثة:' : 'Select an eligible candidate for Year 3:'}
+                    {t('welcome.stage4.selectCandidate')}
                   </span>
                   <div className="grid gap-2.5 sm:grid-cols-3">
                     {[
-                      { id: 'potato', name: 'Potato (Solanaceae)', note: 'Deep-root tuber' },
-                      { id: 'lentil', name: 'Lentil (Fabaceae)', note: 'High water conservation' },
-                      { id: 'sunflower', name: 'Sunflower (Asteraceae)', note: 'Deep taproot structure' },
+                      { id: 'potato', name: t('welcome.stage4.potatoName'), note: t('welcome.stage4.potatoNote') },
+                      { id: 'lentil', name: t('welcome.stage4.lentilName'), note: t('welcome.stage4.lentilNote') },
+                      { id: 'sunflower', name: t('welcome.stage4.sunflowerName'), note: t('welcome.stage4.sunflowerNote') },
                     ].map((crop) => (
                       <button
                         key={crop.id}
@@ -579,20 +604,26 @@ export default function Welcome() {
                 {/* Updated Sequence display */}
                 <div className="rounded-2xl border border-line bg-cream/40 p-4">
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-bold text-forest">Your Modified 3-Year Sequence:</span>
-                    <span className="font-mono text-leaf font-bold">Eligible & Feasible</span>
+                    <span className="font-bold text-forest">{t('welcome.stage4.modifiedSequence')}</span>
+                    <span className="font-mono text-leaf font-bold">{t('welcome.stage4.eligibleFeasible')}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-semibold text-forest">
-                      Year 1: Bread Wheat
+                      {t('welcome.stage4.year1')}
                     </div>
                     <span className="text-ink/30 font-bold" aria-hidden>→</span>
                     <div className="rounded-xl border border-line bg-white px-3 py-1.5 text-xs font-semibold text-forest">
-                      Year 2: Chickpea (N₂ Fixer)
+                      {t('welcome.stage4.year2')}
                     </div>
                     <span className="text-ink/30 font-bold" aria-hidden>→</span>
                     <div className="rounded-xl border-2 border-leaf bg-white px-3 py-1.5 text-xs font-bold text-forest shadow-sm">
-                      Year 3: {customizedCrop === 'potato' ? 'Potato' : customizedCrop === 'lentil' ? 'Lentil' : 'Sunflower'} (Customized)
+                      {t('welcome.stage4.year3Customized', {
+                        crop: customizedCrop === 'potato'
+                          ? (isArabic ? 'بطاطس' : 'Potato')
+                          : customizedCrop === 'lentil'
+                            ? (isArabic ? 'عدس' : 'Lentil')
+                            : (isArabic ? 'دوار الشمس' : 'Sunflower'),
+                      })}
                     </div>
                   </div>
                 </div>
