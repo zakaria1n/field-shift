@@ -140,13 +140,17 @@ def climate_indicator(slots: list[SlotPlan], ctx: FieldContext,
     # rainfed crops between events; measurable from POWER monthly normals.
     if monthly_precip and ctx.irrigation_type in ("rainfed", "unknown", "mixed"):
         vals = [v for v in monthly_precip.values() if v is not None]
-        if len(vals) == 12:
+        if len(vals) == 12 and sum(vals) > 0:
             ordered = sorted(vals, reverse=True)
             wet_share = sum(ordered[:4]) / sum(vals)
             concentration = max(0.0, min(1.0, (wet_share - 0.33) / 0.5))
             stress = 1.0 - 0.25 * concentration
             value = value * stress if value is not None else None
             rules.append("R-CLIMATE-RAIN-CONCENTRATION")
+        elif len(vals) == 12 and sum(vals) == 0:
+            # An observed dry year is not missing data. Its concentration
+            # ratio is undefined; water demand remains evaluated separately.
+            rules.append("R-CLIMATE-RAIN-CONCENTRATION-UNDEFINED-ZERO-RAIN")
 
     return value, sorted(set(rules))
 

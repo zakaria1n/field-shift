@@ -1,27 +1,9 @@
-"""SoilGrids access through the official WebDAV tile mosaic on files.isric.org.
+"""Official SoilGrids access: bounded WCS subsets and authentic SQLite cache.
 
-Context (verified 2026-11-15 from this environment): the SoilGrids REST API
-(api.map.isric.org) and the GeoServer WCS (wcs.isric.org) both resolve,
-worldwide, to a parking IP (213.186.33.5) while the documented service pause
-is in effect — so neither is callable. The third official access route, the
-WebDAV-published VRT mosaic plus per-tile GeoTIFFs on files.isric.org, is
-live and is what this adapter uses.
-
-How it works:
-- Each property/depth is published as a VRT: a global Interrupted Goode
-  Homolosine mosaic (250 m, Int16, nodata -32768) built from ~7700 small
-  600x600 tile GeoTIFFs.
-- The adapter parses the VRT index (cached in SQLite), transforms the field
-  into the mosaic CRS (pyproj +proj=igh), and downloads only the tiles that
-  actually cover the field.
-- Sampling: medium/large polygons take all mosaic pixels whose centers fall
-  inside the polygon; small fields (below one pixel) take a bounded
-  neighborhood around the centroid pixel and the result is explicitly
-  labelled a regional neighborhood estimate.
-- Stored values are integers; official conversion factors (ISRIC FAQ):
-  phh2o /10 -> pH, soc /10 -> g/kg, sand|silt|clay /10 -> %, nitrogen /100
-  -> g/kg. Mosaic gaps are real: if no valid pixel exists the observation is
-  reported unavailable rather than interpolated.
+The operational endpoint is https://maps.isric.org/mapserv (WCS 2.0.1).
+The independently paused REST API is not called. A legacy WebDAV reader is
+retained for its offline regression tests; the application no longer needs
+whole mosaic indices or complete tiles. Depth remains explicitly 5-15 cm.
 """
 import io
 import json
@@ -42,6 +24,7 @@ from app.data_providers.interfaces import (
     STATUS_UNAVAILABLE,
     ProviderResult,
     obs,
+    utcnow_iso,
 )
 
 log = logging.getLogger("fieldshift.soilgrids")
@@ -184,7 +167,7 @@ def _point_in_geometry(lon: float, lat: float, geometry: dict | None) -> bool:
     return shape(geometry).covers(Point(lon, lat))
 
 
-def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None = None) -> ProviderResult:
+def _fetch_soil_webdav(session: Session, lat: float, lon: float, geometry: dict | None = None) -> ProviderResult:
     settings = get_settings()
     if not settings.soilgrids_enabled:
         return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
@@ -362,3 +345,170 @@ def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None =
         log.warning("SoilGrids sampling failed: %s", exc)
         return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
                               detail=f"SoilGrids sampling error: {exc}")
+
+
+# The actual documented WCS is maps.isric.org/mapserv, not wcs.isric.org.
+# The REST pause does not imply this independent endpoint is down.
+WCS_URL = "https://maps.isric.org/mapserv"
+
+
+def _wcs_read(stem: str, bounds: tuple):
+    """Return an authentic native-grid subset; no resampling/depth averaging."""
+    import numpy as np
+    from app.config import get_settings
+    from rasterio.io import MemoryFile
+    params = [("map", f"/map/{stem}.map"), ("SERVICE", "WCS"),
+              ("VERSION", "2.0.1"), ("REQUEST", "GetCoverage"),
+              ("COVERAGEID", f"{stem}_{DEPTH}_{STATISTIC}"), ("FORMAT", "image/tiff"),
+              ("SUBSET", f"X({bounds[0]},{bounds[2]})"),
+              ("SUBSET", f"Y({bounds[1]},{bounds[3]})")]
+    response = None
+    for attempt in range(2):
+        try:
+            response = httpx.get(WCS_URL, params=params, timeout=get_settings().soilgrids_timeout_seconds)
+            response.raise_for_status()
+            break
+        except httpx.HTTPError:
+            if attempt:
+                raise
+    if len(response.content) > 2_000_000:
+        raise ValueError("Soil subset exceeds bounded response size")
+    if "tiff" not in response.headers.get("content-type", "").lower():
+        raise ValueError("WCS returned an exception instead of GeoTIFF: " + response.text[:180])
+    with MemoryFile(response.content) as mem:
+        with mem.open() as src:
+            if src.crs is None or not CRS(src.crs).equals(IGH_CRS, ignore_axis_order=True):
+                raise ValueError("Unexpected WCS CRS")
+            if src.width * src.height > MAX_WINDOW_PIXELS:
+                raise ValueError("Soil subset exceeds bounded pixel count")
+            if not (abs(abs(src.res[0])-250) < 1 and abs(abs(src.res[1])-250) < 1):
+                raise ValueError("Unexpected SoilGrids resolution")
+            data = src.read(1)
+            # WCS emits zero in uncovered cells without a GeoTIFF NoData tag.
+            # Conservatively keep zero as unknown here, not an invented pH=0.
+            valid = (data > 0) & (data != 65535)
+            if src.nodata is not None:
+                valid &= data != src.nodata
+            return np.where(valid, data.astype(float), np.nan), src.transform
+
+
+def _wcs_property(stem, indicator, divisor, unit, lat, lon, geometry):
+    import math
+    import numpy as np
+    from shapely.geometry import shape, mapping, box
+    from shapely.ops import transform as transform_shape
+    from rasterio.features import geometry_mask
+    forward = Transformer.from_crs("EPSG:4326", IGH_CRS, always_xy=True)
+    x, y = forward.transform(lon, lat)
+    selected = transform_shape(forward.transform, shape(geometry)) if geometry else None
+    initial = selected.bounds if selected is not None else (x-125, y-125, x+125, y+125)
+    c0, r0, c1, r1 = initial
+    # At least one complete native pixel around the location; round outwards.
+    bounds = (math.floor(c0/250)*250, math.floor(r0/250)*250,
+              math.ceil(c1/250)*250, math.ceil(r1/250)*250)
+    if ((bounds[2]-bounds[0])/250)*((bounds[3]-bounds[1])/250) > MAX_WINDOW_PIXELS:
+        raise ValueError("Field too large for bounded SoilGrids subset")
+    data, affine = _wcs_read(stem, bounds)
+    mask = geometry_mask([mapping(selected)], data.shape, affine, invert=True) if selected is not None else np.ones(data.shape, dtype=bool)
+    # A small field has only neighborhood support at 250 m.
+    mode = "polygon" if mask.any() and selected is not None else "centroid_neighborhood"
+    if not mask.any():
+        mask = np.ones(data.shape, dtype=bool)
+    sampled = data[mask]
+    values = sampled[np.isfinite(sampled)]
+    fallback = False
+    if not values.size:
+        bounds = (math.floor((x-2500)/250)*250, math.floor((y-2500)/250)*250,
+                  math.ceil((x+2500)/250)*250, math.ceil((y+2500)/250)*250)
+        data, affine = _wcs_read(stem, bounds)
+        sampled = data.ravel()
+        values = sampled[np.isfinite(sampled)]
+        mode = "centroid_neighborhood"
+        fallback = True
+    meta = {
+        "depth": DEPTH, "statistic": STATISTIC, "access_method": "WCS 2.0.1",
+        "retrieved_at": utcnow_iso(),
+        "endpoint": WCS_URL, "coverage_id": f"{stem}_{DEPTH}_{STATISTIC}",
+        "sample_mode": mode, "proxy": mode != "polygon", "fallback_to_neighborhood": fallback,
+        "n_valid_pixels": int(values.size), "n_total_pixels": int(sampled.size),
+        "valid_coverage": round(float(values.size/max(sampled.size, 1)), 3),
+        "confidence": "low" if mode != "polygon" else "moderate",
+        "scale_divisor": divisor, "sample_bounds_igh_m": list(bounds),
+        "zero_handling": "WCS uncovered cells emitted as zero; conservatively treated as missing",
+        "docs_url": "https://docs.isric.org/globaldata/soilgrids/wcs.html",
+        "note": "Modelled estimate at 250 m, not a laboratory measurement; nearby pixels may lie outside the field" if mode != "polygon" else "Modelled pixel estimates, not a laboratory soil test",
+    }
+    return obs(indicator, round(float(values.mean()/divisor), 2) if values.size else None, unit,
+               source_id=SOURCE_ID, quality_status="live", source_layer=f"SoilGrids {stem}_{DEPTH}_{STATISTIC} (WCS)",
+               period_start="2020", spatial_support="global_model_grid (~250 m; " + mode + ")", meta=meta)
+
+
+def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None = None) -> ProviderResult:
+    """Official bounded WCS subsets with authentic, geometry-keyed SQLite cache.
+
+    A failed property doesn't discard other successfully retrieved properties.
+    An expired authentic cache is explicit; missing data never becomes a zero.
+    The legacy WebDAV reader remains for offline tests/data migration, but large
+    tile downloads are no longer required by the application path.
+    """
+    import hashlib
+    from dataclasses import asdict
+    from concurrent.futures import ThreadPoolExecutor
+    from app.data_providers.cache import cache_get_stale
+    from app.data_providers.interfaces import STATUS_CACHED, utcnow_iso
+    settings = get_settings()
+    if not settings.soilgrids_enabled:
+        return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE, detail="SoilGrids disabled by configuration", reason_code="disabled")
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE, detail="invalid_location: WGS84 coordinates out of bounds", reason_code="invalid_location")
+    # Native coverage envelope from the official WCS DescribeCoverage response.
+    # This describes source coverage only; it is never a land/water rule.
+    x, y = Transformer.from_crs("EPSG:4326", IGH_CRS, always_xy=True).transform(lon, lat)
+    if not (-19949750 <= x <= 19861750 and -6147500 <= y <= 8361000):
+        return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
+                              reason_code="unsupported_geographic_coverage", detail="Outside the published SoilGrids WCS native envelope")
+    digest = hashlib.sha256(json.dumps([lat, lon, geometry], sort_keys=True).encode()).hexdigest()
+    key = f"soilgrids:wcs:{DEPTH}:{STATISTIC}:{digest}"
+    cached = cache_get(session, key, settings.provider_cache_ttl_seconds)
+    if cached:
+        result = ProviderResult(**json.loads(cached.payload_json))
+        result.status = STATUS_CACHED
+        for o in result.observations:
+            o["quality_status"] = STATUS_CACHED
+        result.detail = "Authentic SoilGrids WCS estimates from cache; " + (result.detail or "")
+        return result
+    observations = []
+    failures = []
+    def one(spec):
+        try:
+            return _wcs_property(*spec, lat, lon, geometry), None
+        except (httpx.HTTPError, rasterio.errors.RasterioError, OSError, ValueError, KeyError) as exc:
+            return None, f"{spec[0]}: {type(exc).__name__}: {exc}"
+    with ThreadPoolExecutor(max_workers=3) as workers:
+        for item, error in workers.map(one, PROPERTY_SPECS):
+            if item:
+                observations.append(item)
+            if error:
+                failures.append(error)
+    any_value = any(o["value_num"] is not None for o in observations)
+    if any_value:
+        result = ProviderResult(source_id=SOURCE_ID, status=STATUS_LIVE, observations=observations,
+                                data_period=SOILGRID_VERSION_NOTE, fetched_at=utcnow_iso(),
+                                source_layer=f"SoilGrids WCS {DEPTH} mean", detail="Official WCS subsets; " + ("partial properties: " + "; ".join(failures) if failures else "all properties fetched"))
+        result.reason_code = "partial_properties" if failures or any(o["value_num"] is None for o in observations) else "retrieved"
+        cache_put(session, key, SOURCE_ID, asdict(result), SOILGRID_VERSION_NOTE)
+        return result
+    stale = cache_get_stale(session, key)
+    if stale and failures:
+        result = ProviderResult(**json.loads(stale.payload_json))
+        result.status = STATUS_CACHED
+        result.reason_code = "provider_unavailable_authentic_stale_cache"
+        result.detail = "Provider unavailable; serving expired authentic WCS cache from " + stale.fetched_at
+        for o in result.observations:
+            o["quality_status"] = STATUS_CACHED
+        return result
+    return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE if failures else "missing", observations=observations,
+                          reason_code="provider_unavailable" if failures else "missing_soil_data",
+                          detail=("provider_unavailable: " + "; ".join(failures)) if failures else
+                          "missing_soil_data: no valid predicted pixels in bounded field/neighborhood coverage",
+                          fetched_at=utcnow_iso(), data_period=SOILGRID_VERSION_NOTE)

@@ -91,6 +91,11 @@ export interface ScoreBreakdown {
   weights_applied: Record<string, number>
   weight_redistribution_note?: string | null
   indicators: IndicatorOut[]
+  yield_reference_coverage?: { known: number; total: number }
+  evaluated_dimensions?: string[]
+  partial_dimensions?: string[]
+  comparison_basis?: string
+  data_quality_note?: string
 }
 
 export interface RotationOut {

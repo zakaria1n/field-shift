@@ -137,7 +137,7 @@ def test_igh_transform_landmark():
 
 
 def test_scale_factor_conversions(db_session, stubbed_http):
-    result = sg.fetch_soil(db_session, TEST_LAT, TEST_LON)
+    result = sg._fetch_soil_webdav(db_session, TEST_LAT, TEST_LON)
     assert result.status == STATUS_LIVE
     obs_by_id = {o["indicator"]: o for o in result.observations}
     ph = obs_by_id["soil_ph"]
@@ -151,7 +151,7 @@ def test_scale_factor_conversions(db_session, stubbed_http):
 
 
 def test_nodata_pixels_excluded_and_counts_reported(db_session, stubbed_http):
-    result = sg.fetch_soil(db_session, TEST_LAT, TEST_LON)
+    result = sg._fetch_soil_webdav(db_session, TEST_LAT, TEST_LON)
     ph = next(o for o in result.observations if o["indicator"] == "soil_ph")
     meta = json.loads(ph["meta_json"])
     assert meta["n_valid_pixels"] == 3
@@ -177,13 +177,13 @@ def test_all_nodata_reports_unavailable(db_session, monkeypatch):
         return blank_tile(url, timeout)
 
     monkeypatch.setattr(sg.httpx, "get", fake_get)
-    result = sg.fetch_soil(db_session, TEST_LAT, TEST_LON)
+    result = sg._fetch_soil_webdav(db_session, TEST_LAT, TEST_LON)
     assert result.status == STATUS_UNAVAILABLE
     assert "no valid predicted pixel" in (result.detail or "")
 
 
 def test_vrt_index_cached_in_sqlite(db_session, stubbed_http):
-    sg.fetch_soil(db_session, TEST_LAT, TEST_LON)
+    sg._fetch_soil_webdav(db_session, TEST_LAT, TEST_LON)
     cached = cache_get(db_session, "soilgrids:vrt:phh2o_5-15cm_mean", 10**9)
     assert cached is not None
     payload = json.loads(cached.payload_json)
@@ -191,7 +191,7 @@ def test_vrt_index_cached_in_sqlite(db_session, stubbed_http):
 
 
 def test_second_call_reuses_cached_vrt(db_session, stubbed_http, monkeypatch):
-    sg.fetch_soil(db_session, TEST_LAT, TEST_LON)
+    sg._fetch_soil_webdav(db_session, TEST_LAT, TEST_LON)
     calls = {"vrt": 0}
 
     def counting_get(url, timeout=None):
@@ -205,5 +205,5 @@ def test_second_call_reuses_cached_vrt(db_session, stubbed_http, monkeypatch):
         return httpx.Response(200, content=payload, request=httpx.Request("GET", url))
 
     monkeypatch.setattr(sg.httpx, "get", counting_get)
-    sg.fetch_soil(db_session, TEST_LAT, TEST_LON)
+    sg._fetch_soil_webdav(db_session, TEST_LAT, TEST_LON)
     assert calls["vrt"] == 0

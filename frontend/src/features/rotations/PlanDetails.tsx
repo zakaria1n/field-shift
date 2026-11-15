@@ -19,6 +19,7 @@ import { motion } from 'framer-motion'
 import { api, type RotationOut } from '../../api/client'
 import { CropVisual } from '../../app/components/CropVisual'
 import { IndicatorRow } from '../../app/components/ui'
+import { ScoreEvidence } from '../../app/components/ScoreEvidence'
 import { useWizard } from '../../state/wizard'
 
 const INDICATOR_KEYS = ['water', 'soil', 'yield', 'risk'] as const
@@ -173,6 +174,7 @@ export default function PlanDetails() {
                   label={lang === 'ar' ? ind.label_ar : ind.label_en}
                   value={ind.value}
                   status={ind.status}
+                  weight={Math.round((plan.score.weights_applied[key] ?? 0) * 100)}
                 />
               )
             })}
@@ -183,6 +185,7 @@ export default function PlanDetails() {
               {plan.score.weight_redistribution_note}
             </p>
           )}
+          <ScoreEvidence score={plan.score} />
 
           <p className="text-[11px] text-ink-light italic">{t('plan.scoreNote')}</p>
         </div>

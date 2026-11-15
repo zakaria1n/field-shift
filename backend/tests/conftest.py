@@ -39,6 +39,21 @@ def client() -> TestClient:
         yield test_client
 
 
+@pytest.fixture(autouse=True)
+def offline_landcover(monkeypatch):
+    """Legacy API unit tests stay offline; geographic tests override this reader.
+
+    This is a synthetic class-40 raster, not a live verification of a fixture.
+    Captured geographic fixtures and opt-in live tests are tested separately.
+    """
+    import numpy as np
+    from rasterio.transform import from_bounds
+    from app.data_providers import landcover
+    def read(url, bounds):
+        return np.full((24, 24), 40, dtype=np.uint8), from_bounds(*bounds, 24, 24)
+    monkeypatch.setattr(landcover, "_read_tile", read)
+
+
 @pytest.fixture
 def key_factory():
     counter = {"n": 0}

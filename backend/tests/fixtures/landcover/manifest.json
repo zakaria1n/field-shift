@@ -1,0 +1,118 @@
+{
+  "atlantic": {
+    "bounds": [
+      -7.002,
+      34.098,
+      -6.998,
+      34.102
+    ],
+    "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N33W009_Map.tif",
+    "retrieved_at": "2026-11-15T13:05:24.548762+00:00",
+    "source": "ESA WorldCover 2021 v200",
+    "resolution_m": 10,
+    "crs": "EPSG:4326",
+    "classes": {
+      "80": 2304
+    },
+    "sha256": "1d6ca2e068223a773a6ff899c052ea522333b8ffc64d81ae029910b4f1e50707"
+  },
+  "rabat_coastline": {
+    "bounds": [
+      -6.86,
+      34.02,
+      -6.83,
+      34.04
+    ],
+    "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N33W009_Map.tif",
+    "retrieved_at": "2026-11-15T13:06:27.889320+00:00",
+    "source": "ESA WorldCover 2021 v200",
+    "resolution_m": 10,
+    "crs": "EPSG:4326",
+    "classes": {
+      "10": 1627,
+      "20": 24,
+      "30": 5715,
+      "40": 113,
+      "50": 24822,
+      "60": 6656,
+      "80": 47080,
+      "90": 363
+    },
+    "sha256": "0cdc0ca867de487bb8c780d411c0773423d77711a25f43a2c072ce3724ff259d"
+  },
+  "near_coast_land": {
+    "bounds": [
+      -6.832,
+      34.016,
+      -6.83,
+      34.018
+    ],
+    "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N33W009_Map.tif",
+    "retrieved_at": "2026-11-15T13:06:28.898464+00:00",
+    "source": "ESA WorldCover 2021 v200",
+    "resolution_m": 10,
+    "crs": "EPSG:4326",
+    "classes": {
+      "10": 6,
+      "30": 7,
+      "50": 542,
+      "60": 21
+    },
+    "sha256": "ac0d616328079bf43a6e54a736c420d6228393582db53cf528ab79034f16610f"
+  },
+  "lake_geneva": {
+    "bounds": [
+      6.548,
+      46.448,
+      6.552,
+      46.452
+    ],
+    "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N45E006_Map.tif",
+    "retrieved_at": "2026-11-15T13:07:19.346250+00:00",
+    "source": "ESA WorldCover 2021 v200",
+    "resolution_m": 10,
+    "crs": "EPSG:4326",
+    "classes": {
+      "80": 2304
+    },
+    "sha256": "1218d1f9940eafb2b1a3ebfa0a672a033ff78dbc4b71d2434fe18bd08eb02b13"
+  },
+  "rabat_cropland": {
+    "bounds": [
+      -6.846416666666666,
+      34.02708333333333,
+      -6.846166666666666,
+      34.02733333333333
+    ],
+    "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N33W009_Map.tif",
+    "retrieved_at": "2026-11-15T13:06:27.889320+00:00",
+    "source": "ESA WorldCover 2021 v200",
+    "resolution_m": 10,
+    "crs": "EPSG:4326",
+    "classes": {
+      "40": 9
+    },
+    "sha256": "fc56b836facea46e10901bbe51a16b64e187db52307880746d0b5fe47b77bc47",
+    "derived_from": "rabat_coastline.npz (exact native 3x3 class-40 pixel window; no alteration)"
+  },
+  "saiss_farmland": {
+    "bounds": [
+      -5.452,
+      33.838,
+      -5.448,
+      33.842
+    ],
+    "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N33W006_Map.tif",
+    "retrieved_at": "2026-11-15T13:11:58.782002+00:00",
+    "source": "ESA WorldCover 2021 v200",
+    "resolution_m": 10,
+    "crs": "EPSG:4326",
+    "classes": {
+      "10": 33,
+      "20": 15,
+      "30": 50,
+      "40": 2206
+    },
+    "sha256": "ca6e3d894c527a155a3b7cbc87edb9ee02cd155c6cb8c7b16acfeedca9c1cefb"
+  }
+}

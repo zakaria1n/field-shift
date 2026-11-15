@@ -32,6 +32,7 @@ class ProviderResult:
     fetched_at: str = dc_field(default_factory=utcnow_iso)
     data_period: str | None = None
     source_layer: str | None = None
+    reason_code: str | None = None
 
     @property
     def ok(self) -> bool:

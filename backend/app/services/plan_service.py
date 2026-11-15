@@ -42,11 +42,20 @@ def indicators_out(score: dict) -> list[dict]:
 
 
 def score_out(score: dict) -> dict:
+    statuses = score.get("indicator_status", {})
+    evaluated = [k for k, v in score.get("indicators", {}).items() if v is not None]
+    partial = [k for k in evaluated if statuses.get(k) == "partial"]
+    coverage = score.get("yield_reference_coverage", {})
     return {
         "total": score.get("total"),
         "weights_applied": score.get("weights_applied", {}),
         "weight_redistribution_note": score.get("redistribution_note"),
         "indicators": indicators_out(score),
+        "evaluated_dimensions": evaluated,
+        "partial_dimensions": partial,
+        "yield_reference_coverage": coverage,
+        "comparison_basis": ";".join(k + ":" + statuses.get(k, "available") for k in sorted(evaluated)) + ";yield=" + str(coverage) + ";weights=" + str(sorted(score.get("weights_applied", {}).items())),
+        "data_quality_note": "Reference score, not a probability. Compare only with the same priorities, evaluated dimensions and similar data coverage. Partial yield references omit missing crops and may favor incomplete plans.",
     }
 
 
@@ -179,6 +188,7 @@ def evaluate_candidate(
             "indicator_status": result.score.indicator_status,
             "weights_applied": result.score.weights_applied,
             "redistribution_note": result.score.redistribution_note,
+            "yield_reference_coverage": result.score.yield_reference_coverage,
             "rule_ids": result.score.rule_ids,
         },
         "comparison": comparison,
@@ -257,6 +267,7 @@ def adopt_candidate(
             "indicators": score.indicators,
             "indicator_status": score.indicator_status,
             "weights_applied": score.weights_applied,
+            "yield_reference_coverage": score.yield_reference_coverage,
             "rule_ids": score.rule_ids,
         }),
         evidence_json=json.dumps({

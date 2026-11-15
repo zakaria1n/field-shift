@@ -47,6 +47,7 @@ class RotationScore:
     weights_applied: dict[str, float] = dc_field(default_factory=dict)
     redistribution_note: str | None = None
     total: float | None = None
+    yield_reference_coverage: dict[str, int] = dc_field(default_factory=dict)
 
 
 def _clamp01(v: float) -> float:
@@ -254,4 +255,6 @@ def score_rotation(
         weights_applied={k: round(v, 4) for k, v in weights_applied.items()},
         redistribution_note=redistribution_note,
         total=total,
+        yield_reference_coverage={"known": sum(1 for s in slots if not s.is_fallow and yield_refs.get(s.crop_id) is not None),
+                                  "total": sum(1 for s in slots if not s.is_fallow)},
     )

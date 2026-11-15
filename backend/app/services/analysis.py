@@ -165,6 +165,11 @@ def run_analysis(job_id: str, field_id: str) -> None:
         priorities = profile.get("priorities") or {"water": 25, "soil": 25, "yield": 25, "risk": 25}
 
         # Stage: geometry (validated at save time; re-affirm here from record)
+        from app.services.geometry import validate_field_geometry
+        from app.data_providers.landcover import require_terrestrial_field
+        selected_geometry = json.loads(field.geometry_geojson)
+        validate_field_geometry(selected_geometry)
+        field.geographic_validation_json = json.dumps(asdict(require_terrestrial_field(session, selected_geometry)))
         tracker.set("geometry", "complete", "geometry validated and stored with the field")
 
         # Stage: NASA POWER climate (live fetch, honest cache fallback)
@@ -194,9 +199,11 @@ def run_analysis(job_id: str, field_id: str) -> None:
             "source_id": "soilgrids", "status": soil.status,
             "detail": soil.detail, "fetched_at": soil.fetched_at,
             "data_period": soil.data_period,
+            "reason_code": soil.reason_code,
         }
         if soil.ok:
-            tracker.set("soil", "complete", soil.detail or soil.status)
+            soil_complete = len([o for o in soil.observations if o.get("value_num") is not None]) == 6
+            tracker.set("soil", "complete" if soil_complete else "partial", soil.detail or soil.status)
             for o in soil.observations:
                 o["quality_status"] = soil.status
             obs_rows.extend(soil.observations)
@@ -240,6 +247,17 @@ def run_analysis(job_id: str, field_id: str) -> None:
             return
 
         ctx, monthly_precip = build_field_context(field, profile, obs_rows)
+        if (len([v for v in ctx.monthly_mean_temp_c.values() if v is not None]) != 12
+                or len([v for v in monthly_precip.values() if v is not None]) != 12
+                or ctx.annual_mean_temp_c is None):
+            job.status = "failed"
+            job.stages_json = tracker.as_json()
+            job.source_status_json = json.dumps(sources)
+            job.error_json = json.dumps({"code": "insufficient_environmental_evidence",
+                                        "message": "Complete monthly temperature and precipitation normals are required for meaningful scoring; no recommendations generated."})
+            job.finished_at = _now()
+            session.commit()
+            return
 
         tracker.set("suitability", "running")
         session.commit()
@@ -313,6 +331,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
                     "indicator_status": cand.score.indicator_status,
                     "weights_applied": cand.score.weights_applied,
                     "redistribution_note": cand.score.redistribution_note,
+                    "yield_reference_coverage": cand.score.yield_reference_coverage,
                     "rule_ids": cand.score.rule_ids,
                 },
                 "violations": [asdict(v) for v in cand.violations],
@@ -338,13 +357,17 @@ def run_analysis(job_id: str, field_id: str) -> None:
 
         # Overall job status: complete only if every scored stage succeeded.
         soil_ok = sources["soilgrids"]["status"] in ("live", "cached", "demo_fixture")
-        job.status = "complete" if soil_ok else "partial"
+        soil_complete = len([o for o in soil.observations if o.get("value_num") is not None]) == 6
+        job.status = "complete" if soil_ok and soil_complete and n_resolved == len(pool_ids) else "partial"
         job.result_json = json.dumps({
             "candidates": candidate_payload,
             "insufficiency_note": insufficiency,
             "baseline_note": baseline,
             "yield_references": {k: v for k, v in yield_refs.items()},
             "yield_reference_status": yield_status,
+            "yield_reference_details": {cid: {"status": r.status, "detail": r.detail, "reason_code": r.reason_code,
+                                              "observations": r.observations}
+                                        for cid, r in zip(pool_ids, yield_results)},
             "history": {
                 "coverage": hist.coverage,
                 "all_cereal_history": hist.all_cereal_history,

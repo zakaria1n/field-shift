@@ -1,5 +1,6 @@
 """Fields, profile, crop history and priorities routes."""
 import json
+from dataclasses import asdict
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -16,6 +17,7 @@ from app.schemas.api import (
     FieldListOut,
     FieldOut,
     FieldUpdate,
+    FieldValidationIn,
 )
 from app.services.field_store import (
     create_field,
@@ -29,6 +31,15 @@ from app.services.field_store import (
 )
 
 router = APIRouter(prefix="/api/v1/fields", tags=["fields"])
+
+
+@router.post("/validate")
+def validate_selection(payload: FieldValidationIn, db: Session = Depends(get_db), client: AnonymousClient = Depends(get_client)):
+    from app.services.geometry import validate_field_geometry
+    from app.data_providers.landcover import require_terrestrial_field
+    metrics = validate_field_geometry(payload.geometry)
+    location = require_terrestrial_field(db, payload.geometry)
+    return {"area_ha": metrics["area_ha"], "geographic_validation": asdict(location)}
 
 
 @router.post("", response_model=FieldOut, status_code=201)

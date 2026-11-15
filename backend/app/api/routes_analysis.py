@@ -34,6 +34,7 @@ def _job_out(job: AnalysisJob) -> AnalysisJobOut:
                 detail=v.get("detail"),
                 fetched_at=v.get("fetched_at"),
                 data_period=v.get("data_period"),
+                reason_code=v.get("reason_code"),
             )
             for key, v in sources.items()
         ],
@@ -46,6 +47,12 @@ def _job_out(job: AnalysisJob) -> AnalysisJobOut:
 @router.post("/api/v1/fields/{field_id}/analyses", response_model=AnalysisJobOut, status_code=202)
 def start_analysis(field_id: str, background: BackgroundTasks, db: Session = Depends(get_db), client: AnonymousClient = Depends(get_client)):
     field = get_owned_field(db, client, field_id)
+    from app.services.geometry import validate_field_geometry
+    from app.data_providers.landcover import require_terrestrial_field
+    from dataclasses import asdict
+    geometry = json.loads(field.geometry_geojson)
+    validate_field_geometry(geometry)
+    field.geographic_validation_json = json.dumps(asdict(require_terrestrial_field(db, geometry)))
     profile = field.profile
     if profile is None:
         raise ApiError(
@@ -131,7 +138,7 @@ def field_insights(field_id: str, db: Session = Depends(get_db), client: Anonymo
         limitations.append(missing)
     sources = json.loads(job.source_status_json or "{}")
     for sid, meta in sources.items():
-        if meta.get("status") in ("unavailable", "failed"):
+        if meta.get("status") in ("unavailable", "failed", "missing"):
             limitations.append(f"{sid} unavailable: {meta.get('detail') or 'no data'}")
         elif meta.get("status") == "cached":
             limitations.append(f"{sid} served from cache fetched at {meta.get('fetched_at')}")

@@ -125,6 +125,7 @@ def fetch_yield_reference(lat: float, lon: float, crop_id: str,
         return ProviderResult(
             source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
             detail="GAEZ v5 access disabled by configuration (GAEZ_ENABLED=false)",
+            reason_code="disabled",
         )
     crop_code = CROP_GAEZ_MAP.get(crop_id)
     if crop_code is None:
@@ -132,25 +133,29 @@ def fetch_yield_reference(lat: float, lon: float, crop_id: str,
             source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
             detail=f"no GAEZ v5 layer exists for crop '{crop_id}' in the official "
                    "RES05 catalog; yield reference stays unavailable (not estimated)",
+            reason_code="unmapped_crop",
         )
     input_level_code, input_label = scenario_for(irrigation_type, settings.gaez_input_level)
     key = file_key(crop_code, input_level_code)
     url = f"{BASE_URL}/RES05-{VARIABLE}/{key}.tif"
 
     try:
-        with rasterio.open("/vsicurl/" + url) as src:
+        with rasterio.Env(GDAL_HTTP_TIMEOUT="20", GDAL_HTTP_CONNECTTIMEOUT="8",
+                          GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR"), rasterio.open("/vsicurl/" + url) as src:
             if not (-180 <= lon <= 180 and -90 <= lat <= 90):
                 return ProviderResult(
                     source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
                     detail="field centroid outside the GAEZ v5 global coverage",
+                    reason_code="invalid_location",
                 )
             row, col = src.index(lon, lat)
             if not (0 <= row < src.height and 0 <= col < src.width):
                 return ProviderResult(
                     source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
                     detail="field centroid falls outside the published raster grid",
+                    reason_code="unsupported_geographic_coverage",
                 )
-            win = rasterio.windows.Window(col - 0.5, row - 0.5, 1, 1)
+            win = rasterio.windows.Window(col, row, 1, 1)
             value = float(src.read(1, window=win, fill_value=NODATA)[0, 0])
     except rasterio.errors.RasterioIOError as exc:
         # 404/403 on the COG: layer listed in the catalog but not published/accessible
@@ -160,18 +165,20 @@ def fetch_yield_reference(lat: float, lon: float, crop_id: str,
                 source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
                 detail=f"GAEZ v5 layer {key} is not published at the expected cloud "
                        f"location ({message})",
+                reason_code="layer_unavailable",
             )
         return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
-                              detail=f"GAEZ v5 raster unreachable: {message}")
+                              detail=f"GAEZ v5 raster unreachable: {message}", reason_code="provider_unavailable")
     except (httpx.HTTPError, ValueError) as exc:
         return ProviderResult(source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
-                              detail=f"GAEZ v5 raster unreachable: {exc}")
+                              detail=f"GAEZ v5 raster unreachable: {exc}", reason_code="provider_unavailable")
 
     if value == NODATA or value < 0:
         return ProviderResult(
             source_id=SOURCE_ID, status=STATUS_UNAVAILABLE,
             detail=f"GAEZ v5 has no attainable-yield value at this location for "
                    f"{crop_id} ({key}); no substitute value is produced",
+            reason_code="no_data_at_location",
         )
 
     return ProviderResult(
@@ -209,4 +216,5 @@ def fetch_yield_reference(lat: float, lon: float, crop_id: str,
         data_period="GAEZ v5 baseline 2001-2020 (AgERA5, historical)",
         source_layer=f"RES05-{VARIABLE} {key}",
         detail=f"live pixel read ({lat:.3f},{lon:.3f}); {DOCS_URL}",
+        reason_code="retrieved",
     )

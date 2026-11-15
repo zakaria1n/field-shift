@@ -30,6 +30,11 @@ class FieldOut(BaseModel):
     vertex_count: Optional[int] = None
     has_profile: bool = False
     has_active_plan: bool = False
+    geographic_validation: dict[str, Any] | None = None
+
+
+class FieldValidationIn(BaseModel):
+    geometry: dict[str, Any]
 
 
 class FieldListOut(BaseModel):
@@ -143,6 +148,7 @@ class SourceStatusOut(BaseModel):
     detail: Optional[str] = None
     fetched_at: Optional[str] = None
     data_period: Optional[str] = None
+    reason_code: Optional[str] = None
 
 
 class AnalysisJobOut(BaseModel):
@@ -212,6 +218,11 @@ class ScoreBreakdownOut(BaseModel):
     weights_applied: dict[str, float] = {}
     weight_redistribution_note: Optional[str] = None
     indicators: list[IndicatorOut] = []
+    evaluated_dimensions: list[str] = []
+    partial_dimensions: list[str] = []
+    yield_reference_coverage: dict[str, int] = {}
+    comparison_basis: str | None = None
+    data_quality_note: str | None = None
     unsupported_claims_note: str = (
         "Qualitative reference indicators only. No profit, water-savings %, "
         "yield forecast or soil-health point gains are computed."

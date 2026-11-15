@@ -82,12 +82,8 @@ def _indicators_out(score: dict) -> list[IndicatorOut]:
 
 
 def _score_out(score: dict) -> ScoreBreakdownOut:
-    return ScoreBreakdownOut(
-        total=score.get("total"),
-        weights_applied=score.get("weights_applied", {}),
-        weight_redistribution_note=score.get("redistribution_note"),
-        indicators=_indicators_out(score),
-    )
+    from app.services.plan_service import score_out
+    return ScoreBreakdownOut(**score_out(score))
 
 
 def _slots_out(slots: list[dict]) -> list[SlotOut]:

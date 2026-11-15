@@ -6,6 +6,7 @@ numbers; each migration is a plain function. New deploys apply pending steps.
 import logging
 
 from sqlalchemy.orm import Session
+from sqlalchemy import inspect, text
 
 from app.db.base import get_engine, get_session_factory
 from app.db.models import Base, SchemaVersion
@@ -19,7 +20,13 @@ def _m1_initial(session: Session) -> None:
     Base.metadata.create_all(session.get_bind())
 
 
-MIGRATIONS: dict[int, callable] = {1: _m1_initial}
+def _m2_geographic_validation(session: Session) -> None:
+    columns = {c["name"] for c in inspect(session.connection()).get_columns("fields")}
+    if "geographic_validation_json" not in columns:
+        session.execute(text("ALTER TABLE fields ADD COLUMN geographic_validation_json TEXT"))
+
+
+MIGRATIONS: dict[int, callable] = {1: _m1_initial, 2: _m2_geographic_validation}
 
 
 def init_db() -> None:

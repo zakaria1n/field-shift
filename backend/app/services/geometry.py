@@ -28,6 +28,8 @@ def _validate_ring_coords(coords: list) -> None:
         raise ValidationFailed("Polygon ring is not closed (first position != last position).",
                                code="ring_not_closed")
     for lon, lat in coords:
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in (lon, lat)):
+            raise ValidationFailed("Coordinates must be finite numeric longitude/latitude pairs.", code="coordinate_invalid")
         if not (-180.0 <= lon <= 180.0 and -90.0 <= lat <= 90.0):
             raise ValidationFailed("Coordinate out of geographic bounds (lon [-180,180], lat [-90,90]).",
                                    code="coordinate_out_of_bounds")
@@ -52,6 +54,27 @@ def _to_shapely(geojson: dict) -> Polygon | MultiPolygon:
 
 
 def validate_field_geometry(geojson: dict) -> dict:
+    """Normalize malformed coordinates to a structured error, never a 500."""
+    try:
+        if isinstance(geojson, dict) and geojson.get("crs"):
+            if not isinstance(geojson["crs"], dict):
+                raise ValidationFailed("Invalid CRS declaration; expected WGS84 GeoJSON.", code="INVALID_GEOMETRY")
+            name = geojson["crs"].get("properties", {}).get("name", "")
+            if name not in {"EPSG:4326", "urn:ogc:def:crs:OGC:1.3:CRS84", "urn:ogc:def:crs:EPSG::4326"}:
+                raise ValidationFailed("Field coordinates must use WGS84 longitude/latitude (EPSG:4326).", code="INVALID_GEOMETRY")
+        result = _validate_field_geometry(geojson)
+        if result["bbox"][2] - result["bbox"][0] > 180:
+            raise ValidationFailed("Split a field crossing the antimeridian before validation.", code="INVALID_GEOMETRY")
+        return result
+    except ValidationFailed as exc:
+        exc.details["geographic_status"] = "INVALID_GEOMETRY"
+        raise
+    except (TypeError, ValueError, KeyError, IndexError, AttributeError) as exc:
+        raise ValidationFailed("Invalid GeoJSON coordinates: expected finite WGS84 [longitude, latitude] pairs.",
+                               code="INVALID_GEOMETRY", details={"geographic_status": "INVALID_GEOMETRY"}) from exc
+
+
+def _validate_field_geometry(geojson: dict) -> dict:
     """Validate and normalize a field geometry. Returns metrics dict."""
     if not isinstance(geojson, dict) or geojson.get("type") not in SUPPORTED_TYPES:
         raise ValidationFailed("Provide a GeoJSON Polygon or MultiPolygon.", code="geometry_type_unsupported")

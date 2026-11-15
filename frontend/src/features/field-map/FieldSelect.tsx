@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 
 import { api, type FieldOut, type PlaceResult } from '../../api/client'
 import { useWizard } from '../../state/wizard'
+import { useFieldValidation } from './useFieldValidation'
 
 const DEFAULT_CENTER: L.LatLngExpression = [33.89, -5.55] // Meknes agricultural plateau
 
@@ -41,6 +42,9 @@ export default function FieldSelect() {
   const [geoError, setGeoError] = useState<string | null>(null)
   const [locationNote, setLocationNote] = useState<string | null>(null)
   const [polygonCount, setPolygonCount] = useState<number>(0)
+  const [selection, setSelection] = useState<object | null>(null)
+  const [saving, setSaving] = useState(false)
+  const locationValidation = useFieldValidation(selection)
 
   const { data: results, isFetching: searching } = useQuery({
     queryKey: ['places', searchQuery],
@@ -100,11 +104,15 @@ export default function FieldSelect() {
       setPolygonCount(1)
       updateArea(e.layer)
       e.layer.on('pm:edit', () => updateArea(e.layer))
+      e.layer.on('pm:change', () => updateArea(e.layer))
+      e.layer.on('pm:dragend', () => updateArea(e.layer))
     })
 
     map.on('pm:remove', () => {
       setAreaHa(null)
       setPolygonCount(0)
+      setSelection(null)
+      setGeoError(null)
     })
 
     return () => {
@@ -122,6 +130,8 @@ export default function FieldSelect() {
   function updateArea(layer: L.Polygon) {
     const geo = layerToGeoJson(layer)
     setAreaHa(sphericalHa(geo))
+    setSelection(geo)
+    setGeoError(null)
   }
 
   function sphericalHa(geo: { type: string; coordinates: any }): number | null {
@@ -173,6 +183,7 @@ export default function FieldSelect() {
   }
 
   function confirmField() {
+    if (!locationValidation.canProceed || saving) return
     const map = mapRef.current
     if (!map || areaHa === null) return
     let geometry: { type: string; coordinates: unknown } | null = null
@@ -186,10 +197,11 @@ export default function FieldSelect() {
       return
     }
     const finalName = name.trim() || t('field.defaultName')
-    setField({ name: finalName, geometry, area_ha: areaHa })
+    setSaving(true)
     api
       .post<FieldOut>('/api/v1/fields', { name: finalName, geometry })
       .then((created) => {
+        setField({ name: finalName, geometry: created.geometry_geojson, area_ha: created.area_ha })
         setFieldId(created.field_id)
         queryClient.invalidateQueries({ queryKey: ['dashboard'] })
         navigate(`/setup/questions?field=${created.field_id}`, {
@@ -197,6 +209,7 @@ export default function FieldSelect() {
         })
       })
       .catch((err) => setGeoError(err.message ?? t('error.generic')))
+      .finally(() => setSaving(false))
   }
 
   return (
@@ -412,6 +425,12 @@ export default function FieldSelect() {
               </p>
             </div>
 
+            {selection && !locationValidation.canProceed && (
+              <div role="status" aria-live="polite" data-testid="field-validation" className="rounded-xl border border-amber/40 bg-amber-soft p-3 text-sm">
+                {locationValidation.pending ? t('field.validation.checking') : t(`field.validation.${locationValidation.messageKey}`)}
+                {!locationValidation.pending && !locationValidation.canProceed && <button type="button" className="btn-secondary mt-2" onClick={locationValidation.retry}>{t('common.retry')}</button>}
+              </div>
+            )}
             {geoError && (
               <p className="text-xs font-semibold text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200">
                 {geoError}
@@ -422,7 +441,7 @@ export default function FieldSelect() {
             <button
               type="button"
               className="btn-leaf w-full py-3.5 text-sm shadow-md"
-              disabled={areaHa === null}
+              disabled={areaHa === null || !locationValidation.canProceed || saving}
               onClick={confirmField}
             >
               <span>{t('field.confirm')}</span>

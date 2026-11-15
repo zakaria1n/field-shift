@@ -56,6 +56,14 @@ def make_ctx(monthly=True):
     )
 
 
+def test_observed_zero_rain_is_not_missing_or_division_by_zero():
+    ctx = dataclasses.replace(make_ctx(), annual_precipitation_mm=0.0)
+    slots = [SlotPlan('y1', 1, 'bread_wheat')]
+    score, rules = climate_indicator(slots, ctx, {m: 0.0 for m in MEKNES_MONTHLY_MEAN})
+    assert score is not None and 0 <= score <= 1
+    assert 'R-CLIMATE-RAIN-CONCENTRATION-UNDEFINED-ZERO-RAIN' in rules
+
+
 def test_bread_wheat_window_excludes_the_hottest_months():
     """The original defect: August's 46.5 C extreme envelope scored the whole
     rotation ~0. Bread wheat's absolute mean range (5-27 C) excludes JUL

@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     power_max_retries: int = 2
 
     provider_cache_ttl_seconds: int = 86400
+    geographic_timeout_seconds: int = 15
+    geographic_cache_ttl_seconds: int = 604800
+    soilgrids_timeout_seconds: int = 20
 
     database_url: str = f"sqlite:///{BACKEND_DIR / 'fieldshift.db'}"
 

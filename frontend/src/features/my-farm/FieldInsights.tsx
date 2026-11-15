@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -79,6 +79,21 @@ const MONTH_KEYS_UPPER = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'
 export default function FieldInsights() {
   const { t, i18n } = useTranslation()
   const { fieldId } = useParams()
+  const navigate = useNavigate()
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshError, setRefreshError] = useState('')
+  async function refreshAnalysis() {
+    if (!fieldId || refreshing) return
+    setRefreshing(true)
+    setRefreshError('')
+    try {
+      const job = await api.post<{ job_id: string }>(`/api/v1/fields/${fieldId}/analyses`, {})
+      navigate(`/analyses/${job.job_id}/progress`, { state: { fieldId } })
+    } catch (error) {
+      setRefreshError(error instanceof Error ? error.message : t('soil.refreshError'))
+      setRefreshing(false)
+    }
+  }
   const [activeMonth, setActiveMonth] = useState<number | null>(null)
   const isArabic = i18n.language === 'ar'
 
@@ -114,6 +129,7 @@ export default function FieldInsights() {
   const humidityObs = data.climate.find((o) => o.indicator === 'monthly_mean_relative_humidity')
 
   const phObs = data.soil.find((o) => o.indicator === 'soil_ph')
+  const soilSupport = phObs ?? data.soil.find((o) => o.value !== null) ?? data.soil[0]
   const ocObs = data.soil.find((o) => o.indicator === 'soil_organic_carbon')
   const nObs = data.soil.find((o) => o.indicator === 'soil_total_nitrogen')
   const sandObs = data.soil.find((o) => o.indicator === 'soil_sand_fraction')
@@ -384,16 +400,25 @@ export default function FieldInsights() {
                 {t('insights.soil')}
               </h2>
               <p className="text-xs text-ink/60">
-                ISRIC SoilGrids 2020 · 250m Resolution · 0–30 cm Surface Layer
+                ISRIC SoilGrids 2020 · 250 m · {String(soilSupport?.meta?.depth ?? '5-15cm')} · {t('soil.modelled')}
               </p>
             </div>
           </div>
-          {phObs && (
-            <StatusBadge kind={statusKind(phObs.quality_status, phObs.source_id)} />
+          {soilSupport && (
+            <StatusBadge kind={statusKind(soilSupport.quality_status, soilSupport.source_id)} />
           )}
         </div>
 
-        {data.soil.length === 0 ? (
+        {soilSupport && <p className="text-xs text-ink/70">{t('soil.provenance')} {String(soilSupport.meta?.retrieved_at ?? '–')} · {String(soilSupport.meta?.sample_mode ?? '–')}</p>}
+        <p className="text-xs text-ink/70">{t('soil.coverage', { known: data.soil.filter(item => item.value !== null).length, total: 6 })}</p>
+        {data.soil.filter(item => item.value !== null).length < 6 && <div className="text-xs space-y-2">
+          <p className="text-ink/70">{t('soil.refreshHint')}</p>
+          <button type="button" className="btn-secondary" disabled={refreshing} onClick={refreshAnalysis}>
+            {t(refreshing ? 'soil.refreshing' : 'soil.refresh')}
+          </button>
+          {refreshError && <p role="alert" className="text-amber-dark">{refreshError}</p>}
+        </div>}
+        {!data.soil.some(item => item.value !== null) ? (
           <div className="rounded-2xl border border-amber/30 bg-amber/5 p-4 text-xs text-ink/75">
             {t('insights.soilUnavailable')}
           </div>
@@ -450,7 +475,7 @@ export default function FieldInsights() {
                 <span className="text-xs text-ink/50">g/kg SOC</span>
               </div>
               <p className="text-[11px] text-ink/50">
-                {isArabic ? 'محتوى الكربون العضوي للتربة 0-30 سم' : '0–30 cm soil organic carbon (SoilGrids 2020)'}
+                {t('soil.carbonDepth')}
               </p>
             </div>
 
@@ -483,17 +508,17 @@ export default function FieldInsights() {
               <div className="flex h-3 w-full overflow-hidden rounded-full border border-line bg-cream/70">
                 <div
                   className="bg-amber-300"
-                  style={{ width: `${sandObs?.value ?? 33}%` }}
+                  style={{ width: `${sandObs?.value ?? 0}%` }}
                   title={`Sand: ${sandObs?.value?.toFixed(0) ?? '–'}%`}
                 />
                 <div
                   className="bg-leaf"
-                  style={{ width: `${siltObs?.value ?? 33}%` }}
+                  style={{ width: `${siltObs?.value ?? 0}%` }}
                   title={`Silt: ${siltObs?.value?.toFixed(0) ?? '–'}%`}
                 />
                 <div
                   className="bg-forest"
-                  style={{ width: `${clayObs?.value ?? 34}%` }}
+                  style={{ width: `${clayObs?.value ?? 0}%` }}
                   title={`Clay: ${clayObs?.value?.toFixed(0) ?? '–'}%`}
                 />
               </div>

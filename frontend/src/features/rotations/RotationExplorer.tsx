@@ -22,6 +22,7 @@ import { motion } from 'framer-motion'
 import { api, type RotationListOut } from '../../api/client'
 import { CropVisual } from '../../app/components/CropVisual'
 import { IndicatorRow } from '../../app/components/ui'
+import { ScoreEvidence } from '../../app/components/ScoreEvidence'
 import { useWizard } from '../../state/wizard'
 
 const INDICATOR_KEYS = ['water', 'soil', 'yield', 'risk'] as const
@@ -404,12 +405,14 @@ export default function RotationExplorer() {
                       label={lang === 'ar' ? ind.label_ar : ind.label_en}
                       value={ind.value}
                       status={ind.status}
+                      weight={Math.round((plan.score.weights_applied[key] ?? 0) * 100)}
                     />
                   )
                 })}
               </div>
 
               {/* Limitation / Trade-Off Pill */}
+              <ScoreEvidence score={plan.score} />
               {(lang === 'ar' ? plan.main_limitation_ar : plan.main_limitation_en) && (
                 <div className="mt-4 rounded-xl bg-amber-soft/80 border border-amber/30 p-2.5 text-[11px] text-ink-muted leading-snug flex items-start gap-2">
                   <TriangleAlert size={13} className="text-amber-dark shrink-0 mt-0.5" />

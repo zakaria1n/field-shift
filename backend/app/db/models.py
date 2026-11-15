@@ -37,6 +37,7 @@ class Field(Base):
     client_id: Mapped[str] = mapped_column(ForeignKey("anonymous_clients.client_id"), nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     geometry_geojson: Mapped[str] = mapped_column(Text, nullable=False)
+    geographic_validation_json: Mapped[str | None] = mapped_column(Text)
     area_ha: Mapped[float] = mapped_column(Float, nullable=False)
     centroid_lat: Mapped[float] = mapped_column(Float, nullable=False)
     centroid_lon: Mapped[float] = mapped_column(Float, nullable=False)

@@ -1,5 +1,6 @@
 """Field CRUD with anonymous-key ownership."""
 import json
+from dataclasses import asdict
 
 from sqlalchemy.orm import Session
 
@@ -8,6 +9,7 @@ from app.core.keys import hash_key
 from app.db.models import AnonymousClient, AnalysisJob, CropHistoryEntry, FarmProfile, Field, new_id, utcnow_iso
 from app.schemas.api import FieldCreate, FieldOut
 from app.services.geometry import validate_field_geometry
+from app.data_providers.landcover import require_terrestrial_field
 
 
 def ensure_client(db: Session, access_key: str | None) -> AnonymousClient:
@@ -40,11 +42,13 @@ def field_to_out(field: Field) -> FieldOut:
         vertex_count=None,
         has_profile=profile is not None,
         has_active_plan=has_plan,
+        geographic_validation=json.loads(field.geographic_validation_json) if field.geographic_validation_json else None,
     )
 
 
 def create_field(db: Session, client: AnonymousClient, payload: FieldCreate) -> FieldOut:
     metrics = validate_field_geometry(payload.geometry)
+    location = require_terrestrial_field(db, payload.geometry)
     field = Field(
         field_id=new_id("field"),
         client_id=client.client_id,
@@ -54,6 +58,7 @@ def create_field(db: Session, client: AnonymousClient, payload: FieldCreate) -> 
         centroid_lat=metrics["centroid_lat"],
         centroid_lon=metrics["centroid_lon"],
         bbox_json=json.dumps(metrics["bbox"]),
+        geographic_validation_json=json.dumps(asdict(location)),
     )
     db.add(field)
     db.commit()
@@ -61,12 +66,15 @@ def create_field(db: Session, client: AnonymousClient, payload: FieldCreate) -> 
 
 
 def update_field(db: Session, field: Field, name: str | None, geometry: dict | None) -> FieldOut:
+    # Validate before mutating any persisted attributes (including the name).
+    metrics = validate_field_geometry(geometry) if geometry is not None else None
+    location = require_terrestrial_field(db, geometry) if geometry is not None else None
     changed = False
     if name is not None and name.strip() and name.strip() != field.name:
         field.name = name.strip()
         changed = True
     if geometry is not None:
-        metrics = validate_field_geometry(geometry)
+        field.geographic_validation_json = json.dumps(asdict(location))
         field.geometry_geojson = metrics["geometry_geojson"]
         field.area_ha = metrics["area_ha"]
         field.centroid_lat = metrics["centroid_lat"]
