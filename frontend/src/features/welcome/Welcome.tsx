@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -11,12 +11,18 @@ import {
   SlidersHorizontal,
   CloudRain,
   ChevronRight,
-  Database,
+  Droplets,
   Sprout,
   CheckCircle2,
   Calendar,
   Compass,
-  ArrowRightLeft
+  Store,
+  Beef,
+  Utensils,
+  Leaf,
+  Info,
+  Clock,
+  Check
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
@@ -134,6 +140,13 @@ export default function Welcome() {
   const hasFarm = (dashboard?.length ?? 0) > 0
   const savedFarm = dashboard?.[0]
 
+  // Animated field outline completion state
+  const [outlineDrawn, setOutlineDrawn] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setOutlineDrawn(true), 2400)
+    return () => clearTimeout(timer)
+  }, [])
+
   // Interactive Demo State
   const [activeStage, setActiveStage] = useState<1 | 2 | 3 | 4>(1)
   const [selectedPreset, setSelectedPreset] = useState<DemoPreset>(DEMO_PRESETS[0])
@@ -151,13 +164,13 @@ export default function Welcome() {
   ]
 
   return (
-    <div className="space-y-16 pb-20">
+    <div className="space-y-24 pb-20">
       {/* Returning Farmer Notification Ribbon */}
       {hasFarm && savedFarm && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-leaf/40 bg-leaf/10 p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+          className="rounded-2xl border border-leaf/40 bg-leaf/10 p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
         >
           <div className="flex items-center gap-2.5">
             <span className="flex h-2.5 w-2.5 rounded-full bg-leaf animate-pulse" />
@@ -179,19 +192,23 @@ export default function Welcome() {
         </motion.div>
       )}
 
-      {/* 1. OPENING SCENE: FROM EARTH TO YOUR FIELD */}
+      {/* =========================================================================
+          1. HERO SCENE: YOUR FIELD, UNDERSTOOD PRECISELY (01_Hero_Parcel_Outline.png)
+         ========================================================================= */}
       <section className="grid gap-8 lg:grid-cols-12 items-center pt-2">
-        {/* Left Column: Mission, Signature Copy & CTAs */}
+        {/* Left Column: Vision, Value Proposition & Primary CTA */}
         <div className="lg:col-span-7 space-y-6">
           {/* Scientific Provenance Kicker */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-forest/20 bg-forest/5 px-3 py-1 text-xs font-semibold text-forest shadow-2xs">
-            <Satellite size={13} className="text-leaf" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-leaf/30 bg-leaf/10 px-3.5 py-1 text-xs font-semibold text-forest shadow-xs">
+            <Satellite size={14} className="text-leaf" />
             <span>Earth Observation × Agricultural Intelligence · NASA Space Apps</span>
           </div>
 
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.12] text-forest tracking-tight">
             <span>{t('welcome.tagline')}</span>
-            <span className="block text-xl sm:text-2xl font-semibold text-leaf mt-2">{t('welcome.heading')}</span>
+            <span className="block text-xl sm:text-2xl font-semibold text-leaf mt-2">
+              {t('welcome.heading')}
+            </span>
           </h1>
 
           <p className="text-base sm:text-lg text-ink/75 leading-relaxed max-w-xl">
@@ -203,7 +220,7 @@ export default function Welcome() {
             <Link
               to="/fields/new"
               onClick={() => resetWizard()}
-              className="btn-primary text-sm sm:text-base px-6 py-3.5 shadow-md group inline-flex items-center gap-2"
+              className="btn-leaf text-sm sm:text-base px-7 py-3.5 shadow-lg group inline-flex items-center gap-2"
             >
               <span>{t('welcome.ctaPrimary')}</span>
               <span className="sr-only"> ({t('welcome.cta')})</span>
@@ -211,7 +228,7 @@ export default function Welcome() {
             </Link>
 
             <a
-              href="#how-it-works"
+              href="#storytelling"
               className="btn-secondary text-sm sm:text-base px-6 py-3.5 inline-flex items-center gap-2"
             >
               <span>{t('welcome.ctaSecondary')}</span>
@@ -226,25 +243,77 @@ export default function Welcome() {
           </div>
         </div>
 
-        {/* Right Column: Visual Cadastral Aerial Composition */}
+        {/* Right Column: Aerial Agricultural Scene with Progressive Field Outline Drawing */}
         <div className="lg:col-span-5">
-          <div className="relative rounded-3xl overflow-hidden border border-line bg-white shadow-xl">
-            <div className="relative h-64 sm:h-72 w-full overflow-hidden">
+          <div className="relative rounded-3xl overflow-hidden border border-line bg-forest-dark shadow-2xl">
+            <div className="relative h-72 sm:h-80 w-full overflow-hidden">
               <img
                 src="/assets/hero_earth_fields.jpg"
-                alt="Agricultural fields seen from satellite"
-                className="w-full h-full object-cover"
+                alt="Agricultural fields seen from aerial perspective"
+                className="w-full h-full object-cover filter brightness-95 contrast-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-forest/80 via-forest/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/90 via-forest/20 to-transparent" />
 
-              {/* Cadastral Polygon Overlay Badge */}
-              <div className="absolute top-4 start-4 rounded-xl bg-white/90 backdrop-blur-md border border-line/80 px-3 py-1.5 shadow-md text-xs font-mono">
-                <span className="font-bold text-forest">33.89°N, 5.54°W</span>
-                <span className="text-ink/40 ms-2">Meknès</span>
+              {/* PROGRESSIVE PARCEL DRAWING SVG OVERLAY:
+                  At t=0 (first frame), the stroke is invisible.
+                  It draws itself progressively around the agricultural field. */}
+              <svg
+                viewBox="0 0 400 300"
+                className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <filter id="hero-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#229E65" floodOpacity="0.8" />
+                  </filter>
+                  <linearGradient id="hero-fill-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#229E65" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.15" />
+                  </linearGradient>
+                </defs>
+
+                {/* Animated Boundary Polygon Path */}
+                <path
+                  d="M 75 180 L 190 70 L 330 115 L 305 245 L 140 265 Z"
+                  fill="url(#hero-fill-grad)"
+                  stroke="#FFFFFF"
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  filter="url(#hero-glow)"
+                  className="animate-draw-polygon"
+                />
+
+                {/* Animated Corner Vertices (fade in once stroke reaches maturity) */}
+                {[
+                  [75, 180],
+                  [190, 70],
+                  [330, 115],
+                  [305, 245],
+                  [140, 265],
+                ].map(([x, y], i) => (
+                  <circle
+                    key={i}
+                    cx={x}
+                    cy={y}
+                    r="4"
+                    fill="#10B981"
+                    stroke="#FFFFFF"
+                    strokeWidth="1.5"
+                    className="transition-opacity duration-700"
+                    style={{ opacity: outlineDrawn ? 1 : 0 }}
+                  />
+                ))}
+              </svg>
+
+              {/* Cadastral Polygon Coordinate Badge */}
+              <div className="absolute top-4 start-4 rounded-xl bg-forest-dark/85 backdrop-blur-md border border-white/20 px-3 py-1.5 shadow-md text-xs font-mono text-white">
+                <span className="font-bold text-mint">33.89°N, 5.54°W</span>
+                <span className="text-white/60 ms-2">Meknès Plateau</span>
               </div>
 
               {/* 3-Year Crop Succession Card Float */}
-              <div className="absolute bottom-4 inset-x-4 rounded-2xl bg-white/95 backdrop-blur-md border border-line p-3 shadow-lg">
+              <div className="absolute bottom-4 inset-x-4 rounded-2xl bg-white/95 backdrop-blur-md border border-line p-3 shadow-lg z-20">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 block mb-1.5">
                   {t('welcome.multiSeasonSuccession')}
                 </span>
@@ -267,8 +336,313 @@ export default function Welcome() {
         </div>
       </section>
 
-      {/* 2. SIGNATURE INTERACTIVE EXPERIENCE: THE PRODUCT JOURNEY */}
-      <section id="how-it-works" className="space-y-6 pt-6">
+      {/* =========================================================================
+          2. SCROLL STORYTELLING: 4 NARRATIVE SCENES (02_Scroll through 05_Scroll)
+         ========================================================================= */}
+      <section id="storytelling" className="space-y-16 pt-8 border-t border-line/60">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-forest/20 bg-forest/5 px-3 py-0.5 text-xs font-semibold text-forest">
+            <Sprout size={13} className="text-leaf" />
+            <span>{isArabic ? 'القصة الزراعية الكاملة' : 'The FieldShift Journey'}</span>
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+            {isArabic ? 'كيف يتحول حقلك إلى استراتيجية زراعية' : 'From Your Land to a Smarter Harvest'}
+          </h2>
+          <p className="text-xs sm:text-sm text-ink/70">
+            {isArabic
+              ? 'رحلة بصرية متصلة توضح كيف تجمع المنصة بين رصد الأرض وخبرتك الميدانية'
+              : 'A continuous journey showing how satellite observations and farm priorities unite to create resilient crop plans.'}
+          </p>
+        </div>
+
+        {/* --- SCENE 1: START WITH YOUR LAND (02_Scroll_Seed_Start.png) --- */}
+        <div className="grid gap-8 lg:grid-cols-12 items-center">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-white text-xs font-bold font-mono">
+                1
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-leaf font-mono">
+                {isArabic ? 'الخطوة الأولى · تحديد الأرض' : 'Step 1 · Identify Your Land'}
+              </span>
+            </div>
+            <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              {isArabic ? 'ابدأ بأرضك الحقيقية' : 'Start with your land.'}
+            </h3>
+            <p className="text-sm sm:text-base text-ink/75 leading-relaxed">
+              {isArabic
+                ? 'يساعدك فيلد شيفت على تحديد الحقل ورسم حدوده الدقيقة بدقة جيوديسية، لضمان أن كل تحليل ومؤشر مبني على أرضك الفعلية.'
+                : 'Field Shift helps you identify the field and define the exact area to analyze, so your insights are always based on the right land.'}
+            </p>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="rounded-2xl border border-line bg-white p-3.5 space-y-1 shadow-2xs">
+                <span className="text-[11px] font-bold text-forest uppercase tracking-wider block font-mono">
+                  {isArabic ? 'الحدود الجيوديسية' : 'Cadastral Polygon'}
+                </span>
+                <p className="text-xs text-ink/65">
+                  {isArabic ? 'رسم حر بمتجه GeoJSON على مسقط WGS84' : 'Freely draw polygon boundary across WGS84 ellipsoid'}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-line bg-white p-3.5 space-y-1 shadow-2xs">
+                <span className="text-[11px] font-bold text-forest uppercase tracking-wider block font-mono">
+                  {isArabic ? 'تحقق الغطاء الأرضي' : 'ESA WorldCover'}
+                </span>
+                <p className="text-xs text-ink/65">
+                  {isArabic ? 'تأكيد فوري للتربة الأرضية واستبعاد المياه' : 'Live land verification rejecting water bodies'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6">
+            <div className="relative rounded-3xl overflow-hidden border border-line bg-[#0E2921] shadow-xl group">
+              <img
+                src="/assets/seed_soil_stage.webp"
+                alt="Seed in fertile dark agricultural soil"
+                className="w-full h-72 sm:h-80 object-cover filter brightness-95 contrast-105 transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0E2921]/80 via-transparent to-black/20" />
+              <div className="absolute bottom-4 start-4 end-4 rounded-2xl bg-white/90 backdrop-blur-md border border-line p-3 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sprout size={15} className="text-leaf" />
+                  <span className="font-bold text-forest">
+                    {isArabic ? 'بذرة في التربة الخصبة' : 'Seed placed in fertile soil'}
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-ink/60">
+                  {isArabic ? 'بداية الدورة' : 'Cycle Genesis'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SCENE 2: UNDERSTAND YOUR CONDITIONS (03_Scroll_Plant_Conditions.png) --- */}
+        <div className="grid gap-8 lg:grid-cols-12 items-center">
+          <div className="lg:col-span-6 lg:order-2 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-leaf text-white text-xs font-bold font-mono">
+                2
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-leaf font-mono">
+                {isArabic ? 'الخطوة الثانية · رصد المناخ والتربة' : 'Step 2 · Earth Telemetry'}
+              </span>
+            </div>
+            <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              {isArabic ? 'افهم ظروف أرضك بدقة' : 'Understand your conditions.'}
+            </h3>
+            <p className="text-sm sm:text-base text-ink/75 leading-relaxed">
+              {isArabic
+                ? 'يستخدم فيلد شيفت بيانات رصد الأرض من ناسا ومعهد SoilGrids لاستخراج أنماط المناخ وخصائص التربة عبر عقود من القياسات الموثقة.'
+                : 'Field Shift uses Earth observation and agricultural insight to understand the field — from weather and soil to what crops are best suited for your land.'}
+            </p>
+
+            {/* Telemetry Indicator Cards */}
+            <div className="grid gap-3 sm:grid-cols-2 pt-2">
+              <div className="rounded-2xl border border-sky/30 bg-sky/5 p-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-sky-900">
+                  <span className="flex items-center gap-1.5 font-mono">
+                    <CloudRain size={14} className="text-sky-700" /> Climate
+                  </span>
+                  <span className="font-mono text-forest">20.1°C</span>
+                </div>
+                <p className="text-[11px] text-ink/70">
+                  {isArabic ? 'معدل درجات الحرارة وهطول الأمطار التراكمي' : 'Local weather patterns and growing conditions'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-leaf/30 bg-leaf/5 p-4 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-forest">
+                  <span className="flex items-center gap-1.5 font-mono">
+                    <Layers size={14} className="text-leaf" /> SoilGrids
+                  </span>
+                  <span className="font-mono text-leaf">pH 7.8</span>
+                </div>
+                <p className="text-[11px] text-ink/70">
+                  {isArabic ? 'حموضة التربة، صنف النسيج ونسبة الطمي' : 'Clay Loam texture, depth carbon & drainage'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 lg:order-1">
+            <div className="relative rounded-3xl overflow-hidden border border-line bg-[#0E2921] shadow-xl group">
+              <img
+                src="/assets/plant_growth_stage.webp"
+                alt="Growing healthy plant sprout in fertile soil"
+                className="w-full h-72 sm:h-80 object-cover filter brightness-95 contrast-105 transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0E2921]/80 via-transparent to-black/20" />
+              <div className="absolute bottom-4 start-4 end-4 rounded-2xl bg-white/90 backdrop-blur-md border border-line p-3 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Leaf size={15} className="text-leaf" />
+                  <span className="font-bold text-forest">
+                    {isArabic ? 'نبات ينمو بصحة وقوة' : 'Growing plant with root vitality'}
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-leaf font-bold">
+                  NASA POWER × SoilGrids
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SCENE 3: TELL US WHAT MATTERS (04_Scroll_Your_Priorities.png) --- */}
+        <div className="grid gap-8 lg:grid-cols-12 items-center">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-800 text-white text-xs font-bold font-mono">
+                3
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-800 font-mono">
+                {isArabic ? 'الخطوة الثالثة · أولويات الفلاح' : 'Step 3 · Your Priorities'}
+              </span>
+            </div>
+            <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              {isArabic ? 'شاركنا ما يهمك أكثر' : 'Tell us what matters.'}
+            </h3>
+            <p className="text-sm sm:text-base text-ink/75 leading-relaxed">
+              {isArabic
+                ? 'أنت تشارك سياقك الزراعي وأولوياتك — من أسلوب الري والمحاصيل السابقة إلى أهدافك الإنتاجية — ليقوم فيلد شيفت بتفصيل التوصيات لأرضك.'
+                : 'You share your farming context and priorities, so Field Shift can tailor recommendations to your land.'}
+            </p>
+          </div>
+
+          <div className="lg:col-span-6">
+            {/* 4 Representative Priority Preference Cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-line bg-white p-4 space-y-1 shadow-xs hover:border-forest/40 transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky/15 text-sky-800 mb-1">
+                  <Droplets size={17} />
+                </div>
+                <h4 className="font-extrabold text-xs text-forest">
+                  {isArabic ? 'الري' : 'Irrigation'}
+                </h4>
+                <p className="text-[11px] text-ink/65 leading-snug">
+                  {isArabic ? 'مطرية، مسقية، أو ري تكميلي' : 'How you water your fields'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-line bg-white p-4 space-y-1 shadow-xs hover:border-forest/40 transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-leaf/15 text-leaf mb-1">
+                  <Sprout size={17} />
+                </div>
+                <h4 className="font-extrabold text-xs text-forest">
+                  {isArabic ? 'المحاصيل السابقة' : 'Previous Crops'}
+                </h4>
+                <p className="text-[11px] text-ink/65 leading-snug">
+                  {isArabic ? 'تاريخ ٣ سنوات من الزراعة' : 'What was grown before'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-line bg-white p-4 space-y-1 shadow-xs hover:border-forest/40 transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber/15 text-amber-900 mb-1">
+                  <Store size={17} />
+                </div>
+                <h4 className="font-extrabold text-xs text-forest">
+                  {isArabic ? 'أهداف الإنتاج' : 'Goals'}
+                </h4>
+                <p className="text-[11px] text-ink/65 leading-snug">
+                  {isArabic ? 'تسويق، علف، أو غذاء الأسرة' : 'What you want to achieve'}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-line bg-white p-4 space-y-1 shadow-xs hover:border-forest/40 transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-forest/10 text-forest mb-1">
+                  <SlidersHorizontal size={17} />
+                </div>
+                <h4 className="font-extrabold text-xs text-forest">
+                  {isArabic ? 'الأولويات' : 'Priorities'}
+                </h4>
+                <p className="text-[11px] text-ink/65 leading-snug">
+                  {isArabic ? 'توازن المياه والتربة والإنتاج' : 'What matters most right now'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- SCENE 4: EXPLORE YOUR NEXT ROTATION (05_Scroll_Rotation_Exploration.png) --- */}
+        <div className="grid gap-8 lg:grid-cols-12 items-center">
+          <div className="lg:col-span-6 lg:order-2 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-white text-xs font-bold font-mono">
+                4
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-forest font-mono">
+                {isArabic ? 'الخطوة الرابعة · خطة الدورة الزراعية' : 'Step 4 · Rotation Strategies'}
+              </span>
+            </div>
+            <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              {isArabic ? 'استكشف دورتك الزراعية المقبلة' : 'Explore your next rotation.'}
+            </h3>
+            <p className="text-sm sm:text-base text-ink/75 leading-relaxed">
+              {isArabic
+                ? 'تم تحليل حقلك، واتضحت الظروف، وخيارات الدورات الزراعية جاهزة. استكشف، قارن، وخصص الخطة التي تناسب أرضك وأهدافك.'
+                : 'Your field is analyzed, conditions are clear, and rotation options are ready. Explore, compare, and customize the plan that fits your land and goals.'}
+            </p>
+            <div className="pt-2">
+              <Link
+                to="/fields/new"
+                onClick={() => resetWizard()}
+                className="btn-leaf text-xs sm:text-sm px-6 py-3 inline-flex items-center gap-2 shadow-md"
+              >
+                <span>{t('welcome.ctaPrimary')}</span>
+                <ArrowRight size={14} className="rtl:rotate-180" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 lg:order-1">
+            {/* 3-Year Rotation Strategy Card Representation */}
+            <div className="card p-6 border border-line bg-white shadow-lg space-y-4">
+              <div className="flex items-center justify-between border-b border-line pb-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-leaf font-mono block">
+                    {isArabic ? 'الدورة الزراعية الموصى بها' : 'Recommended 3-Year Plan'}
+                  </span>
+                  <h4 className="font-display text-base font-bold text-forest">
+                    {isArabic ? 'استراتيجية تنويع واستعادة الخصوبة' : 'Fertility & Resilience Sequence'}
+                  </h4>
+                </div>
+                <span className="badge-glow text-xs font-mono font-bold text-leaf-dark">
+                  86 / 100
+                </span>
+              </div>
+
+              {/* 3 Years Visual Strip */}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl border border-line bg-cream/50 p-3 space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-forest block">Year 1</span>
+                  <span className="text-xl block">🌾</span>
+                  <span className="text-xs font-bold text-forest block">{isArabic ? 'قمح طري' : 'Wheat'}</span>
+                  <span className="text-[10px] text-ink/50 block">{isArabic ? 'بناء الخصوبة' : 'Build fertility'}</span>
+                </div>
+
+                <div className="rounded-xl border border-line bg-cream/50 p-3 space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-forest block">Year 2</span>
+                  <span className="text-xl block">🫘</span>
+                  <span className="text-xs font-bold text-forest block">{isArabic ? 'حمص' : 'Chickpea'}</span>
+                  <span className="text-[10px] text-ink/50 block">{isArabic ? 'تثبيت النيتروجين' : 'Fix nitrogen'}</span>
+                </div>
+
+                <div className="rounded-xl border border-line bg-cream/50 p-3 space-y-1">
+                  <span className="text-[10px] font-mono font-bold text-forest block">Year 3</span>
+                  <span className="text-xl block">🥔</span>
+                  <span className="text-xs font-bold text-forest block">{isArabic ? 'بطاطس' : 'Potato'}</span>
+                  <span className="text-[10px] text-ink/50 block">{isArabic ? 'تحسين المردود' : 'High resilience'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          3. INTERACTIVE PRODUCT JOURNEY SANDBOX (Real Functional Verification)
+         ========================================================================= */}
+      <section className="space-y-6 pt-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-forest/20 bg-forest/5 px-3 py-0.5 text-xs font-semibold text-forest">
             <Sparkles size={13} className="text-leaf" />
@@ -638,7 +1012,7 @@ export default function Welcome() {
                     onClick={() => resetWizard()}
                     className="btn-primary !py-2.5 text-xs inline-flex items-center gap-1.5 self-start sm:self-auto"
                   >
-                    <span>{t('welcome.ctaPrimary')}</span>
+                    <span>{t('welcome.cta')}</span>
                     <ArrowRight size={13} className="rtl:rotate-180" />
                   </Link>
                 </div>
@@ -648,81 +1022,13 @@ export default function Welcome() {
         </div>
       </section>
 
-      {/* 3. EXPLAIN WHAT MAKES FIELD SHIFT USEFUL (4 Distinct Capabilities) */}
-      <section className="space-y-6 pt-4">
-        <div className="text-center max-w-xl mx-auto space-y-1">
-          <h2 className="font-display text-2xl font-extrabold text-forest">
-            {isArabic ? 'ماذا يقدم فيلد شيفت لأرضك؟' : 'Why Field Shift is Different'}
-          </h2>
-          <p className="text-xs sm:text-sm text-ink/60">
-            {isArabic ? 'علم حقيقي، شفافية كاملة، وتحكم فلاحي تام' : 'Real Earth science, complete provenance, and farmer-controlled decisions.'}
-          </p>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="card p-5 border border-line bg-white shadow-2xs space-y-2 hover:border-forest/40 transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest/5 text-forest">
-              <MapPin size={20} />
-            </div>
-            <h3 className="font-display text-base font-bold text-forest">
-              {isArabic ? 'افهم أرضك' : 'Understand Your Land'}
-            </h3>
-            <p className="text-xs text-ink/70 leading-relaxed">
-              {isArabic
-                ? 'ارسم حدود حقلك واطلع على رصد مناخي وتربوي مباشر من بيانات ناسا ومعهد ISRIC.'
-                : 'Map exact field boundaries and view 30-year climatology and 250m soil horizon estimates.'}
-            </p>
-          </div>
-
-          <div className="card p-5 border border-line bg-white shadow-2xs space-y-2 hover:border-forest/40 transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-leaf/10 text-leaf">
-              <Layers size={20} />
-            </div>
-            <h3 className="font-display text-base font-bold text-forest">
-              {isArabic ? 'استكشف خيارات الدورات' : 'Multi-Season Rotations'}
-            </h3>
-            <p className="text-xs text-ink/70 leading-relaxed">
-              {isArabic
-                ? 'دورات زراعية علمية تراعي كسر دورات الآفات وتثبيت النيتروجين والحفاظ على رطوبة التربة.'
-                : 'Rule-based multi-year rotations designed to break pest cycles, fix nitrogen, and conserve water.'}
-            </p>
-          </div>
-
-          <div className="card p-5 border border-line bg-white shadow-2xs space-y-2 hover:border-forest/40 transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber/15 text-amber-900">
-              <SlidersHorizontal size={20} />
-            </div>
-            <h3 className="font-display text-base font-bold text-forest">
-              {isArabic ? 'خصّص خطتك بنفسك' : 'Customize Eligible Crops'}
-            </h3>
-            <p className="text-xs text-ink/70 leading-relaxed">
-              {isArabic
-                ? 'استبدل أي محصول ببدائل مؤهلة وافحص الفروقات والتأثيرات الزراعية فوراً.'
-                : 'Swap crops with eligible alternatives and immediately evaluate impacts on soil and water balance.'}
-            </p>
-          </div>
-
-          <div className="card p-5 border border-line bg-white shadow-2xs space-y-2 hover:border-forest/40 transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky/15 text-sky-800">
-              <Calendar size={20} />
-            </div>
-            <h3 className="font-display text-base font-bold text-forest">
-              {isArabic ? 'تابع جدول الأنشطة' : 'Keep & Track Over Time'}
-            </h3>
-            <p className="text-xs text-ink/70 leading-relaxed">
-              {isArabic
-                ? 'احتفظ بدورتك في متصفحك دون حساب وسجّل مواعيد الزراعة والحصاد الفعلية.'
-                : 'Save plans locally without passwords and track farmer-reported planting and harvest records.'}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. SCIENTIFIC CREDIBILITY & PROVENANCE */}
+      {/* =========================================================================
+          4. SCIENTIFIC CREDIBILITY & PROVENANCE
+         ========================================================================= */}
       <section className="rounded-3xl border border-line bg-cream/50 p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line/70 pb-4">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 block font-mono">
               {t('welcome.sources.openScience')}
             </span>
             <h3 className="font-display text-xl font-extrabold text-forest">
@@ -774,8 +1080,10 @@ export default function Welcome() {
         </div>
       </section>
 
-      {/* 5. CLOSING CTA BANNER */}
-      <section className="text-center rounded-3xl bg-forest p-8 sm:p-12 text-white shadow-xl space-y-4">
+      {/* =========================================================================
+          5. CLOSING CTA BANNER (Guidance toward Earth Observatory)
+         ========================================================================= */}
+      <section className="text-center rounded-3xl bg-gradient-to-br from-[#081A15] via-[#0E2921] to-[#163E32] p-8 sm:p-12 text-white shadow-2xl space-y-4 border border-leaf/30">
         <h2 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
           {isArabic ? 'جاهز لاستكشاف الدورة الزراعية لأرضك؟' : 'Ready to Map Your Land?'}
         </h2>

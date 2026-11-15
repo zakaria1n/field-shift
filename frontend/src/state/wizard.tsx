@@ -56,6 +56,8 @@ interface WizardState {
   setAnswers: (a: FarmAnswers) => void
   priorities: Priorities
   setPriorities: (p: Priorities) => void
+  farmProfileStep: number
+  setFarmProfileStep: (step: number) => void
   resetWizard: () => void
 }
 
@@ -81,6 +83,7 @@ export function WizardProvider({ children }: { children: ReactNode }) {
   const [fieldId, setFieldId] = useState<string | null>(persisted.fieldId ?? null)
   const [answers, setAnswers] = useState<FarmAnswers>({ ...DEFAULT_ANSWERS, ...(persisted.answers ?? {}) })
   const [priorities, setPriorities] = useState<Priorities>({ ...DEFAULT_PRIORITIES, ...(persisted.priorities ?? {}) })
+  const [farmProfileStep, setFarmProfileStep] = useState<number>(1)
 
   useEffect(() => {
     sessionStorage.setItem(
@@ -104,11 +107,14 @@ export function WizardProvider({ children }: { children: ReactNode }) {
     setAnswers,
     priorities,
     setPriorities,
+    farmProfileStep,
+    setFarmProfileStep,
     resetWizard: () => {
       setField(null)
       setFieldId(null)
       setAnswers({ ...DEFAULT_ANSWERS })
       setPriorities({ ...DEFAULT_PRIORITIES })
+      setFarmProfileStep(1)
     },
   }
 

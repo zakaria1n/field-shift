@@ -15,11 +15,13 @@ import {
   Sparkles,
   AlertCircle,
   Loader2,
+  Layers
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { api, type FieldOut } from '../../api/client'
 import { useWizard, type Priorities } from '../../state/wizard'
+import { Parcel3DCard } from '../../app/components/Parcel3DCard'
 
 const KEYS = ['water', 'soil', 'yield', 'risk'] as const
 type Key = (typeof KEYS)[number]
@@ -76,9 +78,20 @@ export default function Priorities() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const { priorities, setPriorities, answers, fieldId: wizardFieldId, setFieldId } = useWizard()
+  const {
+    priorities,
+    setPriorities,
+    answers,
+    fieldId: wizardFieldId,
+    setFieldId,
+    field,
+    setFarmProfileStep
+  } = useWizard()
   const isArabic = i18n.language === 'ar'
-  const fieldId = (location.state as { fieldId?: string } | null)?.fieldId || searchParams.get('field') || wizardFieldId
+  const fieldId =
+    (location.state as { fieldId?: string } | null)?.fieldId ||
+    searchParams.get('field') ||
+    wizardFieldId
   const barRef = useRef<HTMLDivElement>(null)
 
   const [submitting, setSubmitting] = useState(false)
@@ -89,6 +102,11 @@ export default function Priorities() {
       setFieldId(fieldId)
     }
   }, [fieldId, wizardFieldId, setFieldId])
+
+  // Synchronize wizard stepper state to step 5 (Your Priorities)
+  useEffect(() => {
+    setFarmProfileStep(5)
+  }, [setFarmProfileStep])
 
   useEffect(() => {
     if (totalOf(priorities) !== 100) setPriorities({ water: 25, soil: 25, yield: 25, risk: 25 })
@@ -108,10 +126,10 @@ export default function Priorities() {
     }
   > = {
     water: {
-      label: t('mixer.water'),
+      label: isArabic ? 'كفاءة المياه' : 'Water Efficiency',
       desc: isArabic
-        ? 'تقليل الاحتياجات المائية والاعتماد على رصدات FAO 56'
-        : 'Favors low water-demand crops & drought resilience (FAO 56)',
+        ? 'تفضيل المحاصيل ذات الاحتياجات المائية المنخفضة وتفادي الإجهاد المائي (FAO 56)'
+        : 'Favor crops with lower water needs & drought resilience (FAO 56)',
       icon: Droplets,
       color: 'text-sky',
       bgLight: 'bg-sky-soft',
@@ -119,10 +137,10 @@ export default function Priorities() {
       accent: '#3B8EA5',
     },
     soil: {
-      label: t('mixer.soil'),
+      label: isArabic ? 'صحة التربة' : 'Soil Health',
       desc: isArabic
         ? 'تعزيز تثبيت النيتروجين وتنوع الجذور وتجديد المادة العضوية'
-        : 'Favors legumes, organic carbon build-up & root depth diversity',
+        : 'Support soil health, nitrogen fixation & root depth diversity',
       icon: Sprout,
       color: 'text-leaf',
       bgLight: 'bg-leaf-soft',
@@ -130,10 +148,10 @@ export default function Priorities() {
       accent: '#229E65',
     },
     yield: {
-      label: t('mixer.yield'),
+      label: isArabic ? 'المردود المرجعي' : 'Attainable Yield Reference',
       desc: isArabic
-        ? 'سقوف المردود المحتمل وفق نماذج FAO GAEZ v5'
-        : 'Modeled agro-climatic attainable yield ceiling (GAEZ v5)',
+        ? 'سقوف المردود المحتمل وفق نماذج FAO GAEZ v5 للأصناف المؤهلة'
+        : 'Modeled agro-climatic attainable yield ceiling (FAO GAEZ v5)',
       icon: TrendingUp,
       color: 'text-amber-dark',
       bgLight: 'bg-amber-soft',
@@ -141,10 +159,10 @@ export default function Priorities() {
       accent: '#D9943B',
     },
     risk: {
-      label: t('mixer.risk'),
+      label: isArabic ? 'مقاومة مخاطر المناخ' : 'Climate Resilience',
       desc: isArabic
         ? 'الحماية من الصدمات الحرارية وتقلبات هطول الأمطار'
-        : 'Buffers against extreme temperatures & erratic precipitation',
+        : 'Buffers against temperature extremes & erratic precipitation',
       icon: ShieldCheck,
       color: 'text-forest',
       bgLight: 'bg-cream-warm',
@@ -153,25 +171,42 @@ export default function Priorities() {
     },
   }
 
-  // Quick Preset Strategies
+  // Canonical Four Priority Presets from 05_Your_Priorities_ORIGINAL_MODEL.png
   const presets = [
     {
+      id: 'balanced',
       name: isArabic ? 'متوازن' : 'Balanced',
+      subtitle: isArabic ? 'أوزان متساوية (٢٥٪ لكل عامل)' : 'Equal weight (25% each)',
       weights: { water: 25, soil: 25, yield: 25, risk: 25 },
     },
     {
+      id: 'drought',
       name: isArabic ? 'توفير المياه' : 'Drought Saver',
+      subtitle: isArabic ? 'التركيز على كفاءة المياه' : 'Focus on water efficiency',
       weights: { water: 45, soil: 20, yield: 15, risk: 20 },
     },
     {
+      id: 'soil',
       name: isArabic ? 'تجديد التربة' : 'Soil Restorer',
+      subtitle: isArabic ? 'أولوية لخصوبة وصحة التربة' : 'Prioritize soil health',
       weights: { water: 20, soil: 50, yield: 15, risk: 15 },
     },
     {
+      id: 'yield',
       name: isArabic ? 'أقصى إنتاجية' : 'Yield Focus',
+      subtitle: isArabic ? 'تعظيم إمكانات المردود' : 'Maximize yield potential',
       weights: { water: 15, soil: 20, yield: 50, risk: 15 },
     },
   ]
+
+  // Detect active preset (or show Customized if user tweaked sliders manually)
+  const activePreset = presets.find(
+    (p) =>
+      p.weights.water === priorities.water &&
+      p.weights.soil === priorities.soil &&
+      p.weights.yield === priorities.yield &&
+      p.weights.risk === priorities.risk
+  )
 
   async function startAnalysis() {
     setErrorMessage(null)
@@ -241,206 +276,262 @@ export default function Priorities() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="mx-auto max-w-3xl space-y-6"
+      className="max-w-6xl mx-auto space-y-6"
     >
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
           <p className="kicker">{t('steps.priorities')}</p>
-          <span className="badge-glow text-[10px]">Step 3 of 5</span>
+          <span className="badge-glow text-[10px]">
+            {isArabic ? 'الملف الزراعي · الخطوة ٥ من ٥' : 'YOUR FARM PROFILE - STEP 5 OF 5'}
+          </span>
         </div>
         <h1 className="mt-1.5 text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
-          {t('mixer.title')}
+          {isArabic ? 'حدد أولوياتك الزراعية' : 'Set your priorities'}
         </h1>
-        <p className="mt-1 text-sm text-ink-muted">{t('mixer.subtitle')}</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          {isArabic
+            ? 'شاركنا ما يهمك أكثر لدورتك المقبلة. عدّل التوازن بين العوامل الأربعة — المجموع يبقى دائماً ١٠٠٪.'
+            : 'Tell us what matters most for your next rotation. Adjust the balance between the four factors — the total always stays at 100%.'}
+        </p>
       </div>
 
-      <div className="card p-6 sm:p-8 bg-white shadow-card-hover border border-line space-y-6">
-        {/* Linked Multi-Segment Ribbon Visualizer */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-ink-light font-mono flex items-center gap-1.5">
-              <Sliders size={13} className="text-leaf" /> {t('mixer.balanceNote')}
-            </span>
-            <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-forest bg-cream-warm px-2.5 py-1 rounded-full border border-line">
-              <CheckCircle2 size={13} className="text-leaf" />
-              <span>{t('mixer.total')}:</span>
-              <span data-testid="mixer-total" className="text-leaf font-extrabold text-sm">
-                {totalOf(priorities)}
+      {/* Main Grid: Form Left, Companion 3D Real Parcel Right */}
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* Left Column: Presets + Segmented Ribbon + 4 Sliders */}
+        <div className="lg:col-span-8 card p-6 sm:p-8 bg-white shadow-card-hover border border-line space-y-6">
+          {/* 1. Four Priority Presets (05_Your_Priorities_ORIGINAL_MODEL.png) */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-ink-light font-mono flex items-center gap-1.5">
+                <Sparkles size={13} className="text-leaf" />
+                {isArabic ? 'نماذج استراتيجية جاهزة:' : 'Priority Presets'}
               </span>
-              <span>%</span>
+              {!activePreset && (
+                <span className="badge-glow text-[11px] font-mono text-leaf">
+                  {isArabic ? 'مخصص من قبلك' : 'Customized'}
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {presets.map((p) => {
+                const isSelected = activePreset?.id === p.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPriorities(p.weights as Priorities)}
+                    className={`rounded-2xl border p-3 text-start transition-all duration-200 ${
+                      isSelected
+                        ? 'border-2 border-leaf bg-leaf-soft/60 shadow-glow ring-2 ring-leaf/20 text-forest'
+                        : 'border-line/90 bg-cream/40 hover:bg-white text-ink hover:border-leaf/40'
+                    }`}
+                  >
+                    <span className="font-extrabold text-xs block text-forest">
+                      {p.name}
+                    </span>
+                    <span className="text-[10px] text-ink-muted block mt-0.5 leading-tight">
+                      {p.subtitle}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Connected Glowing Progress Bar */}
-          <div
-            ref={barRef}
-            className="flex h-5 w-full overflow-hidden rounded-full border border-line p-0.5 bg-cream shadow-inner"
-            aria-hidden
-          >
-            {KEYS.map((k) => (
-              <div
-                key={k}
-                className="h-full first:rounded-s-full last:rounded-e-full transition-all duration-300 relative group"
-                style={{
-                  width: `${priorities[k]}%`,
-                  backgroundColor: priorityMeta[k].accent,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Segment Mini Legend with Percentages */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
-            {KEYS.map((k) => (
-              <div key={k} className="flex items-center gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: priorityMeta[k].accent }}
-                />
-                <span className="truncate text-ink-muted">{priorityMeta[k].label}:</span>
-                <span className="font-bold text-forest">{priorities[k]}%</span>
+          {/* 2. Proportional Segmented Priority Ribbon Visualizer */}
+          <div className="space-y-2 pt-2 border-t border-line/60">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-ink-light font-mono flex items-center gap-1.5">
+                <Sliders size={13} className="text-leaf" /> {t('mixer.balanceNote')}
+              </span>
+              <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-forest bg-cream-warm px-2.5 py-1 rounded-full border border-line">
+                <CheckCircle2 size={13} className="text-leaf" />
+                <span>{t('mixer.total')}:</span>
+                <span data-testid="mixer-total" className="text-leaf font-extrabold text-sm">
+                  {totalOf(priorities)}
+                </span>
+                <span>%</span>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Quick Preset Selector */}
-        <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-line/60">
-          <span className="text-xs font-bold text-ink-light flex items-center gap-1">
-            <Sparkles size={12} className="text-leaf" /> {isArabic ? 'نماذج جاهزة:' : 'Presets:'}
-          </span>
-          {presets.map((p) => (
-            <button
-              key={p.name}
-              type="button"
-              onClick={() => setPriorities(p.weights as Priorities)}
-              className="chip hover:border-leaf hover:bg-leaf-soft hover:text-forest text-xs py-1 px-3 transition-all"
+            {/* Connected Glowing Progress Bar */}
+            <div
+              ref={barRef}
+              className="flex h-5 w-full overflow-hidden rounded-full border border-line p-0.5 bg-cream shadow-inner"
+              aria-hidden
             >
-              {p.name}
-            </button>
-          ))}
-          <button
-            type="button"
-            className="btn-ghost ms-auto text-xs flex items-center gap-1"
-            onClick={() => setPriorities({ water: 25, soil: 25, yield: 25, risk: 25 })}
-          >
-            <RotateCcw size={12} /> {t('mixer.reset')}
-          </button>
-        </div>
+              {KEYS.map((k) => (
+                <div
+                  key={k}
+                  className="h-full first:rounded-s-full last:rounded-e-full transition-all duration-300 relative group"
+                  style={{
+                    width: `${priorities[k]}%`,
+                    backgroundColor: priorityMeta[k].accent,
+                  }}
+                />
+              ))}
+            </div>
 
-        {/* 4 Interactive Slider Cards */}
-        <div className="space-y-4 pt-2">
-          {KEYS.map((k) => {
-            const meta = priorityMeta[k]
-            const Icon = meta.icon
-            return (
-              <div
-                key={k}
-                className={`rounded-2xl border p-4.5 transition-all duration-200 ${
-                  meta.border
-                } ${meta.bgLight}/40 hover:shadow-sm`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ${meta.color}`}
-                    >
-                      <Icon size={18} />
-                    </span>
-                    <div>
-                      <label htmlFor={`slider-${k}`} className="text-sm font-extrabold text-forest block">
-                        {meta.label}
-                      </label>
-                      <p className="text-[11px] text-ink-muted leading-tight mt-0.5">{meta.desc}</p>
+            {/* Segment Mini Legend with Percentages */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
+              {KEYS.map((k) => (
+                <div key={k} className="flex items-center gap-1.5">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: priorityMeta[k].accent }}
+                  />
+                  <span className="truncate text-ink-muted">{priorityMeta[k].label}:</span>
+                  <span className="font-bold text-forest">{priorities[k]}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Four Connected Slider Controls */}
+          <div className="space-y-4 pt-2">
+            {KEYS.map((k) => {
+              const meta = priorityMeta[k]
+              const Icon = meta.icon
+              return (
+                <div
+                  key={k}
+                  className={`rounded-2xl border p-4 transition-all duration-200 ${
+                    meta.border
+                  } ${meta.bgLight}/40 hover:shadow-xs`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-xs ${meta.color}`}
+                      >
+                        <Icon size={18} />
+                      </span>
+                      <div>
+                        <label htmlFor={`slider-${k}`} className="text-sm font-extrabold text-forest block">
+                          {meta.label}
+                        </label>
+                        <p className="text-[11px] text-ink-muted leading-tight mt-0.5">{meta.desc}</p>
+                      </div>
                     </div>
+
+                    {/* Percentage Display Badge */}
+                    <span
+                      className="font-mono text-base font-extrabold px-3 py-1 rounded-xl bg-white shadow-xs border border-line text-forest min-w-[3.5rem] text-center"
+                      aria-hidden
+                    >
+                      <bdi>{priorities[k]}</bdi>%
+                    </span>
                   </div>
 
-                  {/* Percentage Display Badge */}
-                  <span
-                    className="font-mono text-base font-extrabold px-3 py-1 rounded-xl bg-white shadow-sm border border-line text-forest min-w-[3.5rem] text-center"
-                    aria-hidden
-                  >
-                    <bdi>{priorities[k]}</bdi>%
-                  </span>
+                  {/* Range Slider Track */}
+                  <div className="mt-3 flex items-center gap-3">
+                    <span className="text-[10px] font-mono text-ink-light">0%</span>
+                    <input
+                      id={`slider-${k}`}
+                      data-testid={`slider-${k}`}
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={priorities[k]}
+                      aria-label={t('aria.slider', { label: meta.label })}
+                      aria-valuetext={`${priorities[k]} percent`}
+                      onChange={(e) => setPriorities(rebalance(priorities, k, Number(e.target.value)))}
+                      style={{ accentColor: meta.accent }}
+                      className="w-full h-2 rounded-lg cursor-pointer bg-line"
+                    />
+                    <span className="text-[10px] font-mono text-ink-light">100%</span>
+                  </div>
                 </div>
+              )
+            })}
+          </div>
 
-                {/* Range Slider Track */}
-                <div className="mt-3 flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-ink-light">0%</span>
-                  <input
-                    id={`slider-${k}`}
-                    data-testid={`slider-${k}`}
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={priorities[k]}
-                    aria-label={t('aria.slider', { label: meta.label })}
-                    aria-valuetext={`${priorities[k]} percent`}
-                    onChange={(e) => setPriorities(rebalance(priorities, k, Number(e.target.value)))}
-                    style={{ accentColor: meta.accent }}
-                    className="w-full h-2 rounded-lg cursor-pointer bg-line"
-                  />
-                  <span className="text-[10px] font-mono text-ink-light">100%</span>
-                </div>
+          {/* Honest Scientific Yield != Profit Disclaimer */}
+          <div className="rounded-2xl border border-sky/30 bg-sky-soft/60 p-4 flex items-start gap-3 text-xs text-ink-muted leading-relaxed">
+            <Info size={16} className="text-sky shrink-0 mt-0.5" />
+            <span>{t('mixer.yieldNote')}</span>
+          </div>
+
+          {/* Error Feedback Message if Submission Failed */}
+          {errorMessage && (
+            <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-xs text-red-700 flex items-start gap-3 shadow-xs">
+              <AlertCircle size={18} className="text-red-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-bold text-sm text-red-800">
+                  {isArabic ? 'تعذر بدء التحليل' : 'Failed to start field analysis'}
+                </p>
+                <p className="mt-1 text-red-600 leading-relaxed">{errorMessage}</p>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )}
 
-        {/* Honest Scientific Yield != Profit Disclaimer */}
-        <div className="rounded-2xl border border-sky/30 bg-sky-soft/60 p-4 flex items-start gap-3 text-xs text-ink-muted leading-relaxed">
-          <Info size={16} className="text-sky shrink-0 mt-0.5" />
-          <span>{t('mixer.yieldNote')}</span>
-        </div>
-      </div>
+          {/* Action Footer */}
+          <div className="flex items-center justify-between pt-2 border-t border-line/60">
+            <button
+              type="button"
+              className="btn-secondary flex items-center gap-2 px-6"
+              onClick={() =>
+                navigate(`/setup/questions${fieldId ? `?field=${fieldId}` : ''}`, {
+                  state: fieldId ? { fieldId } : undefined,
+                })
+              }
+            >
+              <ArrowLeft className="rtl:rotate-180" size={16} />
+              <span>{t('nav.back')}</span>
+            </button>
 
-      {/* Error Feedback Message if Submission Failed */}
-      {errorMessage && (
-        <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-xs text-red-700 flex items-start gap-3 shadow-sm animate-fade-in">
-          <AlertCircle size={18} className="text-red-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-bold text-sm text-red-800">
-              {isArabic ? 'تعذر بدء التحليل' : 'Failed to start field analysis'}
-            </p>
-            <p className="mt-1 text-red-600 leading-relaxed">{errorMessage}</p>
+            <button
+              type="button"
+              className="btn-leaf flex items-center gap-2.5 px-9 py-3 text-sm shadow-lg group disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={totalOf(priorities) !== 100 || submitting}
+              onClick={startAnalysis}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 size={16} className="text-mint animate-spin" />
+                  <span>{isArabic ? 'جاري التحضير...' : 'Starting analysis...'}</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={16} className="text-mint animate-pulse" />
+                  <span>{t('analysis.start')}</span>
+                  <ArrowRight className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" size={17} />
+                </>
+              )}
+            </button>
           </div>
         </div>
-      )}
 
-      {/* Action Footer */}
-      <div className="flex items-center justify-between pt-2">
-        <button
-          type="button"
-          className="btn-secondary flex items-center gap-2 px-6"
-          onClick={() =>
-            navigate(`/setup/questions${fieldId ? `?field=${fieldId}` : ''}`, { state: fieldId ? { fieldId } : undefined })
-          }
-        >
-          <ArrowLeft className="rtl:rotate-180" size={16} />
-          <span>{t('nav.back')}</span>
-        </button>
+        {/* Right Column: Extruded 3D Real Parcel Representation & How It Works Card */}
+        <aside className="lg:col-span-4 sticky top-28 space-y-4">
+          <Parcel3DCard
+            geometry={field?.geometry}
+            fieldName={field?.name}
+            areaHa={field?.area_ha}
+          />
 
-        <button
-          type="button"
-          className="btn-leaf flex items-center gap-2.5 px-9 py-3 text-sm shadow-lg group disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={totalOf(priorities) !== 100 || submitting}
-          onClick={startAnalysis}
-        >
-          {submitting ? (
-            <>
-              <Loader2 size={16} className="text-mint animate-spin" />
-              <span>{isArabic ? 'جاري التحضير...' : 'Starting analysis...'}</span>
-            </>
-          ) : (
-            <>
-              <Sparkles size={16} className="text-mint animate-pulse" />
-              <span>{t('analysis.start')}</span>
-              <ArrowRight className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" size={17} />
-            </>
-          )}
-        </button>
+          {/* How It Works Guidance Card */}
+          <div className="card p-5 bg-white border border-line text-xs space-y-3">
+            <div className="flex items-center gap-2 text-forest font-bold">
+              <Info size={15} className="text-leaf" />
+              <span>{isArabic ? 'كيف يعمل التوازن؟' : 'How the Balance Works'}</span>
+            </div>
+            <p className="text-[11px] text-ink-muted leading-relaxed">
+              {isArabic
+                ? 'عند زيادة أحد العوامل، يُعاد توزيع النسبة المتبقية تلقائياً بين العوامل الأخرى باستخدام طريقة الباقي الأكبر لضمان مجموع ١٠٠٪ تماماً.'
+                : 'When you adjust any priority factor, the remaining weight is mathematically distributed across the other three to guarantee an exact 100% total.'}
+            </p>
+            <div className="rounded-xl bg-cream-warm p-3 text-[10px] text-ink-light space-y-1 font-mono">
+              <div>• Water: FAO 56 crop evapotranspiration</div>
+              <div>• Soil: Legume fixation & crop family breaks</div>
+              <div>• Yield: GAEZ v5 agro-climatic baseline</div>
+              <div>• Climate: Thermal & precipitation resilience</div>
+            </div>
+          </div>
+        </aside>
       </div>
     </motion.div>
   )

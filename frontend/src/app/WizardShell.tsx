@@ -4,14 +4,17 @@ import { Sprout, Satellite, Home, MapPin, Compass, BarChart2, Settings } from 'l
 import { useQuery } from '@tanstack/react-query'
 
 import { api, type DashboardItem } from '../api/client'
+import { useWizard } from '../state/wizard'
 import LanguageSwitch from './components/LanguageSwitch'
 import WizardStepper from './components/WizardStepper'
 
 /** Shell for first-visit journey screens (welcome → … → confirmation) harmonized with AppShell styling. */
 export default function WizardShell() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+  const { farmProfileStep } = useWizard()
+  const isArabic = i18n.language === 'ar'
 
   // Only display navigation links if an adopted rotation plan actually exists
   const { data: dashboard } = useQuery({
@@ -30,6 +33,9 @@ export default function WizardShell() {
     { to: '/settings', label: t('nav.settings'), icon: Settings },
   ]
 
+  const isFarmProfile =
+    location.pathname === '/setup/questions' || location.pathname === '/setup/priorities'
+
   const stepFor: Record<string, number> = {
     '/welcome': 0,
     '/fields/new': 1,
@@ -46,17 +52,24 @@ export default function WizardShell() {
 
   return (
     <div className="flex min-h-screen flex-col bg-cream text-ink">
-      {/* Top Navigation Harmonized with AppShell */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-line shadow-sm">
+      {/* Top Cinematic Navigation Header */}
+      <header className="sticky top-0 z-40 bg-[#071913]/95 backdrop-blur-md border-b border-white/10 shadow-lg text-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-6">
             <Link to={hasSavedPlan ? '/home' : '/welcome'} className="group flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-forest to-forest-surface text-white shadow-sm group-hover:bg-leaf transition-colors">
-                <Sprout size={20} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-leaf to-forest-surface text-white shadow-md group-hover:bg-leaf transition-colors ring-1 ring-white/20">
+                <Sprout size={20} className="text-white" />
               </span>
               <div className="flex flex-col">
-                <span className="text-lg font-extrabold tracking-tight text-forest">
-                  {t('app.title')}
+                <span className="text-lg font-extrabold tracking-tight text-white flex items-center gap-2">
+                  <span>{t('app.title')}</span>
+                  {isFarmProfile && (
+                    <span className="hidden lg:inline text-xs font-normal text-white/50 border-s border-white/20 ps-2">
+                      {isArabic
+                        ? 'الملف الزراعي — من حقلك إلى خطة دورة زراعية مخصصة'
+                        : 'Farm Profile — From your field to a personalized crop plan'}
+                    </span>
+                  )}
                 </span>
                 <span className="text-[9px] font-semibold text-leaf tracking-wider uppercase flex items-center gap-1 font-mono">
                   <Satellite size={9} /> Agritech Platform
@@ -76,11 +89,11 @@ export default function WizardShell() {
                       to={item.to}
                       className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
                         active
-                          ? 'bg-forest text-white shadow-sm ring-1 ring-forest/20'
-                          : 'text-ink-muted hover:text-forest hover:bg-forest/5'
+                          ? 'bg-leaf text-white shadow-sm ring-1 ring-white/30'
+                          : 'text-white/70 hover:text-white hover:bg-white/10'
                       }`}
                     >
-                      <Icon size={14} className={active ? 'text-mint' : 'text-ink-light'} />
+                      <Icon size={14} className={active ? 'text-white' : 'text-white/60'} />
                       <span>{item.label}</span>
                     </Link>
                   )
@@ -90,15 +103,18 @@ export default function WizardShell() {
           </div>
 
           <div className="flex items-center gap-3">
-            <LanguageSwitch variant="light" />
+            <LanguageSwitch variant="dark" />
           </div>
         </div>
 
-        {/* Stepper progress Bar */}
+        {/* Stepper Progress Bar */}
         {step > 0 && (
-          <div className="border-t border-line bg-cream-warm/70 backdrop-blur-md">
+          <div className="border-t border-white/10 bg-[#0A2018]/90 backdrop-blur-md">
             <div className="mx-auto max-w-6xl px-4 sm:px-6">
-              <WizardStepper current={step} />
+              <WizardStepper
+                current={isFarmProfile ? farmProfileStep : step}
+                mode={isFarmProfile ? 'farmProfile' : 'default'}
+              />
             </div>
           </div>
         )}

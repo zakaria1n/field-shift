@@ -6,8 +6,22 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '@geoman-io/leaflet-geoman-free'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
-import { MapPin, Search, Radar, Loader2, Layers, CheckCircle2, Globe2, ArrowRight, Info, Sparkles } from 'lucide-react'
-import { motion } from 'framer-motion'
+import {
+  MapPin,
+  Search,
+  Radar,
+  Loader2,
+  Layers,
+  CheckCircle2,
+  Globe2,
+  ArrowRight,
+  Info,
+  Sparkles,
+  Compass,
+  Satellite,
+  Maximize2
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { api, type FieldOut, type PlaceResult } from '../../api/client'
 import { useWizard } from '../../state/wizard'
@@ -24,6 +38,7 @@ const DEMO_PRESETS = [
 ]
 
 type BaseMapKind = 'standard' | 'satellite'
+type ViewMode = 'globe' | 'map'
 
 export default function FieldSelect() {
   const { t, i18n } = useTranslation()
@@ -36,6 +51,10 @@ export default function FieldSelect() {
   const mapRef = useRef<L.Map | null>(null)
   const baseLayersRef = useRef<Record<BaseMapKind, L.TileLayer> | null>(null)
   const [basemap, setBasemap] = useState<BaseMapKind>('satellite') // default to satellite for cinematic AgriTech
+  const [viewMode, setViewMode] = useState<ViewMode>('globe')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [targetLocationName, setTargetLocationName] = useState('')
+
   const [areaHa, setAreaHa] = useState<number | null>(field?.area_ha ?? null)
   const [name, setName] = useState(field?.name ?? '')
   const [searchQuery, setSearchQuery] = useState('')
@@ -165,8 +184,21 @@ export default function FieldSelect() {
     }
   }
 
-  function flyTo(lat: number, lon: number, zoom = 14) {
-    mapRef.current?.flyTo([lat, lon], zoom, { duration: 1.5 })
+  function flyTo(lat: number, lon: number, zoom = 14, label = '') {
+    if (viewMode === 'globe') {
+      setIsTransitioning(true)
+      setTargetLocationName(label || `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`)
+      setTimeout(() => {
+        setViewMode('map')
+        setIsTransitioning(false)
+        setTimeout(() => {
+          mapRef.current?.invalidateSize()
+          mapRef.current?.flyTo([lat, lon], zoom, { duration: 1.5 })
+        }, 150)
+      }, 1200)
+    } else {
+      mapRef.current?.flyTo([lat, lon], zoom, { duration: 1.5 })
+    }
   }
 
   function useMyLocation() {
@@ -176,7 +208,7 @@ export default function FieldSelect() {
       return
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => flyTo(pos.coords.latitude, pos.coords.longitude, 15),
+      (pos) => flyTo(pos.coords.latitude, pos.coords.longitude, 15, isArabic ? 'موقعي الجغرافي' : 'Current Geolocation'),
       () => setLocationNote(t('field.locationDenied')),
       { timeout: 8000 },
     )
@@ -234,29 +266,210 @@ export default function FieldSelect() {
           </p>
         </div>
 
-        {/* Quick Demo Location Jump Chips */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] font-bold text-ink-light flex items-center gap-1 font-mono">
-            <Globe2 size={12} /> {isArabic ? 'مناطق نموذجية:' : 'Presets:'}
-          </span>
-          {DEMO_PRESETS.map((p) => (
+        {/* View Mode & Preset Quick Jump Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Globe vs Map Toggle Switch */}
+          <div className="flex items-center gap-1 bg-cream-warm p-0.5 rounded-full border border-line">
             <button
-              key={p.name}
               type="button"
-              onClick={() => flyTo(p.lat, p.lon, p.zoom)}
-              className="chip hover:border-leaf hover:text-forest hover:bg-leaf-soft transition-all text-[11px] py-0.5 px-2.5"
+              onClick={() => setViewMode('globe')}
+              className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                viewMode === 'globe' ? 'bg-forest text-white shadow-sm' : 'text-ink-muted hover:text-forest'
+              }`}
             >
-              {isArabic ? p.nameAr.split('،')[0] : p.name.split(',')[0]}
+              <Globe2 size={13} />
+              <span>{isArabic ? 'رؤية الفضاء' : 'Globe'}</span>
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => {
+                setViewMode('map')
+                setTimeout(() => mapRef.current?.invalidateSize(), 150)
+              }}
+              className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                viewMode === 'map' ? 'bg-forest text-white shadow-sm' : 'text-ink-muted hover:text-forest'
+              }`}
+            >
+              <Satellite size={13} />
+              <span>{isArabic ? 'خريطة الأقمار' : 'Satellite Map'}</span>
+            </button>
+          </div>
+
+          {/* Preset Location Chips */}
+          <div className="hidden md:flex items-center gap-1">
+            {DEMO_PRESETS.slice(0, 3).map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => flyTo(p.lat, p.lon, p.zoom, isArabic ? p.nameAr : p.name)}
+                className="chip hover:border-leaf hover:text-forest hover:bg-leaf-soft transition-all text-[11px] py-0.5 px-2.5"
+              >
+                {isArabic ? p.nameAr.split('،')[0] : p.name.split(',')[0]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12 items-start">
+      {/* =========================================================================
+          MODE 1: CINEMATIC EARTH OBSERVATORY (01_Fullscreen_Earth.png)
+         ========================================================================= */}
+      {viewMode === 'globe' && (
+        <motion.div
+          key="globe-view"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.3 }}
+          className="relative rounded-3xl overflow-hidden border border-forest-line bg-[#040E0B] shadow-2xl min-h-[500px] flex flex-col justify-between"
+        >
+          {/* Earth Space Photographic Backdrop */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img
+              src="/assets/earth_space_bg.webp"
+              alt="Planet Earth seen from space orbit"
+              className="w-full h-full object-cover filter brightness-95"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#040E0B]/90 via-transparent to-[#040E0B]/80" />
+          </div>
+
+          {/* Top Location Search Pill Bar (matching 02_Location_Search.png) */}
+          <div className="relative z-20 p-4 sm:p-6 max-w-xl mx-auto w-full space-y-2">
+            <div className="relative flex items-center shadow-2xl rounded-2xl bg-white/95 backdrop-blur-md border border-line p-1">
+              <div className="ps-3 pe-2 text-leaf flex items-center justify-center">
+                {searching ? (
+                  <Loader2 size={18} className="animate-spin text-leaf" />
+                ) : (
+                  <Search size={18} className="text-leaf" />
+                )}
+              </div>
+              <input
+                className="flex-1 bg-transparent py-2.5 px-2 text-xs sm:text-sm text-forest font-semibold outline-none placeholder:text-ink/40"
+                placeholder={t('field.search.placeholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={useMyLocation}
+                className="btn-leaf !py-2 !px-3.5 text-xs flex items-center gap-1.5 shrink-0 shadow-sm"
+              >
+                <Radar size={13} />
+                <span className="hidden sm:inline">{t('field.useMyLocation')}</span>
+              </button>
+            </div>
+
+            {/* Live Geocoding Results Dropdown */}
+            {results && results.results.length > 0 && (
+              <ul className="divide-y divide-line rounded-2xl border border-line bg-white/95 backdrop-blur-md shadow-2xl max-h-56 overflow-y-auto">
+                {results.results.map((r, i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      className="w-full text-start px-4 py-2.5 text-xs hover:bg-leaf/10 flex items-center gap-2.5 transition-colors"
+                      onClick={() => flyTo(r.lat, r.lon, 14, r.display_name)}
+                    >
+                      <MapPin size={14} className="text-leaf shrink-0" />
+                      <span className="font-semibold text-forest truncate"><bdi>{r.display_name}</bdi></span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {locationNote && (
+              <p className="text-xs text-amber-soft bg-black/60 px-3 py-1.5 rounded-xl border border-amber/30 text-center">
+                {locationNote}
+              </p>
+            )}
+          </div>
+
+          {/* Center Orbital Title Prompt */}
+          <div className="relative z-10 text-center p-6 space-y-3 max-w-md mx-auto">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-forest-dark/80 backdrop-blur-md px-3.5 py-1 text-xs font-mono text-mint border border-leaf/30">
+              <Compass size={13} className="text-leaf animate-spin" style={{ animationDuration: '8s' }} />
+              <span>Earth Observation · 35,786 km Orbit</span>
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {isArabic ? 'استكشف الأرض أو ابحث عن موقعك' : 'Explore the Earth or Search for Your Location'}
+            </h2>
+            <p className="text-xs text-white/70 leading-relaxed">
+              {isArabic
+                ? 'استخدم البحث أعلاه للتوجه نحو إقليمك، أو انقر للنزول المباشر إلى خريطة الأقمار الصناعية ورسم حدود الحقل.'
+                : 'Search any agricultural zone, or enter the satellite mapping canvas to trace your parcel boundary.'}
+            </p>
+          </div>
+
+          {/* Bottom Action Footer inside Globe View */}
+          <div className="relative z-20 p-4 sm:p-6 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-t from-[#040E0B] to-transparent">
+            {/* Quick preset jumps */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-mono text-white/50">{isArabic ? 'مناطق:' : 'Presets:'}</span>
+              {DEMO_PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => flyTo(p.lat, p.lon, p.zoom, isArabic ? p.nameAr : p.name)}
+                  className="rounded-xl px-2.5 py-1 bg-white/10 hover:bg-leaf hover:text-white text-white/80 text-[11px] font-mono transition-all border border-white/10"
+                >
+                  {isArabic ? p.nameAr.split('،')[0] : p.name.split(',')[0]}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setViewMode('map')
+                setTimeout(() => mapRef.current?.invalidateSize(), 150)
+              }}
+              className="btn-leaf text-xs px-5 py-2.5 inline-flex items-center gap-2 shadow-lg ms-auto"
+            >
+              <span>{isArabic ? 'الانتقال إلى خريطة الحقل' : 'Enter Map Directly'}</span>
+              <ArrowRight size={14} className="rtl:rotate-180" />
+            </button>
+          </div>
+
+          {/* Cinematic Fly-In Overlay during Transition */}
+          <AnimatePresence>
+            {isTransitioning && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 bg-[#040E0B]/90 backdrop-blur-lg flex flex-col items-center justify-center p-6 text-center space-y-4"
+              >
+                <div className="relative flex items-center justify-center">
+                  <span className="absolute h-16 w-16 rounded-full bg-leaf/30 animate-ping" />
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-leaf text-white shadow-glow">
+                    <Satellite size={24} />
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-mint">
+                    {isArabic ? 'الاقتراب من المنطقة الزراعية' : 'Approaching Geographic Region'}
+                  </span>
+                  <h3 className="font-display text-xl sm:text-2xl font-extrabold text-white">
+                    <bdi>{targetLocationName}</bdi>
+                  </h3>
+                  <p className="text-xs text-white/60">
+                    {isArabic ? 'جاري تحميل طبقات الأقمار الصناعية عالية الدقة...' : 'Streaming high-resolution satellite Earth tiles...'}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+
+      {/* =========================================================================
+          MODE 2: SATELLITE MAP & FIELD DRAWING (05_Agricultural_Area_Map.png)
+         ========================================================================= */}
+      <div className={`grid gap-6 lg:grid-cols-12 items-start ${viewMode === 'globe' ? 'hidden' : ''}`}>
         {/* Main Map Canvas Area */}
         <div className="lg:col-span-8 card overflow-hidden border border-line shadow-card relative">
           {/* Floating Map Controls Top Bar */}
-          <div className="flex items-center justify-between gap-2 p-3 bg-white/90 backdrop-blur-md border-b border-line">
+          <div className="flex items-center justify-between gap-2 p-3 bg-white/95 backdrop-blur-md border-b border-line">
             <div className="flex items-center gap-1 bg-cream-warm p-0.5 rounded-full border border-line">
               <button
                 type="button"
@@ -280,18 +493,20 @@ export default function FieldSelect() {
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={useMyLocation}
-              className="btn-secondary !py-1 !px-3 text-xs flex items-center gap-1.5"
-            >
-              <Radar size={13} className="text-leaf" />
-              <span>{t('field.useMyLocation')}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={useMyLocation}
+                className="btn-secondary !py-1 !px-3 text-xs flex items-center gap-1.5"
+              >
+                <Radar size={13} className="text-leaf" />
+                <span>{t('field.useMyLocation')}</span>
+              </button>
+            </div>
           </div>
 
           {/* Leaflet Map DOM Container */}
-          <div ref={containerRef} className="h-[440px] sm:h-[540px] w-full" />
+          <div ref={containerRef} className="h-[460px] sm:h-[560px] w-full" />
 
           {/* Map Bottom Hint Banner */}
           <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-cream-warm to-white px-4 py-2.5 border-t border-line text-xs text-ink-muted">
@@ -317,28 +532,9 @@ export default function FieldSelect() {
             <div className="relative flex items-center">
               <div className="absolute start-3 pointer-events-none z-10 flex items-center justify-center">
                 {searching ? (
-                  <div className="relative flex items-center justify-center">
-                    <span className="absolute h-5 w-5 rounded-full bg-leaf/40 animate-ping" />
-                    <Loader2 className="h-4 w-4 animate-spin text-leaf" />
-                  </div>
+                  <Loader2 className="h-4 w-4 animate-spin text-leaf" />
                 ) : (
-                  <div className="relative flex items-center justify-center">
-                    <span className="absolute -inset-1 rounded-full bg-leaf/20 animate-pulse" />
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.22, 1],
-                        rotate: [0, 10, -10, 0],
-                      }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 2.2,
-                        ease: 'easeInOut',
-                      }}
-                      className="relative text-leaf"
-                    >
-                      <Search className="h-4 w-4" aria-hidden />
-                    </motion.div>
-                  </div>
+                  <Search className="h-4 w-4 text-leaf" />
                 )}
               </div>
               <input
@@ -372,7 +568,7 @@ export default function FieldSelect() {
                     <button
                       type="button"
                       className="w-full text-start px-3 py-2 text-xs hover:bg-forest/5 flex items-center gap-2 transition-colors"
-                      onClick={() => flyTo(r.lat, r.lon, 14)}
+                      onClick={() => flyTo(r.lat, r.lon, 14, r.display_name)}
                     >
                       <MapPin size={13} className="text-leaf shrink-0" />
                       <span className="font-semibold text-forest truncate"><bdi>{r.display_name}</bdi></span>
@@ -384,7 +580,7 @@ export default function FieldSelect() {
             {locationNote && <p className="mt-2 text-xs text-amber-dark font-medium">{locationNote}</p>}
           </div>
 
-          {/* Parcel Details & Hectare Calculation Card */}
+          {/* Parcel Details & Hectare Calculation Card (07_Confirm_Field.png) */}
           <div className="card p-5 space-y-4 bg-white">
             <div>
               <label className="label text-xs uppercase tracking-wider font-mono text-ink-light" htmlFor="field-name">
@@ -420,7 +616,7 @@ export default function FieldSelect() {
                 {areaHa === null
                   ? t('field.areaPending')
                   : isArabic
-                    ? 'المساحة الجيوديسية محسوبة بدقة على السطح الإهليلجي للأرض.'
+                    ? 'المساحة الجيوديسية محسوبة بدقة على السطح الإهليلجي للأرض (WGS84).'
                     : 'Geodesic area calculated across WGS84 Earth ellipsoid.'}
               </p>
             </div>

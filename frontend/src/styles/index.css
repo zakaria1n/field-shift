@@ -261,6 +261,71 @@ body {
   animation: pulse-subtle 3s ease-in-out infinite;
 }
 
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(34, 158, 101, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(34, 158, 101, 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0.5deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+@keyframes draw-polygon-stroke {
+  from {
+    stroke-dashoffset: 1200;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-polygon {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: draw-polygon-stroke 2.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glass & Dark Theme Helpers */
+.bg-forest-glass {
+  background: rgba(14, 41, 33, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bg-forest-header {
+  background: linear-gradient(180deg, #071913 0%, #0A2018 100%);
+}
+
+.border-forest-line {
+  border-color: rgba(188, 230, 206, 0.15);
+}
+
+.card-dark-glass {
+  background: rgba(8, 26, 21, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(188, 230, 206, 0.18);
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+}
+
 /* RTL Helpers */
 [dir="rtl"] .rtl-flip {
   transform: scaleX(-1);

@@ -51,5 +51,6 @@ docs/
 references/
 scripts/
 screenshots/
+frontend/FieldShift_UI_Handoff/
 make_csvs.py
 render_ui.py
