@@ -19,6 +19,7 @@ interface CropVisualProps {
   selected?: boolean
   showFamily?: boolean
   showBadge?: boolean
+  showName?: boolean
   className?: string
   onClick?: () => void
 }
@@ -30,6 +31,7 @@ export function CropVisual({
   selected = false,
   showFamily = false,
   showBadge = true,
+  showName = true,
   className = '',
   onClick,
 }: CropVisualProps) {
@@ -138,9 +140,11 @@ export function CropVisual({
       </div>
 
       {/* Crop Name */}
-      <span className={`font-bold leading-snug tracking-tight ${sizeMap.text}`}>
-        <bdi>{displayName}</bdi>
-      </span>
+      {showName && (
+        <span className={`font-bold leading-snug tracking-tight ${sizeMap.text}`}>
+          <bdi>{displayName}</bdi>
+        </span>
+      )}
 
       {/* Optional Family or Rotation Group Subtext */}
       {showFamily && meta && !isFallow && (
