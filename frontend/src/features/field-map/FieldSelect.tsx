@@ -28,7 +28,7 @@ export default function FieldSelect() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { field, setField } = useWizard()
+  const { field, setField, setFieldId } = useWizard()
   const isArabic = i18n.language === 'ar'
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -190,6 +190,7 @@ export default function FieldSelect() {
     api
       .post<FieldOut>('/api/v1/fields', { name: finalName, geometry })
       .then((created) => {
+        setFieldId(created.field_id)
         queryClient.invalidateQueries({ queryKey: ['dashboard'] })
         navigate(`/setup/questions?field=${created.field_id}`, {
           state: { fieldId: created.field_id, areaHa: created.area_ha },

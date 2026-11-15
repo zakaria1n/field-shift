@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Info,
@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   Sliders,
   Sparkles,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -23,35 +25,45 @@ const KEYS = ['water', 'soil', 'yield', 'risk'] as const
 type Key = (typeof KEYS)[number]
 
 /**
- * Linked priority mixer: the four weights always total exactly 100.
- * Increasing one slider redistributes the remaining weight across the others,
- * preserving their relative proportions (or splitting evenly when all are 0).
+ * Linked priority mixer: the four weights always total exactly 100 with non-negative integers.
+ * Uses the Largest Remainder Method (Hamilton-Hare) to guarantee that every priority
+ * remains an integer >= 0 and <= 100, and their sum equals exactly 100.
  */
 export function rebalance(current: Priorities, changed: Key, nextValue: number): Priorities {
-  const clamped = Math.max(0, Math.min(100, Math.round(nextValue)))
+  const target = Math.max(0, Math.min(100, Math.round(nextValue)))
   const others = KEYS.filter((k) => k !== changed)
-  const remaining = 100 - clamped
-  const othersSum = others.reduce((sum, k) => sum + current[k], 0)
+  const remaining = 100 - target
 
-  const result: Priorities = { ...current, [changed]: clamped } as Priorities
-  if (othersSum === 0) {
-    // Nothing to scale: distribute evenly.
-    for (const k of others) result[k] = Math.floor(remaining / others.length)
-    // Exactness: push the leftover onto the first other key.
-    let assigned = others.reduce((sum, k) => sum + result[k], 0)
-    result[others[0]] += remaining - assigned
-  } else {
-    let assigned = 0
-    others.forEach((k, i) => {
-      if (i === others.length - 1) {
-        result[k] = remaining - assigned
-      } else {
-        const share = Math.round((current[k] / othersSum) * remaining)
-        result[k] = share
-        assigned += share
-      }
-    })
+  if (remaining === 0) {
+    return { water: 0, soil: 0, yield: 0, risk: 0, [changed]: 100 } as Priorities
   }
+
+  const othersSum = others.reduce((s, k) => s + Math.max(0, current[k] || 0), 0)
+
+  let rawShares: number[]
+  if (othersSum === 0) {
+    rawShares = others.map(() => remaining / others.length)
+  } else {
+    rawShares = others.map((k) => (Math.max(0, current[k] || 0) / othersSum) * remaining)
+  }
+
+  const floors = rawShares.map((s) => Math.floor(s))
+  const allocated = floors.reduce((a, b) => a + b, 0)
+  const remainder = remaining - allocated
+
+  // Distribute remainder by largest fractional part (Hamilton-Hare / Largest Remainder)
+  const fractions = rawShares.map((s, idx) => ({ idx, frac: s - floors[idx] }))
+  fractions.sort((a, b) => (b.frac - a.frac !== 0 ? b.frac - a.frac : b.idx - a.idx))
+
+  for (let i = 0; i < remainder; i++) {
+    floors[fractions[i].idx] += 1
+  }
+
+  const result: Priorities = { water: 0, soil: 0, yield: 0, risk: 0, [changed]: target }
+  others.forEach((k, i) => {
+    result[k] = floors[i]
+  })
+
   return result
 }
 
@@ -63,10 +75,20 @@ export default function Priorities() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const { priorities, setPriorities, answers } = useWizard()
+  const [searchParams] = useSearchParams()
+  const { priorities, setPriorities, answers, fieldId: wizardFieldId, setFieldId } = useWizard()
   const isArabic = i18n.language === 'ar'
-  const fieldId = (location.state as { fieldId?: string } | null)?.fieldId
+  const fieldId = (location.state as { fieldId?: string } | null)?.fieldId || searchParams.get('field') || wizardFieldId
   const barRef = useRef<HTMLDivElement>(null)
+
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (fieldId && fieldId !== wizardFieldId) {
+      setFieldId(fieldId)
+    }
+  }, [fieldId, wizardFieldId, setFieldId])
 
   useEffect(() => {
     if (totalOf(priorities) !== 100) setPriorities({ water: 25, soil: 25, yield: 25, risk: 25 })
@@ -152,27 +174,65 @@ export default function Priorities() {
   ]
 
   async function startAnalysis() {
-    const target = fieldId
+    setErrorMessage(null)
+    let id = fieldId || wizardFieldId || searchParams.get('field')
+    if (!id) {
+      try {
+        const dashboard = await api.get<Array<{ field_id: string }>>('/api/v1/dashboard')
+        if (dashboard && dashboard.length > 0) {
+          id = dashboard[0].field_id
+          setFieldId(id)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!id) {
+      setErrorMessage(isArabic ? 'يرجى تحديد حقل أولاً للمتابعة' : 'Please select or draw a field first.')
+      return
+    }
+
+    // Ensure priorities total exactly 100 with non-negative integers
+    const normalizedPriorities = rebalance(priorities, 'water', priorities.water)
+    setPriorities(normalizedPriorities)
+
+    setSubmitting(true)
     try {
-      let id = target
-      if (!id) return
-      const historyPayload = answers.crop_history.filter(
-        (r) => r.status === 'planted' || r.status === 'fallow' || r.status === 'unknown',
-      )
+      const isIrrigatedOrMixed = answers.irrigation_type === 'irrigated' || answers.irrigation_type === 'mixed'
       await api.put(`/api/v1/fields/${id}/profile`, {
         irrigation_type: answers.irrigation_type,
-        irrigation_method: answers.irrigation_type === 'rainfed' ? null : answers.irrigation_method,
-        water_availability: answers.irrigation_type === 'rainfed' ? null : answers.water_availability,
+        irrigation_method: isIrrigatedOrMixed ? answers.irrigation_method : null,
+        water_availability: isIrrigatedOrMixed ? answers.water_availability : null,
         water_volume_note: answers.water_volume_note,
         purposes: answers.purposes,
-        priorities,
+        priorities: {
+          water: normalizedPriorities.water,
+          soil: normalizedPriorities.soil,
+          yield: normalizedPriorities.yield,
+          risk: normalizedPriorities.risk,
+        },
         constraints: answers.banned_crops.length > 0 ? { banned_crops: answers.banned_crops } : null,
       })
+
+      // Sanitize crop history: if planted without crop_id, convert to unknown to avoid 422
+      const historyPayload = answers.crop_history
+        .map((r) => {
+          if (r.status === 'planted' && (!r.crop_id || !r.crop_id.trim())) {
+            return { ...r, status: 'unknown' as const, crop_id: null }
+          }
+          return r
+        })
+        .filter((r) => r.status === 'planted' || r.status === 'fallow' || r.status === 'unknown')
+
       await api.put(`/api/v1/fields/${id}/crop-history`, historyPayload)
       const job = await api.post<{ job_id: string; status: string }>(`/api/v1/fields/${id}/analyses`, {})
       navigate(`/analyses/${job.job_id}/progress`, { state: { fieldId: id } })
-    } catch (err) {
-      navigate('/setup/questions', { state: { fieldId: target } })
+    } catch (err: any) {
+      console.error('Failed to start analysis:', err)
+      setSubmitting(false)
+      const msg = err?.message || (err instanceof Error ? err.message : t('error.generic'))
+      setErrorMessage(msg)
     }
   }
 
@@ -336,13 +396,26 @@ export default function Priorities() {
         </div>
       </div>
 
+      {/* Error Feedback Message if Submission Failed */}
+      {errorMessage && (
+        <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-xs text-red-700 flex items-start gap-3 shadow-sm animate-fade-in">
+          <AlertCircle size={18} className="text-red-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-bold text-sm text-red-800">
+              {isArabic ? 'تعذر بدء التحليل' : 'Failed to start field analysis'}
+            </p>
+            <p className="mt-1 text-red-600 leading-relaxed">{errorMessage}</p>
+          </div>
+        </div>
+      )}
+
       {/* Action Footer */}
       <div className="flex items-center justify-between pt-2">
         <button
           type="button"
           className="btn-secondary flex items-center gap-2 px-6"
           onClick={() =>
-            navigate('/setup/questions', { state: fieldId ? { fieldId } : undefined })
+            navigate(`/setup/questions${fieldId ? `?field=${fieldId}` : ''}`, { state: fieldId ? { fieldId } : undefined })
           }
         >
           <ArrowLeft className="rtl:rotate-180" size={16} />
@@ -351,13 +424,22 @@ export default function Priorities() {
 
         <button
           type="button"
-          className="btn-leaf flex items-center gap-2.5 px-9 py-3 text-sm shadow-lg group"
-          disabled={totalOf(priorities) !== 100}
+          className="btn-leaf flex items-center gap-2.5 px-9 py-3 text-sm shadow-lg group disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={totalOf(priorities) !== 100 || submitting}
           onClick={startAnalysis}
         >
-          <Sparkles size={16} className="text-mint animate-pulse" />
-          <span>{t('analysis.start')}</span>
-          <ArrowRight className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" size={17} />
+          {submitting ? (
+            <>
+              <Loader2 size={16} className="text-mint animate-spin" />
+              <span>{isArabic ? 'جاري التحضير...' : 'Starting analysis...'}</span>
+            </>
+          ) : (
+            <>
+              <Sparkles size={16} className="text-mint animate-pulse" />
+              <span>{t('analysis.start')}</span>
+              <ArrowRight className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" size={17} />
+            </>
+          )}
         </button>
       </div>
     </motion.div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -40,11 +40,18 @@ export default function Questions() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const { answers, setAnswers } = useWizard()
+  const [searchParams] = useSearchParams()
+  const { answers, setAnswers, fieldId: wizardFieldId, setFieldId } = useWizard()
   const isArabic = i18n.language === 'ar'
 
   const [step, setStep] = useState<Step>(0)
-  const fieldId = (location.state as { fieldId?: string } | null)?.fieldId
+  const fieldId = (location.state as { fieldId?: string } | null)?.fieldId || searchParams.get('field') || wizardFieldId
+
+  useEffect(() => {
+    if (fieldId && fieldId !== wizardFieldId) {
+      setFieldId(fieldId)
+    }
+  }, [fieldId, wizardFieldId, setFieldId])
 
   const { data: catalog } = useQuery({
     queryKey: ['crops'],
@@ -73,8 +80,13 @@ export default function Questions() {
   const set = (patch: Partial<typeof answers>) => setAnswers({ ...answers, ...patch })
 
   function goNext() {
-    if (step < 3) setStep((s) => (s + 1) as Step)
-    else navigate('/setup/priorities', { state: fieldId ? { fieldId } : undefined })
+    if (step < 3) {
+      setStep((s) => (s + 1) as Step)
+    } else {
+      navigate(`/setup/priorities${fieldId ? `?field=${fieldId}` : ''}`, {
+        state: fieldId ? { fieldId } : undefined,
+      })
+    }
   }
   function goBack() {
     if (step > 0) setStep((s) => (s - 1) as Step)
@@ -364,10 +376,11 @@ export default function Questions() {
                           onClick={() => {
                             const globalIdx = answers.crop_history.findIndex((r) => r.crop_year === year)
                             const copy = [...answers.crop_history]
+                            const defaultCrop = crops[0]?.crop_id ?? 'bread_wheat'
                             copy.splice(globalIdx, 0, {
                               crop_year: year,
                               season_label: null,
-                              crop_id: null,
+                              crop_id: defaultCrop,
                               status: 'planted',
                             })
                             set({ crop_history: copy })
