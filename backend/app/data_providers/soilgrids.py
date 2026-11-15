@@ -268,14 +268,52 @@ def fetch_soil(session: Session, lat: float, lon: float, geometry: dict | None =
                         "bounded neighborhood around the field centroid"
                     )
             n_valid = len(values)
+
+            # Proxy classification: when no sampled pixel is provably inside
+            # the drawn boundary, the result is a NEARBY-PROXY estimate, not a
+            # direct field sample. Record distance, coverage, method and
+            # confidence so consumers can keep it out of hard constraints.
+            proxy = mode != "polygon"
+            proxy_distance_km = None
+            if proxy and values:
+                from pyproj import Geod
+                geod = Geod(ellps="WGS84")
+                dists = []
+                for col_i, row_i in zip(cols, rows):
+                    px_lon, px_lat = inverse_transformer.transform(
+                        index.origin_x + (col_i + 0.5) * index.res_x,
+                        index.origin_y + (row_i + 0.5) * index.res_y,
+                    )
+                    dists.append(geod.inv(lon, lat, px_lon, px_lat)[2] / 1000.0)
+                proxy_distance_km = {
+                    "mean": round(sum(dists) / len(dists), 2),
+                    "max": round(max(dists), 2),
+                }
+            valid_ratio = (n_valid / n_total) if n_total else 0.0
+            if proxy:
+                confidence = "low"
+            elif valid_ratio >= 0.5:
+                confidence = "moderate"
+            else:
+                confidence = "low"
             common_meta = {
                 "depth": DEPTH,
                 "statistic": STATISTIC,
                 "n_valid_pixels": n_valid,
                 "n_total_pixels": n_total,
                 "sample_mode": mode,
+                "proxy": proxy,
+                "confidence": confidence,
+                "valid_coverage": round(valid_ratio, 3),
                 "docs_url": "https://www.isric.org/explore/soilgrids",
             }
+            if proxy:
+                common_meta["proxy_distance_km"] = proxy_distance_km
+                common_meta["proxy_note"] = (
+                    "nearby-proxy estimate: sampled pixels are outside the drawn "
+                    "polygon; use as indicative context only, not as a direct "
+                    "field measurement or a hard agronomic constraint"
+                )
             if n_valid:
                 extra = {"fallback_note": fallback_note} if fallback_note else {}
                 observations.append(obs(

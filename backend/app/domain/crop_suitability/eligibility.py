@@ -35,6 +35,8 @@ class FieldContext:
     banned_crop_ids: list[str] = dc_field(default_factory=list)
     purposes: list[str] = dc_field(default_factory=list)
     soil_ph: float | None = None  # None when soil estimates unavailable
+    soil_ph_provenance: dict = dc_field(default_factory=dict)  # sample_mode/proxy/confidence
+    monthly_mean_temp_c_filled: bool = False  # True when verified monthly means are available
     country_iso2: str | None = None
 
 
@@ -177,6 +179,16 @@ def evaluate_crop(crop: CropTraits, ctx: FieldContext) -> CropEligibilityResult:
     if ctx.soil_ph is None:
         notes_en.append("Soil pH estimate unavailable; soil fit not assessed.")
         notes_ar.append("تقدير pH التربة غير متوفر؛ لم يُقيَّم ملاءمة التربة.")
+    elif ctx.soil_ph_provenance.get("proxy"):
+        notes_en.append(
+            "Soil pH is a nearby-proxy estimate (sampled outside the drawn "
+            "polygon): it informs suitability as soft context only and is "
+            "never used as a hard constraint."
+        )
+        notes_ar.append(
+            "قيمة pH التربة تقدير من جوار الأرض (خارج الحدود المرسومة): "
+            "تُستخدم كمؤشر سياقي فقط وليست قيدًا صارمًا."
+        )
 
     if crop.is_provisional_data:
         notes_en.append("Trait ranges come from the team's provisional reference table and are not independently validated.")
