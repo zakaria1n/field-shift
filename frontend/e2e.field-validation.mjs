@@ -78,8 +78,8 @@ try{
   summary.rotations=await get(`/api/v1/fields/${fid}/rotations`)
   assert(summary.rotations.body.rotations.length>0)
   await page.goto(origin+`/fields/${fid}/rotations`,{waitUntil:'networkidle2'})
-  await page.waitForSelector('[data-testid="score-evidence"]')
-  summary.score_evidence=await page.$$eval('[data-testid="score-evidence"]',nodes=>nodes.map(e=>e.textContent))
+  await page.waitForSelector('[data-testid="plan-card"]')
+  assert.equal(await page.$('[data-testid="score-evidence"]'),null)
   if(outage){
     for(const plan of summary.rotations.body.rotations){
       assert.equal(plan.score.indicators.find(i=>i.key==='yield').value,null)
@@ -88,6 +88,67 @@ try{
     }
   }
   await page.screenshot({path:path.join(out,`${mode}_recommendations.png`),fullPage:true})
+  if(process.env.E2E_PLAN_CARDS==='1'){
+    const visualOut=path.join(root,'docs/verification/plan-cards')
+    await fs.mkdir(visualOut,{recursive:true})
+    const ar=JSON.parse(await fs.readFile(path.join(root,'frontend/src/i18n/ar.json'),'utf8'))
+    await button('العربية');await pause(700)
+    const cards=await page.$$eval('[data-testid="plan-card"]',nodes=>nodes.map(node=>{
+      const r=node.getBoundingClientRect()
+      return {id:node.dataset.planId,total:node.querySelector('[data-testid="plan-total"]').textContent,
+        values:[...node.querySelectorAll('[data-indicator-key]')].map(i=>({key:i.dataset.indicatorKey,value:i.dataset.value})),
+        crops:[...node.querySelectorAll('[data-crop-id]')].map(s=>({id:s.dataset.cropId,year:Number(s.dataset.year)})),
+        warnings:node.querySelectorAll('[data-testid="plan-warning"]').length,height:r.height,top:r.top,
+        bars:[...node.querySelectorAll('[role="img"]')].map(e=>e.getBoundingClientRect().top),
+        footer:node.querySelector('a').getBoundingClientRect().top}
+    }))
+    assert.equal(cards.length,summary.rotations.body.rotations.length)
+    for(const card of cards){
+      const plan=summary.rotations.body.rotations.find(p=>p.plan_id===card.id)
+      assert(card.total.includes(plan.score.total.toFixed(1)))
+      assert.deepEqual(card.crops,plan.slots.map(s=>({id:s.crop_id??'',year:s.year_number})))
+      for(const indicator of plan.score.indicators)assert.equal(card.values.find(i=>i.key===indicator.key).value,String(indicator.value??'missing'))
+      assert.equal(card.warnings,plan.main_limitation_ar||plan.main_limitation_en?1:0)
+    }
+    assert(Math.max(...cards.map(c=>c.height))-Math.min(...cards.map(c=>c.height))<2)
+    for(let i=0;i<4;i++)assert(Math.max(...cards.map(c=>c.bars[i]))-Math.min(...cards.map(c=>c.bars[i]))<2,'Indicator bars must align')
+    await page.screenshot({path:path.join(visualOut,'Plans_Desktop_AR.png'),fullPage:true})
+    const first=summary.rotations.body.rotations[0]
+    await page.click(`[data-plan-id="${first.plan_id}"] a[href="/rotations/${first.plan_id}"]`)
+    await page.waitForSelector('[data-testid="score-calculation"]')
+    await pause(600)
+    assert(await page.$('[data-testid="score-evidence"]'))
+    const details=await page.$eval('main',e=>e.textContent)
+    for(const note of first.evidence.notes)assert(details.includes(note),'Full evidence note missing')
+    for(const rule of first.evidence.rule_ids)assert(details.includes(rule),'Rule reference missing')
+    for(const gap of first.evidence.missing_information)assert(details.includes(gap),'Missing-data note missing')
+    assert(details.includes(first.main_limitation_ar||first.main_limitation_en||''))
+    await page.screenshot({path:path.join(visualOut,'Plan_Details_AR.png'),fullPage:true})
+    await page.click(`a[href="/rotations/${first.plan_id}/customize"]`)
+    await page.waitForFunction(text=>document.querySelector('h1')?.textContent.includes(text),{},ar['customize.title'])
+    assert.equal(new URL(page.url()).pathname,`/rotations/${first.plan_id}/customize`)
+    await page.goto(origin+`/fields/${fid}/rotations`,{waitUntil:'networkidle2'})
+    await page.setViewport({width:390,height:844,deviceScaleFactor:1});await pause(700)
+    assert.equal(await page.$$eval('[data-testid="plan-card"]',n=>n.length),3)
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile page overflows')
+    await page.screenshot({path:path.join(visualOut,'Plans_Mobile_AR.png'),fullPage:true})
+    await page.setViewport({width:320,height:740,deviceScaleFactor:1});await pause(600)
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Narrow mobile page overflows')
+    await page.screenshot({path:path.join(visualOut,'Plans_Mobile_320_AR.png'),fullPage:true})
+    await page.setViewport({width:390,height:844,deviceScaleFactor:1});await pause(400)
+    await page.click(`[data-plan-id="${first.plan_id}"] a[href="/rotations/${first.plan_id}"]`)
+    await page.waitForSelector('[data-testid="score-calculation"]')
+    await pause(600)
+    summary.mobileDetailsLayout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+      overflow:[...document.querySelectorAll('main *')].map(e=>{const r=e.getBoundingClientRect();return {tag:e.tagName,class:e.className,left:r.left,right:r.right,width:r.width}}).filter(r=>r.left<-.5||r.right>innerWidth+.5).slice(0,20)}))
+    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Mobile details overflow')
+    await page.screenshot({path:path.join(visualOut,'Plan_Details_Mobile_AR.png'),fullPage:true})
+    await page.goto(origin+`/fields/${fid}/rotations`,{waitUntil:'networkidle2'})
+    await page.click(`[data-plan-id="${first.plan_id}"] a[href="/rotations/${first.plan_id}/customize"]`)
+    await page.waitForFunction(text=>document.querySelector('h1')?.textContent.includes(text),{},ar['customize.title'])
+    summary.cardsVerification={cards,detailsAndCustomize:true,desktopRTL:true,mobileRTL:true}
+    await page.setViewport({width:1600,height:1100,deviceScaleFactor:1})
+  }
   summary.insights=await get(`/api/v1/fields/${fid}/insights`)
   await page.goto(origin+`/fields/${fid}/insights`,{waitUntil:'networkidle2'})
   await page.waitForFunction(()=>document.body.textContent.includes('ISRIC SoilGrids'))

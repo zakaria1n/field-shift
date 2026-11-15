@@ -20,6 +20,7 @@ import { api, type RotationOut } from '../../api/client'
 import { CropVisual } from '../../app/components/CropVisual'
 import { IndicatorRow } from '../../app/components/ui'
 import { ScoreEvidence } from '../../app/components/ScoreEvidence'
+import { ScoreCalculation } from './ScoreCalculation'
 import { useWizard } from '../../state/wizard'
 
 const INDICATOR_KEYS = ['water', 'soil', 'yield', 'risk'] as const
@@ -61,7 +62,7 @@ export default function PlanDetails() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="mx-auto max-w-4xl space-y-6"
+      className="mx-auto min-w-0 max-w-4xl space-y-6 [overflow-wrap:anywhere]"
     >
       {/* Back button */}
       <button
@@ -77,7 +78,7 @@ export default function PlanDetails() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
-            {plan.label}
+            <bdi>{plan.label}</bdi>
           </h1>
           <span className="chip font-mono text-xs">
             {t('plan.years', { n: plan.horizon_years })}
@@ -97,12 +98,9 @@ export default function PlanDetails() {
           <div className="flex items-center gap-2">
             <Calendar size={16} className="text-leaf" />
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-forest font-mono">
-              {t('customize.sequence')} · {plan.horizon_years} Years
+              {t('customize.sequence')} · {t('plan.years', { n: plan.horizon_years })}
             </h2>
           </div>
-          <span className="text-xs font-mono text-ink-light font-bold">
-            NASA POWER & SoilGrids Aligned
-          </span>
         </div>
 
         {/* 3 Large Botanical Crop Cards connected by arrows */}
@@ -132,6 +130,11 @@ export default function PlanDetails() {
                     <span className="font-bold text-forest">{t('insights.harvest')}: </span>
                     <bdi>{slot.planting_window.harvest_months.join('–')}</bdi>
                   </p>
+                  {slot.planting_window.source?.url && /^https?:\/\//.test(slot.planting_window.source.url) && <a
+                    href={slot.planting_window.source.url} target="_blank" rel="noreferrer"
+                    className="mt-2 block break-words text-sky-deep underline">
+                    <bdi>{slot.planting_window.source.name || t('plan.calendarSource')}</bdi>
+                  </a>}
                 </div>
               )}
 
@@ -152,7 +155,7 @@ export default function PlanDetails() {
       {/* Two-Column Deep Dive: Strategic Rationale vs Evidence & Limitations */}
       <div className="grid gap-6 md:grid-cols-2 items-start">
         {/* Left Card: Strategic Summary & Scored Indices */}
-        <div className="card p-6 bg-white border border-line space-y-4">
+        <div className="card min-w-0 p-6 bg-white border border-line space-y-4">
           <h2 className="text-xs font-extrabold uppercase tracking-wider text-ink-light font-mono flex items-center gap-1.5">
             <Compass size={14} className="text-leaf" /> {t('plan.why')}
           </h2>
@@ -163,7 +166,7 @@ export default function PlanDetails() {
 
           <div className="pt-3 border-t border-line space-y-3">
             <span className="text-[11px] font-bold uppercase tracking-wider text-ink-light font-mono block">
-              Multi-Objective Evaluated Indices
+              {t('plans.indicators')}
             </span>
             {INDICATOR_KEYS.map((key) => {
               const ind = plan.score.indicators.find((i) => i.key === key)
@@ -174,7 +177,7 @@ export default function PlanDetails() {
                   label={lang === 'ar' ? ind.label_ar : ind.label_en}
                   value={ind.value}
                   status={ind.status}
-                  weight={Math.round((plan.score.weights_applied[key] ?? 0) * 100)}
+                  weight={Number(((plan.score.weights_applied[key] ?? 0) * 100).toFixed(2))}
                 />
               )
             })}
@@ -191,17 +194,17 @@ export default function PlanDetails() {
         </div>
 
         {/* Right Card: Limitations & Evidence Rule IDs */}
-        <div className="card p-6 bg-white border border-line space-y-4">
+        <div className="card min-w-0 p-6 bg-white border border-line space-y-4">
           <h2 className="text-xs font-extrabold uppercase tracking-wider text-ink-light font-mono flex items-center gap-1.5">
             <ShieldAlert size={14} className="text-amber-dark" /> {t('plan.limitation')}
           </h2>
 
-          <div className="rounded-2xl border border-amber/40 bg-amber-soft p-3.5 flex items-start gap-2.5 text-xs text-ink-muted leading-relaxed">
+          {(plan.main_limitation_ar || plan.main_limitation_en) && <div className="rounded-2xl border border-amber/40 bg-amber-soft p-3.5 flex items-start gap-2.5 text-xs text-ink-muted leading-relaxed">
             <TriangleAlert size={16} className="text-amber-dark shrink-0 mt-0.5" />
             <p>
               <bdi>{(lang === 'ar' ? plan.main_limitation_ar : plan.main_limitation_en) ?? t('common.unknown')}</bdi>
             </p>
-          </div>
+          </div>}
 
           {/* Scientific Provenance Rule IDs */}
           <div className="pt-2">
@@ -215,10 +218,10 @@ export default function PlanDetails() {
                   <bdi>{s}</bdi>
                 </span>
               ))}
-              {plan.evidence.rule_ids.slice(0, 6).map((r) => (
+              {plan.evidence.rule_ids.map((r) => (
                 <span
                   key={r}
-                  className="rounded-full bg-cream-warm border border-line px-2.5 py-0.5 text-[10px] font-mono text-ink-muted font-bold"
+                  className="max-w-full rounded-full bg-cream-warm border border-line px-2.5 py-0.5 text-[10px] font-mono text-ink-muted font-bold"
                 >
                   <bdi>{r}</bdi>
                 </span>
@@ -226,7 +229,7 @@ export default function PlanDetails() {
             </div>
 
             <ul className="mt-3 space-y-1.5 text-xs text-ink-muted list-disc ps-4">
-              {plan.evidence.notes.slice(0, 4).map((note, i) => (
+              {plan.evidence.notes.map((note, i) => (
                 <li key={i}>
                   <bdi>{note}</bdi>
                 </li>
@@ -235,7 +238,7 @@ export default function PlanDetails() {
 
             {plan.evidence.missing_information.length > 0 && (
               <p className="mt-3 rounded-xl bg-amber-soft border border-amber/30 p-2.5 text-[11px] text-amber-dark font-medium">
-                {t('status.missing')}: {plan.evidence.missing_information.join(', ')}
+                {t('status.missing')}: <bdi>{plan.evidence.missing_information.join(', ')}</bdi>
               </p>
             )}
 
@@ -247,9 +250,11 @@ export default function PlanDetails() {
         </div>
       </div>
 
+      <ScoreCalculation score={plan.score} />
+
       {/* Action Dock */}
       <div className="card p-4 sm:p-5 bg-white border border-line flex flex-wrap items-center justify-between gap-3 shadow-md">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             to={`/rotations/${plan.plan_id}/confirmation`}
             className="btn-leaf text-sm px-8 py-3 shadow-md"

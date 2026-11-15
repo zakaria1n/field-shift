@@ -53,11 +53,13 @@ export function IndicatorRow({
   value,
   status,
   weight,
+  compact = false,
 }: {
   label: string
   value: number | null
   status: string
   weight?: number
+  compact?: boolean
 }) {
   const { t } = useTranslation()
   const pct = value === null ? 0 : Math.round(value * 100)
@@ -72,11 +74,11 @@ export function IndicatorRow({
 
   return (
     <div className="group">
-      <div className="flex items-center justify-between text-xs mb-1.5">
-        <span className="font-semibold text-ink-muted group-hover:text-forest transition-colors">
+      <div className={`flex items-center justify-between gap-2 text-xs mb-1.5 ${compact ? 'min-h-8' : ''}`}>
+        <span className="min-w-0 font-semibold text-ink-muted group-hover:text-forest transition-colors">
           {label}
         </span>
-        <div className="flex items-center gap-1.5 font-mono">
+        <div dir="ltr" className="flex shrink-0 items-center gap-1.5 font-mono tabular-nums">
           {weight !== undefined && (
             <span className="text-[10px] text-ink-light font-normal">
               ({weight}%)
@@ -84,7 +86,7 @@ export function IndicatorRow({
           )}
           {value === null ? (
             <span className="text-amber-dark font-bold text-[11px] bg-amber-soft px-1.5 py-0.5 rounded">
-              {t('plan.indicators.unavailable')}
+              {t(compact ? 'status.missing' : 'plan.indicators.unavailable')}
             </span>
           ) : (
             <span className="font-bold text-forest text-xs">{pct}%</span>
