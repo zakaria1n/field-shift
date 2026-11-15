@@ -46,7 +46,7 @@ export default function WizardShell() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-line shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-6">
-            <Link to={hasFarm ? '/home' : '/welcome'} className="group flex items-center gap-2.5">
+            <Link to="/welcome" className="group flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-forest to-forest-surface text-white shadow-sm group-hover:bg-leaf transition-colors">
                 <Sprout size={20} />
               </span>
