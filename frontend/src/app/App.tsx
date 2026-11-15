@@ -30,7 +30,8 @@ function RootRedirect() {
     staleTime: 10_000,
   })
   if (isLoading) return null
-  if (data && data.length > 0) return <Navigate to="/home" replace />
+  const hasSavedPlan = Boolean(data?.some((f) => Boolean(f.active_plan)))
+  if (hasSavedPlan) return <Navigate to="/home" replace />
   return <Navigate to="/welcome" replace />
 }
 

@@ -11,14 +11,14 @@ export default function AppShell() {
   const { t } = useTranslation()
   const location = useLocation()
 
-  // Only display navigation links if a saved farm exists in this browser
+  // Only display navigation links if an adopted rotation plan actually exists
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api.get<DashboardItem[]>('/api/v1/dashboard'),
     staleTime: 10_000,
     retry: 0,
   })
-  const hasFarm = (dashboard?.length ?? 0) > 0
+  const hasSavedPlan = Boolean(dashboard?.some((f) => Boolean(f.active_plan)))
 
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home },
@@ -48,8 +48,8 @@ export default function AppShell() {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links ONLY when a farm is saved */}
-            {hasFarm && (
+            {/* Desktop Navigation Links ONLY when a rotation plan is actually saved */}
+            {hasSavedPlan && (
               <nav className="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
                 {nav.map((item) => {
                   const active = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
@@ -84,8 +84,8 @@ export default function AppShell() {
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Navigation Bar ONLY when a farm is saved */}
-      {hasFarm && (
+      {/* Mobile Bottom Navigation Bar ONLY when a rotation plan is actually saved */}
+      {hasSavedPlan && (
         <nav
           className="md:hidden fixed bottom-0 start-0 end-0 z-40 bg-white/95 backdrop-blur-lg border-t border-line shadow-lg px-2 py-1.5"
           aria-label="Mobile Navigation"

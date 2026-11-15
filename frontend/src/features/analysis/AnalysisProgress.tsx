@@ -13,6 +13,8 @@ import {
   Sparkles,
   Radio,
   RotateCcw,
+  Radar,
+  Search,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -63,12 +65,29 @@ export default function AnalysisProgress() {
   const sourceStatus = (id: string): string =>
     job?.sources.find((s) => s.source_id === id)?.status ?? 'pending'
 
-  const stageIcon = (status: string) => {
+  const stageIcon = (status: string, stageKey?: string) => {
     if (status === 'complete') return <CheckCircle2 size={19} className="text-leaf" />
-    if (status === 'running') return <Loader2 size={19} className="animate-spin text-sky" />
+    if (status === 'running') {
+      return (
+        <div className="relative flex items-center justify-center">
+          <span className="absolute h-5 w-5 rounded-full bg-leaf/40 animate-ping" />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+            className="relative text-leaf"
+          >
+            {stageKey === 'rotation' ? <Radar size={19} /> : <Loader2 size={19} />}
+          </motion.div>
+        </div>
+      )
+    }
     if (status === 'failed') return <XCircle size={19} className="text-red-600" />
     if (status === 'skipped') return <TriangleAlert size={19} className="text-amber-dark" />
-    return <CircleDashed size={19} className="text-ink-light/40" />
+    return (
+      <div className="relative flex items-center justify-center">
+        <CircleDashed size={19} className="text-ink-light/40" />
+      </div>
+    )
   }
 
   const stageDescriptions: Record<string, { en: string; ar: string }> = {
@@ -162,7 +181,7 @@ export default function AnalysisProgress() {
                         : 'opacity-65'
                   }`}
                 >
-                  <span className="mt-0.5 shrink-0">{stageIcon(status)}</span>
+                  <span className="mt-0.5 shrink-0">{stageIcon(status, key)}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p

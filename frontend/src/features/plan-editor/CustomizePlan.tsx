@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   Calendar,
+  Search,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -41,6 +42,7 @@ export default function CustomizePlan() {
 
   const [edits, setEdits] = useState<Record<string, string | null>>({})
   const [openSlot, setOpenSlot] = useState<string | null>(null)
+  const [candidateSearch, setCandidateSearch] = useState('')
 
   const editedSlots: SlotOut[] = useMemo(() => {
     if (!plan) return []
@@ -236,9 +238,53 @@ export default function CustomizePlan() {
                 </button>
               </div>
 
+              {/* Substitute Search Filter with Animated Search Icon */}
+              <div className="relative flex items-center mt-3">
+                <div className="absolute start-3 pointer-events-none z-10 flex items-center justify-center">
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute -inset-1 rounded-full bg-leaf/25 animate-ping" style={{ animationDuration: '2.5s' }} />
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], rotate: [0, 8, -8, 0] }}
+                      transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
+                      className="relative text-leaf"
+                    >
+                      <Search size={14} />
+                    </motion.div>
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={candidateSearch}
+                  onChange={(e) => setCandidateSearch(e.target.value)}
+                  placeholder={isArabic ? 'ابحث عن محصول بديل مؤهل...' : 'Filter eligible substitute crops...'}
+                  className="input text-xs !py-1.5 w-full"
+                  style={{ paddingInlineStart: '2.4rem', paddingInlineEnd: candidateSearch ? '2rem' : '0.75rem' }}
+                />
+                {candidateSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCandidateSearch('')}
+                    className="absolute end-2.5 text-xs text-ink/40 hover:text-ink"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
               {/* Eligible Candidates Grid */}
               <ul className="mt-3 grid gap-3 sm:grid-cols-2 max-h-72 overflow-y-auto p-1">
-                {(subs?.candidates ?? []).map((cand) => {
+                {(subs?.candidates ?? [])
+                  .filter((cand) => {
+                    if (!candidateSearch.trim()) return true
+                    const q = candidateSearch.toLowerCase().trim()
+                    return (
+                      cand.name_en.toLowerCase().includes(q) ||
+                      cand.name_ar.toLowerCase().includes(q) ||
+                      cand.crop_id.toLowerCase().includes(q) ||
+                      cand.rotation_group?.toLowerCase().includes(q)
+                    )
+                  })
+                  .map((cand) => {
                   const meta = getCropAsset(cand.crop_id)
                   return (
                     <li

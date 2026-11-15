@@ -303,14 +303,28 @@ export default function FieldSelect() {
             <div className="relative flex items-center">
               <div className="absolute start-3 pointer-events-none z-10 flex items-center justify-center">
                 {searching ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-leaf" />
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute h-5 w-5 rounded-full bg-leaf/40 animate-ping" />
+                    <Loader2 className="h-4 w-4 animate-spin text-leaf" />
+                  </div>
                 ) : (
-                  <motion.div
-                    animate={{ scale: [1, 1.18, 1], rotate: [0, 4, -4, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                  >
-                    <Search className="h-4 w-4 text-leaf" aria-hidden />
-                  </motion.div>
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute -inset-1 rounded-full bg-leaf/20 animate-pulse" />
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.22, 1],
+                        rotate: [0, 10, -10, 0],
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 2.2,
+                        ease: 'easeInOut',
+                      }}
+                      className="relative text-leaf"
+                    >
+                      <Search className="h-4 w-4" aria-hidden />
+                    </motion.div>
+                  </div>
                 )}
               </div>
               <input

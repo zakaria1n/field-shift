@@ -13,14 +13,14 @@ export default function WizardShell() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Only display navigation links if a saved farm exists in this browser
+  // Only display navigation links if an adopted rotation plan actually exists
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => api.get<DashboardItem[]>('/api/v1/dashboard'),
     staleTime: 10_000,
     retry: 0,
   })
-  const hasFarm = (dashboard?.length ?? 0) > 0
+  const hasSavedPlan = Boolean(dashboard?.some((f) => Boolean(f.active_plan)))
 
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home },
@@ -39,6 +39,10 @@ export default function WizardShell() {
   const isAnalysisRoute = location.pathname.startsWith('/analyses/')
   const isPlansRoute = location.pathname.includes('/rotations')
   const step = isAnalysisRoute ? 4 : isPlansRoute ? 5 : (stepFor[location.pathname] ?? 0)
+
+  // Navigation items are ONLY shown on the Welcome page (step === 0) AND ONLY if a rotation plan has already been saved.
+  // During any wizard step (1 to 5), nav links are completely hidden to prevent premature navigation to empty pages.
+  const showNav = step === 0 && hasSavedPlan
 
   return (
     <div className="flex min-h-screen flex-col bg-cream text-ink">
@@ -60,8 +64,8 @@ export default function WizardShell() {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links ONLY when the farmer has an active saved farm */}
-            {hasFarm && (
+            {/* Desktop Navigation Links ONLY when on /welcome AND a rotation plan is already saved */}
+            {showNav && (
               <nav className="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
                 {nav.map((item) => {
                   const active = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
