@@ -2,17 +2,37 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { CircleHelp, Plus, Trash2 } from 'lucide-react'
+import {
+  CircleHelp,
+  Plus,
+  Trash2,
+  Droplets,
+  CloudRain,
+  Shuffle,
+  HelpCircle,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Wheat,
+  ShieldAlert,
+  Sprout,
+  Store,
+  Beef,
+  Utensils,
+  Leaf,
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { api, type CropOut } from '../../api/client'
 import { useWizard, type CropHistoryRow } from '../../state/wizard'
+import { CropVisual } from '../../app/components/CropVisual'
+import { getCropAsset } from '../../assets/crops/cropRegistry'
 
 type Step = 0 | 1 | 2 | 3
 const TOTAL = 4
 
 function nextYears(n: number): number[] {
   const y = new Date().getFullYear()
-  // oldest first so the history reads chronologically
   return Array.from({ length: n }, (_, i) => y - n + i)
 }
 
@@ -21,6 +41,7 @@ export default function Questions() {
   const navigate = useNavigate()
   const location = useLocation()
   const { answers, setAnswers } = useWizard()
+  const isArabic = i18n.language === 'ar'
 
   const [step, setStep] = useState<Step>(0)
   const fieldId = (location.state as { fieldId?: string } | null)?.fieldId
@@ -36,7 +57,15 @@ export default function Questions() {
 
   useEffect(() => {
     if (answers.crop_history.length === 0) {
-      setAnswers({ ...answers, crop_history: years.map((y) => ({ crop_year: y, season_label: 'main', crop_id: null, status: 'unknown' as const })) })
+      setAnswers({
+        ...answers,
+        crop_history: years.map((y) => ({
+          crop_year: y,
+          season_label: 'main',
+          crop_id: null,
+          status: 'unknown' as const,
+        })),
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -52,239 +81,523 @@ export default function Questions() {
     else navigate('/fields/new')
   }
 
-  const irrigationOptions = [
-    { value: 'rainfed', label: t('q.irrigation.rainfed') },
-    { value: 'irrigated', label: t('q.irrigation.irrigated') },
-    { value: 'mixed', label: t('q.irrigation.mixed') },
-    { value: 'unknown', label: t('q.irrigation.unknown') },
+  const irrigationCards = [
+    {
+      value: 'rainfed',
+      label: t('q.irrigation.rainfed'),
+      desc: isArabic ? 'تعتمد حصرياً على الأمطار الموسمية' : 'Dependent on seasonal rainfall alone',
+      icon: CloudRain,
+      color: 'text-sky',
+    },
+    {
+      value: 'irrigated',
+      label: t('q.irrigation.irrigated'),
+      desc: isArabic ? 'نظام ري تكميلي متوفر بانتظام' : 'Equipped with active irrigation infrastructure',
+      icon: Droplets,
+      color: 'text-leaf',
+    },
+    {
+      value: 'mixed',
+      label: t('q.irrigation.mixed'),
+      desc: isArabic ? 'ري جزئي أو تكميلي حسب الحاجة' : 'Partial or deficit supplemental watering',
+      icon: Shuffle,
+      color: 'text-forest',
+    },
+    {
+      value: 'unknown',
+      label: t('q.irrigation.unknown'),
+      desc: isArabic ? 'استخدام التقدير الإقليمي الافتراضي' : 'Use regional satellite baseline model',
+      icon: HelpCircle,
+      color: 'text-ink-light',
+    },
   ] as const
 
-  const purposeOptions = [
-    { value: 'sell', label: t('q.purposes.sell') },
-    { value: 'livestock_feed', label: t('q.purposes.livestock_feed') },
-    { value: 'household_food', label: t('q.purposes.household_food') },
-    { value: 'soil_restoration', label: t('q.purposes.soil_restoration') },
+  const purposeCards = [
+    {
+      value: 'sell',
+      label: t('q.purposes.sell'),
+      desc: isArabic ? 'تسويق المحصول والبيع التجاري' : 'Commercial sale and market revenue',
+      icon: Store,
+    },
+    {
+      value: 'livestock_feed',
+      label: t('q.purposes.livestock_feed'),
+      desc: isArabic ? 'تغذية الماشية والأعلاف الحيوانية' : 'Animal feed, silage, and forage pasture',
+      icon: Beef,
+    },
+    {
+      value: 'household_food',
+      label: t('q.purposes.household_food'),
+      desc: isArabic ? 'الاكتفاء الذاتي وغذاء الأسرة' : 'Farm household sustenance and food security',
+      icon: Utensils,
+    },
+    {
+      value: 'soil_restoration',
+      label: t('q.purposes.soil_restoration'),
+      desc: isArabic ? 'تثبيت النيتروجين وتحسين خصوبة التربة' : 'Nitrogen fixation, cover crop & soil health',
+      icon: Leaf,
+    },
   ] as const
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <p className="kicker">{t('steps.questions')}</p>
-      <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold text-forest">{t('q.title')}</h1>
-      <p className="mt-1 text-sm text-ink/70">{t('q.subtitle')}</p>
-      <p className="mt-2 text-xs font-semibold text-ink/50">{t('q.step', { n: step + 1, total: TOTAL })}</p>
+    <div className="mx-auto max-w-3xl space-y-6">
+      {/* Step Header */}
+      <div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <p className="kicker">{t('steps.questions')}</p>
+            <span className="badge-glow text-[10px]">
+              {t('q.step', { n: step + 1, total: TOTAL })}
+            </span>
+          </div>
 
-      <div className="card mt-4 p-5">
-        {step === 0 && (
-          <section>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold">{t('q.irrigation.title')}</h2>
-              <span className="group relative" tabIndex={0} aria-label="help">
-                <CircleHelp size={16} className="text-ink/50" />
-                <span className="pointer-events-none absolute hidden group-focus:block group-hover:block start-6 top-0 z-10 w-56 rounded-lg bg-forest p-2 text-xs text-white">{t('q.irrigation.help')}</span>
-              </span>
-            </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {irrigationOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => set({ irrigation_type: opt.value, irrigation_method: opt.value === 'rainfed' ? null : answers.irrigation_method })}
-                  aria-pressed={answers.irrigation_type === opt.value}
-                  className={`rounded-xl border px-4 py-3 text-start text-sm font-semibold transition-colors ${
-                    answers.irrigation_type === opt.value ? 'border-leaf bg-leaf/10 text-forest' : 'border-line bg-white hover:bg-forest/5'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+          {/* Micro Progress Bar */}
+          <div className="flex items-center gap-1.5">
+            {[0, 1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  i === step
+                    ? 'w-6 bg-leaf'
+                    : i < step
+                      ? 'w-3 bg-forest'
+                      : 'w-2 bg-line'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
 
-            {answers.irrigation_type === 'irrigated' || answers.irrigation_type === 'mixed' ? (
-              <div className="mt-5 space-y-4 rounded-xl bg-cream border border-line p-4">
-                <div>
-                  <p className="label">{t('q.method.title')}</p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {(['drip', 'sprinkler', 'surface', 'other', 'unknown'] as const).map((m) => (
-                      <button
-                        key={m}
-                        onClick={() => set({ irrigation_method: m })}
-                        aria-pressed={answers.irrigation_method === m}
-                        className={`rounded-lg border px-3 py-2 text-xs font-semibold ${answers.irrigation_method === m ? 'border-leaf bg-leaf/10 text-forest' : 'border-line bg-white'}`}
-                      >
-                        {t(`q.method.${m}`)}
-                      </button>
-                    ))}
-                  </div>
+        <h1 className="mt-1.5 text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+          {t('q.title')}
+        </h1>
+        <p className="mt-1 text-sm text-ink-muted">{t('q.subtitle')}</p>
+      </div>
+
+      {/* Main Questionnaire Card with Animated Step Transitions */}
+      <div className="card p-6 sm:p-8 bg-white shadow-card-hover border border-line/90">
+        <AnimatePresence mode="wait">
+          {step === 0 && (
+            <motion.section
+              key="step-0"
+              initial={{ opacity: 0, x: isArabic ? -15 : 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isArabic ? 15 : -15 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-extrabold text-forest">
+                    {t('q.irrigation.title')}
+                  </h2>
+                  <span className="group relative" tabIndex={0} aria-label="help">
+                    <CircleHelp size={17} className="text-ink-light hover:text-forest transition-colors cursor-help" />
+                    <span className="pointer-events-none absolute hidden group-focus:block group-hover:block start-6 top-0 z-20 w-64 rounded-xl bg-forest p-3 text-xs text-white shadow-xl">
+                      {t('q.irrigation.help')}
+                    </span>
+                  </span>
                 </div>
-                <div>
-                  <p className="label">{t('q.availability.title')}</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['regular', 'limited', 'unknown'] as const).map((v) => (
-                      <button
-                        key={v}
-                        onClick={() => set({ water_availability: v })}
-                        aria-pressed={answers.water_availability === v}
-                        className={`rounded-lg border px-3 py-2 text-xs font-semibold ${answers.water_availability === v ? 'border-leaf bg-leaf/10 text-forest' : 'border-line bg-white'}`}
-                      >
-                        {t(`q.availability.${v}`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="label" htmlFor="water-volume">{t('q.volume.title')}</label>
-                  <input
-                    id="water-volume"
-                    className="input"
-                    placeholder={t('q.volume.optional')}
-                    value={answers.water_volume_note ?? ''}
-                    onChange={(e) => set({ water_volume_note: e.target.value || null })}
-                  />
-                </div>
+                <p className="text-xs text-ink-light mt-1">
+                  {isArabic
+                    ? 'يحدد هذا الخيار تصنيف المحاصيل المؤهلة وحدود الإجهاد المائي بناءً على رصدات NASA POWER.'
+                    : 'Calibrates drought vulnerability and crop suitability using NASA POWER climatology.'}
+                </p>
               </div>
-            ) : null}
-          </section>
-        )}
 
-        {step === 1 && (
-          <section>
-            <h2 className="text-lg font-bold">{t('q.history.title')}</h2>
-            <p className="mt-1 text-sm text-ink/70">{t('q.history.help')}</p>
-            <div className="mt-4 space-y-4">
-              {years.map((year) => {
-                const rows = answers.crop_history.filter((r) => r.crop_year === year)
-                const update = (idx: number, patch: Partial<CropHistoryRow>) => {
-                  const globalIdx = answers.crop_history.findIndex((r) => r === rows[idx])
-                  const copy = [...answers.crop_history]
-                  copy[globalIdx] = { ...copy[globalIdx], ...patch }
-                  set({ crop_history: copy })
-                }
-                return (
-                  <div key={year} className="rounded-xl border border-line p-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-forest">{t('q.history.year', { year })}</p>
-                      <button
-                        className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs font-semibold text-forest hover:bg-forest/5"
-                        onClick={() => {
-                          const globalIdx = answers.crop_history.findIndex((r) => r.crop_year === year)
-                          const copy = [...answers.crop_history]
-                          copy.splice(globalIdx, 0, { crop_year: year, season_label: null, crop_id: null, status: 'planted' })
-                          set({ crop_history: copy })
-                        }}
+              {/* 4 Large Interactive Irrigation Cards */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {irrigationCards.map((opt) => {
+                  const selected = answers.irrigation_type === opt.value
+                  const Icon = opt.icon
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          irrigation_type: opt.value,
+                          irrigation_method: opt.value === 'rainfed' ? null : answers.irrigation_method,
+                        })
+                      }
+                      aria-pressed={selected}
+                      className={`group relative flex items-start gap-3.5 rounded-2xl border p-4 text-start transition-all duration-200 ${
+                        selected
+                          ? 'border-2 border-leaf bg-leaf-soft/60 shadow-glow ring-2 ring-leaf/20 text-forest'
+                          : 'border-line/90 bg-white hover:border-leaf/40 hover:bg-cream/50 text-ink'
+                      }`}
+                    >
+                      <span
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
+                          selected
+                            ? 'bg-leaf text-white shadow-sm'
+                            : 'bg-cream-warm text-ink-muted group-hover:bg-leaf-soft group-hover:text-leaf'
+                        }`}
                       >
-                        <Plus size={12} /> {t('q.history.addCrop')}
-                      </button>
-                    </div>
-                    <div className="mt-2 space-y-2">
-                      {rows.map((row, idx) => (
-                        <div key={`${year}-${idx}`} className="flex flex-wrap items-center gap-2">
-                          <select
-                            aria-label={`${t('q.history.crop')} ${year}`}
-                            className="input max-w-[14rem]"
-                            value={row.status === 'planted' ? row.crop_id ?? '' : row.status}
-                            onChange={(e) => {
-                              const v = e.target.value
-                              if (v === 'fallow' || v === 'unknown') update(idx, { status: v, crop_id: null })
-                              else update(idx, { status: 'planted', crop_id: v })
-                            }}
-                          >
-                            <option value="unknown">{t('q.history.unknown')}</option>
-                            <option value="fallow">{t('q.history.fallow')}</option>
-                            {crops.map((c) => (
-                              <option key={c.crop_id} value={c.crop_id}>
-                                {i18n.language === 'ar' ? c.name_ar : c.name_en}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            aria-label={`${t('q.history.season')} ${year}`}
-                            className="input max-w-[9rem]"
-                            placeholder={t('q.history.season')}
-                            value={row.season_label ?? ''}
-                            onChange={(e) => update(idx, { season_label: e.target.value || null })}
-                          />
-                          {rows.length > 1 && (
-                            <button
-                              aria-label={t('q.history.remove')}
-                              className="rounded-full p-1.5 text-ink/50 hover:bg-red-50 hover:text-red-600"
-                              onClick={() => {
-                                const globalIdx = answers.crop_history.findIndex((r) => r === row)
-                                const copy = [...answers.crop_history]
-                                copy.splice(globalIdx, 1)
-                                set({ crop_history: copy })
-                              }}
-                            >
-                              <Trash2 size={15} />
-                            </button>
+                        <Icon size={20} />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-forest">{opt.label}</span>
+                          {selected && (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-leaf text-white">
+                              <Check size={12} strokeWidth={3} />
+                            </span>
                           )}
                         </div>
+                        <p className="mt-1 text-xs text-ink-muted leading-snug">{opt.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Conditional Nested Options for Irrigated/Mixed */}
+              {(answers.irrigation_type === 'irrigated' || answers.irrigation_type === 'mixed') && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="space-y-4 rounded-2xl bg-cream-warm/70 border border-line p-5 mt-4"
+                >
+                  <div>
+                    <p className="label text-xs uppercase tracking-wider font-mono text-ink-light">
+                      {t('q.method.title')}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 mt-2">
+                      {(['drip', 'sprinkler', 'surface', 'other', 'unknown'] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => set({ irrigation_method: m })}
+                          aria-pressed={answers.irrigation_method === m}
+                          className={`rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+                            answers.irrigation_method === m
+                              ? 'border-leaf bg-leaf text-white shadow-sm'
+                              : 'border-line bg-white text-ink-muted hover:border-leaf/40'
+                          }`}
+                        >
+                          {t(`q.method.${m}`)}
+                        </button>
                       ))}
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </section>
-        )}
 
-        {step === 2 && (
-          <section>
-            <h2 className="text-lg font-bold">{t('q.purposes.title')}</h2>
-            <p className="mt-1 text-sm text-ink/70">{t('q.purposes.help')}</p>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {purposeOptions.map((opt) => {
-                const active = answers.purposes.includes(opt.value)
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() =>
-                      set({
-                        purposes: active ? answers.purposes.filter((p) => p !== opt.value) : [...answers.purposes, opt.value],
-                      })
-                    }
-                    aria-pressed={active}
-                    className={`rounded-xl border px-4 py-3 text-start text-sm font-semibold ${active ? 'border-leaf bg-leaf/10 text-forest' : 'border-line bg-white hover:bg-forest/5'}`}
-                  >
-                    {opt.label}
-                  </button>
-                )
-              })}
-            </div>
-            <p className="mt-3 rounded-lg bg-amber/10 border border-amber/40 px-3 py-2 text-xs text-ink/75">{t('q.purposes.marketNote')}</p>
-          </section>
-        )}
+                  <div>
+                    <p className="label text-xs uppercase tracking-wider font-mono text-ink-light">
+                      {t('q.availability.title')}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {(['regular', 'limited', 'unknown'] as const).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => set({ water_availability: v })}
+                          aria-pressed={answers.water_availability === v}
+                          className={`rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+                            answers.water_availability === v
+                              ? 'border-leaf bg-leaf text-white shadow-sm'
+                              : 'border-line bg-white text-ink-muted hover:border-leaf/40'
+                          }`}
+                        >
+                          {t(`q.availability.${v}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-        {step === 3 && (
-          <section>
-            <h2 className="text-lg font-bold">{t('q.constraints.title')}</h2>
-            <p className="mt-1 text-sm text-ink/70">{t('q.constraints.bannedHint')}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {crops.map((c) => {
-                const active = answers.banned_crops.includes(c.crop_id)
-                return (
-                  <button
-                    key={c.crop_id}
-                    onClick={() =>
-                      set({
-                        banned_crops: active ? answers.banned_crops.filter((x) => x !== c.crop_id) : [...answers.banned_crops, c.crop_id],
-                      })
-                    }
-                    aria-pressed={active}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${active ? 'border-red-300 bg-red-50 text-red-700' : 'border-line bg-white text-ink/70 hover:bg-forest/5'}`}
-                  >
-                    <bdi>{i18n.language === 'ar' ? c.name_ar : c.name_en}</bdi>
-                  </button>
-                )
-              })}
-            </div>
-            <p className="mt-3 text-xs text-ink/60">{t('q.constraints.none')}</p>
-          </section>
-        )}
+                  <div>
+                    <label className="label text-xs uppercase tracking-wider font-mono text-ink-light" htmlFor="water-volume">
+                      {t('q.volume.title')}
+                    </label>
+                    <input
+                      id="water-volume"
+                      className="input mt-1 text-xs"
+                      placeholder={t('q.volume.optional')}
+                      value={answers.water_volume_note ?? ''}
+                      onChange={(e) => set({ water_volume_note: e.target.value || null })}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </motion.section>
+          )}
+
+          {step === 1 && (
+            <motion.section
+              key="step-1"
+              initial={{ opacity: 0, x: isArabic ? -15 : 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isArabic ? 15 : -15 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-extrabold text-forest">
+                  {t('q.history.title')}
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-ink-muted">{t('q.history.help')}</p>
+              </div>
+
+              {/* 3 Years Timeline Cards */}
+              <div className="space-y-4">
+                {years.map((year) => {
+                  const rows = answers.crop_history.filter((r) => r.crop_year === year)
+                  const update = (idx: number, patch: Partial<CropHistoryRow>) => {
+                    const globalIdx = answers.crop_history.findIndex((r) => r === rows[idx])
+                    const copy = [...answers.crop_history]
+                    copy[globalIdx] = { ...copy[globalIdx], ...patch }
+                    set({ crop_history: copy })
+                  }
+
+                  return (
+                    <div key={year} className="rounded-2xl border border-line bg-cream/40 p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b border-line/60 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-forest text-white font-mono text-xs font-bold">
+                            {year.toString().slice(-2)}
+                          </span>
+                          <p className="text-sm font-extrabold text-forest">{t('q.history.year', { year })}</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-secondary !py-1 !px-2.5 text-xs flex items-center gap-1"
+                          onClick={() => {
+                            const globalIdx = answers.crop_history.findIndex((r) => r.crop_year === year)
+                            const copy = [...answers.crop_history]
+                            copy.splice(globalIdx, 0, {
+                              crop_year: year,
+                              season_label: null,
+                              crop_id: null,
+                              status: 'planted',
+                            })
+                            set({ crop_history: copy })
+                          }}
+                        >
+                          <Plus size={12} /> {t('q.history.addCrop')}
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {rows.map((row, idx) => {
+                          const cropAsset = getCropAsset(row.crop_id)
+                          return (
+                            <div
+                              key={`${year}-${idx}`}
+                              className="flex flex-wrap items-center gap-2.5 bg-white p-2.5 rounded-xl border border-line"
+                            >
+                              {/* Crop thumbnail preview */}
+                              {row.status === 'planted' && cropAsset && (
+                                <img
+                                  src={cropAsset.image}
+                                  alt=""
+                                  className="h-8 w-8 rounded-lg object-contain bg-cream border border-line p-0.5"
+                                />
+                              )}
+
+                              <select
+                                aria-label={`${t('q.history.crop')} ${year}`}
+                                className="input max-w-[15rem] text-xs font-semibold"
+                                value={row.status === 'planted' ? row.crop_id ?? '' : row.status}
+                                onChange={(e) => {
+                                  const v = e.target.value
+                                  if (v === 'fallow' || v === 'unknown') update(idx, { status: v, crop_id: null })
+                                  else update(idx, { status: 'planted', crop_id: v })
+                                }}
+                              >
+                                <option value="unknown">{t('q.history.unknown')}</option>
+                                <option value="fallow">{t('q.history.fallow')}</option>
+                                <optgroup label={isArabic ? 'المحاصيل المعتمدة' : 'Cataloged Crops'}>
+                                  {crops.map((c) => (
+                                    <option key={c.crop_id} value={c.crop_id}>
+                                      {isArabic ? c.name_ar : c.name_en}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              </select>
+
+                              <input
+                                aria-label={`${t('q.history.season')} ${year}`}
+                                className="input max-w-[9rem] text-xs"
+                                placeholder={t('q.history.season')}
+                                value={row.season_label ?? ''}
+                                onChange={(e) => update(idx, { season_label: e.target.value || null })}
+                              />
+
+                              {rows.length > 1 && (
+                                <button
+                                  type="button"
+                                  aria-label={t('q.history.remove')}
+                                  className="rounded-full p-2 text-ink-light hover:bg-red-50 hover:text-red-600 transition-colors ms-auto"
+                                  onClick={() => {
+                                    const globalIdx = answers.crop_history.findIndex((r) => r === row)
+                                    const copy = [...answers.crop_history]
+                                    copy.splice(globalIdx, 1)
+                                    set({ crop_history: copy })
+                                  }}
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.section>
+          )}
+
+          {step === 2 && (
+            <motion.section
+              key="step-2"
+              initial={{ opacity: 0, x: isArabic ? -15 : 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isArabic ? 15 : -15 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-xl font-extrabold text-forest">
+                  {t('q.purposes.title')}
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-ink-muted">{t('q.purposes.help')}</p>
+              </div>
+
+              {/* Multi-Select Purpose Cards */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {purposeCards.map((opt) => {
+                  const active = answers.purposes.includes(opt.value as any)
+                  const Icon = opt.icon
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          purposes: active
+                            ? answers.purposes.filter((p) => p !== opt.value)
+                            : [...answers.purposes, opt.value as any],
+                        })
+                      }
+                      aria-pressed={active}
+                      className={`group flex items-start gap-3.5 rounded-2xl border p-4 text-start transition-all duration-200 ${
+                        active
+                          ? 'border-2 border-leaf bg-leaf-soft/60 shadow-glow ring-2 ring-leaf/20 text-forest'
+                          : 'border-line/90 bg-white hover:border-leaf/40 hover:bg-cream/50 text-ink'
+                      }`}
+                    >
+                      <span
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
+                          active
+                            ? 'bg-leaf text-white shadow-sm'
+                            : 'bg-cream-warm text-ink-muted group-hover:bg-leaf-soft group-hover:text-leaf'
+                        }`}
+                      >
+                        <Icon size={20} />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-forest">{opt.label}</span>
+                          <span
+                            className={`flex h-5 w-5 items-center justify-center rounded-full border transition-all ${
+                              active ? 'bg-leaf border-leaf text-white' : 'border-line bg-white'
+                            }`}
+                          >
+                            {active && <Check size={12} strokeWidth={3} />}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-ink-muted leading-snug">{opt.desc}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="rounded-xl bg-amber-soft border border-amber/30 p-3 text-xs text-amber-dark flex items-start gap-2">
+                <CircleHelp size={15} className="mt-0.5 shrink-0" />
+                <span>{t('q.purposes.marketNote')}</span>
+              </div>
+            </motion.section>
+          )}
+
+          {step === 3 && (
+            <motion.section
+              key="step-3"
+              initial={{ opacity: 0, x: isArabic ? -15 : 15 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isArabic ? 15 : -15 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <ShieldAlert size={18} className="text-amber-dark" />
+                  <h2 className="text-xl font-extrabold text-forest">
+                    {t('q.constraints.title')}
+                  </h2>
+                </div>
+                <p className="mt-1 text-xs sm:text-sm text-ink-muted">{t('q.constraints.bannedHint')}</p>
+              </div>
+
+              {/* Banned Crop Toggles */}
+              <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-1">
+                {crops.map((c) => {
+                  const active = answers.banned_crops.includes(c.crop_id)
+                  const meta = getCropAsset(c.crop_id)
+                  return (
+                    <button
+                      key={c.crop_id}
+                      type="button"
+                      onClick={() =>
+                        set({
+                          banned_crops: active
+                            ? answers.banned_crops.filter((x) => x !== c.crop_id)
+                            : [...answers.banned_crops, c.crop_id],
+                        })
+                      }
+                      aria-pressed={active}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                        active
+                          ? 'border-red-400 bg-red-50 text-red-700 shadow-sm ring-1 ring-red-300'
+                          : 'border-line bg-white text-ink-muted hover:border-leaf/40 hover:text-forest'
+                      }`}
+                    >
+                      {meta?.image && (
+                        <img src={meta.image} alt="" className="h-3.5 w-3.5 rounded-full object-cover" />
+                      )}
+                      <bdi>{isArabic ? c.name_ar : c.name_en}</bdi>
+                      {active && <span className="ms-1 text-red-600 font-extrabold">✕</span>}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <p className="text-xs text-ink-light italic">{t('q.constraints.none')}</p>
+            </motion.section>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <button className="btn-secondary" onClick={goBack}>{t('nav.back')}</button>
-        <button className="btn-primary" onClick={goNext}>
-          {step === 3 ? t('nav.next') : t('nav.next')}
+      {/* Navigation Buttons Footer */}
+      <div className="flex items-center justify-between pt-2">
+        <button
+          type="button"
+          className="btn-secondary flex items-center gap-2 px-6"
+          onClick={goBack}
+        >
+          <ArrowLeft className="rtl:rotate-180" size={16} />
+          <span>{t('nav.back')}</span>
+        </button>
+
+        <button
+          type="button"
+          className="btn-leaf flex items-center gap-2 px-8 py-3 text-sm"
+          onClick={goNext}
+        >
+          <span>{step === 3 ? t('mixer.title') : t('nav.next')}</span>
+          <ArrowRight className="rtl:rotate-180" size={16} />
         </button>
       </div>
     </div>

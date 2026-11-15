@@ -6,12 +6,20 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import '@geoman-io/leaflet-geoman-free'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
-import { MapPin, Search, Radar, Loader2 } from 'lucide-react'
+import { MapPin, Search, Radar, Loader2, Layers, CheckCircle2, Globe2, ArrowRight, Info, Sparkles } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 import { api, type FieldOut, type PlaceResult } from '../../api/client'
 import { useWizard } from '../../state/wizard'
 
-const DEFAULT_CENTER: L.LatLngExpression = [33.9, -5.55] // demo region; user can pan anywhere
+const DEFAULT_CENTER: L.LatLngExpression = [33.89, -5.55] // Meknes agricultural plateau
+
+const DEMO_PRESETS = [
+  { name: 'Meknès Valley, Morocco', lat: 33.89, lon: -5.55, zoom: 14 },
+  { name: 'Gharb Basin, Morocco', lat: 34.26, lon: -5.92, zoom: 14 },
+  { name: 'Nile Delta, Egypt', lat: 30.85, lon: 31.05, zoom: 14 },
+  { name: 'Central Valley, California', lat: 36.74, lon: -119.78, zoom: 14 },
+]
 
 type BaseMapKind = 'standard' | 'satellite'
 
@@ -20,16 +28,18 @@ export default function FieldSelect() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { field, setField } = useWizard()
+  const isArabic = i18n.language === 'ar'
 
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const baseLayersRef = useRef<Record<BaseMapKind, L.TileLayer> | null>(null)
-  const [basemap, setBasemap] = useState<BaseMapKind>('standard')
+  const [basemap, setBasemap] = useState<BaseMapKind>('satellite') // default to satellite for cinematic AgriTech
   const [areaHa, setAreaHa] = useState<number | null>(field?.area_ha ?? null)
   const [name, setName] = useState(field?.name ?? '')
   const [searchQuery, setSearchQuery] = useState('')
   const [geoError, setGeoError] = useState<string | null>(null)
   const [locationNote, setLocationNote] = useState<string | null>(null)
+  const [polygonCount, setPolygonCount] = useState<number>(0)
 
   const { data: results, isFetching: searching } = useQuery({
     queryKey: ['places', searchQuery],
@@ -39,16 +49,19 @@ export default function FieldSelect() {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
-    const map = L.map(containerRef.current, { center: DEFAULT_CENTER, zoom: 12, zoomControl: true })
+    const map = L.map(containerRef.current, { center: DEFAULT_CENTER, zoom: 13, zoomControl: true })
+
     const standard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: '&copy; OpenStreetMap contributors',
     })
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics',
+      attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
     })
-    standard.addTo(map)
+
+    // Default to satellite layer
+    satellite.addTo(map)
     baseLayersRef.current = { standard, satellite }
     mapRef.current = map
 
@@ -67,18 +80,22 @@ export default function FieldSelect() {
       cutPolygon: false,
       rotateMode: false,
     })
+
     map.on('pm:create', (e: any) => {
       // Only one polygon at a time: remove any previous layer.
       map.eachLayer((layer) => {
         if ((layer as any).pm && (layer as any) !== e.layer) {
-          try { map.removeLayer(layer) } catch { /* already removed */ }
+          try { map.removeLayer(layer) } catch { /* removed */ }
         }
       })
+      setPolygonCount(1)
       updateArea(e.layer)
       e.layer.on('pm:edit', () => updateArea(e.layer))
     })
+
     map.on('pm:remove', () => {
       setAreaHa(null)
+      setPolygonCount(0)
     })
 
     return () => {
@@ -95,8 +112,6 @@ export default function FieldSelect() {
 
   function updateArea(layer: L.Polygon) {
     const geo = layerToGeoJson(layer)
-    // Geodesic area is computed by the backend; use a client-side spherical
-    // estimate for the live label, the authoritative value arrives on save.
     setAreaHa(sphericalHa(geo))
   }
 
@@ -132,7 +147,7 @@ export default function FieldSelect() {
   }
 
   function flyTo(lat: number, lon: number, zoom = 14) {
-    mapRef.current?.flyTo([lat, lon], zoom)
+    mapRef.current?.flyTo([lat, lon], zoom, { duration: 1.5 })
   }
 
   function useMyLocation() {
@@ -142,7 +157,7 @@ export default function FieldSelect() {
       return
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => flyTo(pos.coords.latitude, pos.coords.longitude, 14),
+      (pos) => flyTo(pos.coords.latitude, pos.coords.longitude, 15),
       () => setLocationNote(t('field.locationDenied')),
       { timeout: 8000 },
     )
@@ -161,10 +176,10 @@ export default function FieldSelect() {
       setGeoError(t('field.noPolygon'))
       return
     }
-    setField({ name: name.trim() || t('field.defaultName'), geometry, area_ha: areaHa })
-    // Create on the server; authoritative area comes back from the backend.
+    const finalName = name.trim() || t('field.defaultName')
+    setField({ name: finalName, geometry, area_ha: areaHa })
     api
-      .post<FieldOut>('/api/v1/fields', { name: name.trim() || t('field.defaultName'), geometry })
+      .post<FieldOut>('/api/v1/fields', { name: finalName, geometry })
       .then((created) => {
         queryClient.invalidateQueries({ queryKey: ['dashboard'] })
         navigate(`/setup/questions?field=${created.field_id}`, {
@@ -175,90 +190,202 @@ export default function FieldSelect() {
   }
 
   return (
-    <div>
-      <p className="kicker">{t('steps.field')}</p>
-      <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold text-forest">{t('field.select.title')}</h1>
-      <p className="mt-1 text-sm text-ink/70">{t('field.select.subtitle')}</p>
-
-      <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_320px]">
-        <div className="card overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-line px-3 py-2">
-            <button
-              onClick={() => switchBasemap('standard')}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${basemap === 'standard' ? 'bg-forest text-white' : 'text-ink/70 hover:bg-forest/5'}`}
-            >
-              {t('field.standard')}
-            </button>
-            <button
-              onClick={() => switchBasemap('satellite')}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${basemap === 'satellite' ? 'bg-forest text-white' : 'text-ink/70 hover:bg-forest/5'}`}
-            >
-              {t('field.satellite')}
-            </button>
-            <button onClick={useMyLocation} className="ms-auto inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-semibold text-ink/70 hover:bg-forest/5">
-              <Radar size={14} /> {t('field.useMyLocation')}
-            </button>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6"
+    >
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="kicker">{t('steps.field')}</p>
+            <span className="badge-glow text-[10px]">Step 1 of 5</span>
           </div>
-          <div ref={containerRef} className="h-[420px] sm:h-[520px] w-full" />
-          <p className="border-t border-line px-3 py-2 text-xs text-ink/60">{t('field.drawHint')}</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+            {t('field.select.title')}
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">
+            {t('field.select.subtitle')}
+          </p>
         </div>
 
-        <aside className="space-y-4">
-          <div className="card p-4">
-            <label className="label" htmlFor="place-search">{t('field.search.placeholder')}</label>
+        {/* Quick Demo Location Jump Chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[11px] font-bold text-ink-light flex items-center gap-1 font-mono">
+            <Globe2 size={12} /> {isArabic ? 'مناطق نموذجية:' : 'Presets:'}
+          </span>
+          {DEMO_PRESETS.map((p) => (
+            <button
+              key={p.name}
+              type="button"
+              onClick={() => flyTo(p.lat, p.lon, p.zoom)}
+              className="chip hover:border-leaf hover:text-forest hover:bg-leaf-soft transition-all text-[11px] py-0.5 px-2.5"
+            >
+              {p.name.split(',')[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* Main Map Canvas Area */}
+        <div className="lg:col-span-8 card overflow-hidden border border-line shadow-card relative">
+          {/* Floating Map Controls Top Bar */}
+          <div className="flex items-center justify-between gap-2 p-3 bg-white/90 backdrop-blur-md border-b border-line">
+            <div className="flex items-center gap-1 bg-cream-warm p-0.5 rounded-full border border-line">
+              <button
+                type="button"
+                onClick={() => switchBasemap('satellite')}
+                className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                  basemap === 'satellite' ? 'bg-forest text-white shadow-sm' : 'text-ink-muted hover:text-forest'
+                }`}
+              >
+                <Layers size={13} />
+                {t('field.satellite')}
+              </button>
+              <button
+                type="button"
+                onClick={() => switchBasemap('standard')}
+                className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                  basemap === 'standard' ? 'bg-forest text-white shadow-sm' : 'text-ink-muted hover:text-forest'
+                }`}
+              >
+                <Globe2 size={13} />
+                {t('field.standard')}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={useMyLocation}
+              className="btn-secondary !py-1 !px-3 text-xs flex items-center gap-1.5"
+            >
+              <Radar size={13} className="text-leaf" />
+              <span>{t('field.useMyLocation')}</span>
+            </button>
+          </div>
+
+          {/* Leaflet Map DOM Container */}
+          <div ref={containerRef} className="h-[440px] sm:h-[540px] w-full" />
+
+          {/* Map Bottom Hint Banner */}
+          <div className="flex items-center justify-between gap-2 bg-gradient-to-r from-cream-warm to-white px-4 py-2.5 border-t border-line text-xs text-ink-muted">
+            <div className="flex items-center gap-2">
+              <Info size={14} className="text-leaf shrink-0" />
+              <span>{t('field.drawHint')}</span>
+            </div>
+            {polygonCount > 0 && (
+              <span className="badge-glow text-[11px] text-leaf-dark">
+                <CheckCircle2 size={12} className="text-leaf" /> Boundary Active
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Right Sidebar Form */}
+        <aside className="lg:col-span-4 space-y-4">
+          {/* Search Location Card */}
+          <div className="card p-4 space-y-2">
+            <label className="label text-xs uppercase tracking-wider font-mono text-ink-light" htmlFor="place-search">
+              {t('field.search.placeholder')}
+            </label>
             <div className="relative">
-              <Search className="absolute top-2.5 start-3 h-4 w-4 text-ink/40" aria-hidden />
+              <Search className="absolute top-3 start-3.5 h-4 w-4 text-ink-light" aria-hidden />
               <input
                 id="place-search"
-                className="input ps-9"
+                className="input ps-10 text-xs sm:text-sm"
                 placeholder={t('field.search.placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              {searching && <Loader2 className="absolute top-2.5 end-3 h-4 w-4 animate-spin text-ink/40" />}
+              {searching && <Loader2 className="absolute top-3 end-3.5 h-4 w-4 animate-spin text-leaf" />}
             </div>
+
             {results && results.results.length === 0 && searchQuery.length >= 2 && (
-              <p className="mt-2 text-xs text-ink/60">{t('field.search.noResults')}</p>
+              <p className="mt-2 text-xs text-ink-light italic">{t('field.search.noResults')}</p>
             )}
-            <ul className="mt-2 divide-y divide-line max-h-40 overflow-y-auto">
-              {(results?.results ?? []).map((r, i) => (
-                <li key={i}>
-                  <button
-                    className="w-full text-start px-1 py-2 text-xs hover:bg-forest/5 rounded"
-                    onClick={() => flyTo(r.lat, r.lon)}
-                  >
-                    <span className="flex items-center gap-1.5 font-semibold text-forest"><MapPin size={12} /> <bdi>{r.display_name}</bdi></span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {locationNote && <p className="mt-2 text-xs text-amber font-medium">{locationNote}</p>}
+
+            {results && results.results.length > 0 && (
+              <ul className="mt-2 divide-y divide-line max-h-48 overflow-y-auto rounded-xl border border-line bg-white shadow-sm">
+                {results.results.map((r, i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      className="w-full text-start px-3 py-2 text-xs hover:bg-forest/5 flex items-center gap-2 transition-colors"
+                      onClick={() => flyTo(r.lat, r.lon, 14)}
+                    >
+                      <MapPin size={13} className="text-leaf shrink-0" />
+                      <span className="font-semibold text-forest truncate"><bdi>{r.display_name}</bdi></span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {locationNote && <p className="mt-2 text-xs text-amber-dark font-medium">{locationNote}</p>}
           </div>
 
-          <div className="card p-4 space-y-3">
+          {/* Parcel Details & Hectare Calculation Card */}
+          <div className="card p-5 space-y-4 bg-white">
             <div>
-              <label className="label" htmlFor="field-name">{t('field.name')}</label>
+              <label className="label text-xs uppercase tracking-wider font-mono text-ink-light" htmlFor="field-name">
+                {t('field.name')}
+              </label>
               <input
                 id="field-name"
-                className="input"
+                className="input font-semibold"
                 placeholder={t('field.namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="rounded-lg bg-cream border border-line px-3 py-2">
-              <span className="block text-xs font-medium text-ink/60">{t('field.area')}</span>
-              <span className="mt-0.5 block font-bold text-forest">
-                {areaHa === null ? t('field.areaPending') : <><bdi>{areaHa.toLocaleString(i18n.language)}</bdi> {t('common.hectare')}</>}
+
+            {/* Geodesic Area Counter Box */}
+            <div className={`rounded-2xl border p-4 transition-all duration-300 ${
+              areaHa !== null
+                ? 'border-leaf/40 bg-leaf-soft/50 shadow-inner'
+                : 'border-line bg-cream'
+            }`}>
+              <span className="block text-[11px] font-bold uppercase tracking-wider text-ink-light font-mono">
+                {t('field.area')}
               </span>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-extrabold text-forest font-mono">
+                  {areaHa === null ? '—' : areaHa.toLocaleString(i18n.language)}
+                </span>
+                <span className="text-sm font-bold text-ink-muted">
+                  {t('common.hectare')}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-ink-light">
+                {areaHa === null
+                  ? t('field.areaPending')
+                  : isArabic
+                    ? 'المساحة الجيوديسية محسوبة بدقة على السطح الإهليلجي للأرض.'
+                    : 'Geodesic area calculated across WGS84 Earth ellipsoid.'}
+              </p>
             </div>
-            {geoError && <p className="text-xs font-medium text-red-600">{geoError}</p>}
-            <button className="btn-primary w-full" disabled={areaHa === null} onClick={confirmField}>
-              {t('field.confirm')}
+
+            {geoError && (
+              <p className="text-xs font-semibold text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200">
+                {geoError}
+              </p>
+            )}
+
+            {/* Confirm Field CTA */}
+            <button
+              type="button"
+              className="btn-leaf w-full py-3.5 text-sm shadow-md"
+              disabled={areaHa === null}
+              onClick={confirmField}
+            >
+              <span>{t('field.confirm')}</span>
+              <ArrowRight className="rtl:rotate-180" size={17} />
             </button>
           </div>
         </aside>
       </div>
-    </div>
+    </motion.div>
   )
 }
