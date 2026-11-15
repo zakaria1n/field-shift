@@ -22,6 +22,7 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
   const nTotal = obs.meta?.n_total_pixels as number | undefined
   const scenario = obs.meta?.period as string | undefined
   const inputLabel = obs.meta?.input_label as string | undefined
+  const fallbackNote = obs.meta?.fallback_note as string | undefined
   return (
     <div className="rounded-xl border border-line p-3">
       <div className="flex items-start justify-between gap-2">
@@ -46,6 +47,11 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
       {typeof nValid === 'number' && (
         <p className="mt-0.5 text-[11px] text-ink/45">
           {t('insights.pixels')}: <bdi>{nValid}</bdi>/{bdiSafe(nTotal)}
+        </p>
+      )}
+      {typeof fallbackNote === 'string' && (
+        <p className="mt-1 rounded bg-amber/10 px-1.5 py-1 text-[10px] text-ink/70">
+          {fallbackNote}
         </p>
       )}
       {monthly && obs.indicator === 'monthly_mean_precipitation' && (
@@ -77,6 +83,7 @@ const LABELS: Record<string, string> = {
   soil_ph: 'insights.soilPh',
   soil_organic_carbon: 'insights.soilOc',
   soil_sand_fraction: 'insights.soilSand',
+  soil_silt_fraction: 'insights.soilSilt',
   soil_clay_fraction: 'insights.soilClay',
   soil_total_nitrogen: 'insights.soilN',
 }

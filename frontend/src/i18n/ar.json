@@ -272,5 +272,6 @@
   "insights.plantingWindow": "نافذة الزراعة",
   "settings.clearKey": "مسح مفتاح هذا المتصفح",
   "settings.clearedNote": "تم مسح المفتاح. أعد التحميل للبدء من جديد؛ البيانات القديمة تصبح غير قابلة للوصول.",
-  "insights.pixels": "بكسات صالحة"
+  "insights.pixels": "بكسات صالحة",
+  "insights.soilSilt": "نسبة الغرين"
 }
