@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Globe } from 'lucide-react'
 import { useWizard } from '../../state/wizard'
 import type { Lang } from '../../i18n'
 
@@ -13,22 +14,54 @@ export default function LanguageSwitch({
 }) {
   const { t } = useTranslation()
   const { lang: wizardLang, setLang: setWizardLang } = useWizard()
-  const lang = langProp ?? wizardLang
+  const currentLang = langProp ?? wizardLang
   const setLang = onChange ?? setWizardLang
-  const next: Lang = lang === 'en' ? 'ar' : 'en'
-  const label = lang === 'en' ? 'العربية' : 'English'
 
   return (
-    <button
-      onClick={() => setLang(next)}
+    <div
+      role="group"
       aria-label={t('aria.languageSwitch')}
-      className={
+      className={`inline-flex items-center rounded-full p-0.5 border text-xs font-bold transition-all duration-200 ${
         variant === 'dark'
-          ? 'rounded-full border border-white/30 px-3 py-1.5 text-sm font-semibold text-white hover:bg-white/10'
-          : 'rounded-full border border-forest/30 px-3 py-1.5 text-sm font-semibold text-forest hover:bg-forest/5'
-      }
+          ? 'bg-black/35 border-white/25 text-white shadow-inner'
+          : 'bg-cream-warm border-line text-forest shadow-inner'
+      }`}
     >
-      <span dir={next === 'ar' ? 'rtl' : 'ltr'}>{label}</span>
-    </button>
+      <span className="ps-2 pe-1 text-ink-light/70" aria-hidden>
+        <Globe size={13} className={variant === 'dark' ? 'text-white/70' : 'text-forest/70'} />
+      </span>
+      <button
+        type="button"
+        onClick={() => setLang('en')}
+        aria-pressed={currentLang === 'en'}
+        className={`rounded-full px-2.5 py-1 transition-all duration-200 ${
+          currentLang === 'en'
+            ? variant === 'dark'
+              ? 'bg-white text-forest shadow-sm'
+              : 'bg-forest text-white shadow-sm'
+            : variant === 'dark'
+              ? 'text-white/75 hover:text-white'
+              : 'text-ink-muted hover:text-forest'
+        }`}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        onClick={() => setLang('ar')}
+        aria-pressed={currentLang === 'ar'}
+        className={`rounded-full px-2.5 py-1 font-ar transition-all duration-200 ${
+          currentLang === 'ar'
+            ? variant === 'dark'
+              ? 'bg-white text-forest shadow-sm'
+              : 'bg-forest text-white shadow-sm'
+            : variant === 'dark'
+              ? 'text-white/75 hover:text-white'
+              : 'text-ink-muted hover:text-forest'
+        }`}
+      >
+        العربية
+      </button>
+    </div>
   )
 }

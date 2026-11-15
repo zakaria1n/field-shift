@@ -49,5 +49,6 @@ Thumbs.db
 ui_reference/
 docs/
 references/
+screenshots/
 make_csvs.py
 render_ui.py
