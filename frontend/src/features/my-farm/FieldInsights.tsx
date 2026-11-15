@@ -6,12 +6,24 @@ import { CloudRain, Layers, TriangleAlert } from 'lucide-react'
 import { api, type InsightsOut, type ObservationOut } from '../../api/client'
 import { StatusBadge } from '../../app/components/ui'
 
-function statusKind(quality: string): 'live' | 'cached' | 'unavailable' | 'demo' | 'failed' {
-  if (quality === 'live') return 'live'
+function statusKind(quality: string, sourceId: string): 'live' | 'dataset' | 'cached' | 'unavailable' | 'demo' | 'failed' {
+  // Distinguish a fresh remote retrieval from a retrieval of a HISTORICAL
+  // dataset: SoilGrids/GAEZ values are dataset-backed (2020 release /
+  // 2001-2020 baseline), even when fetched live.
+  if (quality === 'live') return sourceId === 'soilgrids' || sourceId === 'gaez_v5' ? 'dataset' : 'live'
   if (quality === 'cached') return 'cached'
   if (quality === 'demo_fixture') return 'demo'
-  if (quality === 'unavailable' || quality === 'failed') return 'unavailable'
   return 'unavailable'
+}
+
+function referencePeriod(o: { source_id: string; period_start: string | null; period_end: string | null; meta: Record<string, unknown> }): string | null {
+  if (o.source_id === 'soilgrids') return 'SoilGrids 2020 release'
+  if (o.source_id === 'gaez_v5') return '2001-2020 baseline (AgERA5)'
+  if (o.source_id === 'nasa_power') {
+    const p = o.meta?.climatology_period as string | undefined
+    return p ?? null
+  }
+  return null
 }
 
 function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
@@ -27,7 +39,7 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
     <div className="rounded-xl border border-line p-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-semibold text-ink">{label}</p>
-        <StatusBadge kind={statusKind(obs.quality_status)} />
+        <StatusBadge kind={statusKind(obs.quality_status, obs.source_id)} />
       </div>
       <p className="mt-1 text-xl font-bold text-forest">
         {obs.value === null ? (
@@ -42,6 +54,14 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
           {scenario && inputLabel && <>{scenario} · {inputLabel}</>}
         </p>
       )}
+      {(() => {
+        const period = referencePeriod(obs)
+        return period ? (
+          <p className="mt-1 text-[11px] text-ink/55">
+            {t('insights.referencePeriod')}: <bdi>{period}</bdi>
+          </p>
+        ) : null
+      })()}
       <p className="mt-1 text-[11px] text-ink/50"><bdi>{obs.source_id}</bdi> · {t('status.regional')}</p>
       {obs.spatial_support && <p className="mt-0.5 text-[11px] text-ink/45"><bdi>{obs.spatial_support}</bdi></p>}
       {typeof nValid === 'number' && (

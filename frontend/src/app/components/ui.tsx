@@ -51,10 +51,11 @@ export function IndicatorRow({ label, value, status }: { label: string; value: n
   )
 }
 
-export function StatusBadge({ kind, children }: { kind: 'live' | 'cached' | 'unavailable' | 'failed' | 'demo' | 'pending'; children?: React.ReactNode }) {
+export function StatusBadge({ kind, children }: { kind: 'live' | 'dataset' | 'cached' | 'unavailable' | 'failed' | 'demo' | 'pending'; children?: React.ReactNode }) {
   const { t } = useTranslation()
   const labels: Record<string, string> = {
     live: t('analysis.source.live'),
+    dataset: t('analysis.source.dataset'),
     cached: t('analysis.source.cached'),
     unavailable: t('analysis.source.unavailable'),
     failed: t('analysis.source.failed'),
@@ -63,13 +64,14 @@ export function StatusBadge({ kind, children }: { kind: 'live' | 'cached' | 'una
   }
   const styles: Record<string, string> = {
     live: 'bg-leaf/10 text-forest border-leaf/40',
+    dataset: 'bg-purple-100 text-purple-700 border-purple-300',
     cached: 'bg-sky/10 text-sky border-sky/40',
     unavailable: 'bg-amber/10 text-amber border-amber/40',
     failed: 'bg-red-100 text-red-700 border-red-300',
     demo: 'bg-purple-100 text-purple-700 border-purple-300',
     pending: 'bg-line text-ink/60 border-line',
   }
-  const icon = kind === 'live' ? <CloudRain size={12} /> : kind === 'unavailable' || kind === 'failed' ? <TriangleAlert size={12} /> : kind === 'demo' ? <Info size={12} /> : null
+  const icon = kind === 'live' ? <CloudRain size={12} /> : kind === 'unavailable' || kind === 'failed' ? <TriangleAlert size={12} /> : kind === 'demo' || kind === 'dataset' ? <Info size={12} /> : null
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${styles[kind]}`}>
       {icon}

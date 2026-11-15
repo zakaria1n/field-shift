@@ -273,5 +273,7 @@
   "settings.clearKey": "Clear this browser key",
   "settings.clearedNote": "Browser key cleared. Reload to start fresh; old data becomes unreachable.",
   "insights.pixels": "Valid pixels",
-  "insights.soilSilt": "Silt fraction"
+  "insights.soilSilt": "Silt fraction",
+  "analysis.source.dataset": "Reference dataset (retrieved)",
+  "insights.referencePeriod": "Reference period"
 }

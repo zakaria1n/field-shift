@@ -103,7 +103,7 @@ def test_gaez_layer_discovery_and_second_location():
     assert r.status == "live"
     value = r.observations[0]["value_num"]
     assert 0 < value < 60000  # kg/ha sanity band
-    assert r.observations[0]["unit"] == "kg/ha"
+    assert r.observations[0]["unit"] == "kg/ha (DW)"  # dry weight per FAO metadata
     assert r.observations[0]["period_start"] == "2001"
 
     # second location: Minnesota maize, irrigated management
