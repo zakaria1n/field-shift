@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     power_enabled: bool = True
     soilgrids_enabled: bool = True
     gaez_enabled: bool = True
+    # GAEZ management-intensity assumption: "high" (attainable ceiling) or
+    # "low". Water supply comes from the farmer's irrigation answer; this
+    # setting documents that intensity is assumed, not collected.
+    gaez_input_level: str = "high"
     search_enabled: bool = True
 
     power_community: str = "AG"

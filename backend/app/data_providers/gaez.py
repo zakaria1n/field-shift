@@ -80,23 +80,37 @@ CROP_GAEZ_MAP: dict[str, str] = {
     "sunflower": "SFL",
 }
 
-INPUT_FOR_IRRIGATION = {
-    "irrigated": "HILM",   # high inputs, irrigated management
-    "mixed": "HRLM",       # conservative rain-fed reference for mixed systems
-    "rainfed": "HRLM",     # high inputs, rain-fed management
-    "unknown": "HRLM",
-}
+# Water supply comes from the farmer's irrigation answer; management
+# intensity CANNOT be inferred from it — the farmer questionnaire does not
+# collect fertilizer/pest-management intensity. The official GAEZ v5 catalog
+# (CODES_WATER_INPUT) defines the four combinations:
+#   HILM  Irrigation and high input level of management
+#   LILM  Irrigation and low input level of management
+#   LRLM  Rain-fed and low input level of management
+#   HRLM  Rain-fed and high input level of management
+# We therefore treat the input level as an explicit, documented assumption
+# (default: high, i.e. the attainable ceiling for well-managed fields) that
+# can be changed via GAEZ_INPUT_LEVEL without touching the water supply.
+VALID_INPUT_LEVELS = {"high", "low"}
 
-UNIT = "kg/ha"
+UNIT = "kg/ha (DW)"  # kilograms dry weight per hectare (official: Kg (DW)/ha, scale 1.0)
 SPATIAL = "global_model_grid (~9.3 km / 5-arc-min cell at field centroid)"
 DOCS_URL = "https://gaez.fao.org/pages/data-access-download"
 
 
-def scenario_for(irrigation_type: str | None) -> tuple[str, str]:
-    """Return (input_level code, human label) for the farmer's irrigation answer."""
+def scenario_for(irrigation_type: str | None,
+                 input_level: str = "high") -> tuple[str, str]:
+    """Resolve the GAEZ water-input code from two independent dimensions.
+
+    Water supply: the farmer's irrigation answer (irrigated -> I, otherwise R).
+    Management intensity: an explicit assumption (default "high" = the
+    attainable ceiling), NOT derived from the irrigation answer.
+    """
     key = (irrigation_type or "unknown").lower()
-    code = INPUT_FOR_IRRIGATION.get(key, "HRLM")
-    label = "high inputs, irrigated" if code == "HILM" else "high inputs, rain-fed"
+    level = input_level if input_level in VALID_INPUT_LEVELS else "high"
+    irrigated = key == "irrigated"
+    code = ("H" if level == "high" else "L") + ("I" if irrigated else "R") + "LM"
+    label = f"{'high' if level == 'high' else 'low'} inputs, {'irrigated' if irrigated else 'rain-fed'}"
     return code, label
 
 
@@ -119,8 +133,8 @@ def fetch_yield_reference(lat: float, lon: float, crop_id: str,
             detail=f"no GAEZ v5 layer exists for crop '{crop_id}' in the official "
                    "RES05 catalog; yield reference stays unavailable (not estimated)",
         )
-    input_level, input_label = scenario_for(irrigation_type)
-    key = file_key(crop_code, input_level)
+    input_level_code, input_label = scenario_for(irrigation_type, settings.gaez_input_level)
+    key = file_key(crop_code, input_level_code)
     url = f"{BASE_URL}/RES05-{VARIABLE}/{key}.tif"
 
     try:
@@ -177,10 +191,17 @@ def fetch_yield_reference(lat: float, lon: float, crop_id: str,
                 "period": "2001-2020",
                 "climate_data_source": CLIMATE,
                 "ssp": SSP,
-                "input_level": input_level,
+                "input_level": input_level_code,
                 "input_label": input_label,
+                "management_assumption": (
+                    f"management intensity assumed '{settings.gaez_input_level}' "
+                    "(actual farmer management intensity is not collected; "
+                    "water supply comes from the irrigation answer)"
+                ),
+                "yield_basis": "dry weight (DW), per FAO GAEZ v5 metadata",
                 "note": "modeled attainable yield of the best occurring suitability "
-                        "class at this cell — a reference, not a harvest prediction",
+                        "class at this cell (dry-weight basis) — a reference, not a "
+                        "harvest prediction",
                 "docs_url": DOCS_URL,
                 "catalog_url": CATALOG_URL,
             },
