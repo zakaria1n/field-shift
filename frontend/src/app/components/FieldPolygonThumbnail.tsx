@@ -86,38 +86,62 @@ export function FieldPolygonThumbnail({
     })
     .join(' ')
 
+  const centerLon = (minX + maxX) / 2
+  const centerLat = (minY + maxY) / 2
+  const zoom = 15
+  const n = 2 ** zoom
+  const tileX = Math.floor(((centerLon + 180) / 360) * n)
+  const latRad = (centerLat * Math.PI) / 180
+  const tileY = Math.floor(
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
+  )
+  const satelliteTileUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tileY}/${tileX}`
+
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-cream-warm/80 border border-forest/15 shadow-inner ${className}`}>
-      {/* Precision agricultural coordinate grid background */}
+    <div className={`relative overflow-hidden rounded-2xl bg-forest-surface border border-forest/20 shadow-inner group ${className}`}>
+      {/* Real Earth Satellite Imagery Backdrop */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <img
+          src={satelliteTileUrl}
+          alt="Satellite earth imagery of field parcel"
+          className="w-full h-full object-cover scale-110 filter brightness-90 contrast-110 transition-transform duration-700 group-hover:scale-125"
+          onError={(e) => {
+            // Graceful fallback to styled agricultural terrain texture if tile cannot load
+            (e.target as HTMLElement).style.display = 'none'
+          }}
+        />
+        {/* Cinematic atmospheric depth overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-forest/60 via-transparent to-forest/30" />
+      </div>
+
+      {/* Precision Cadastral SVG Polygon Overlay */}
       <svg
         viewBox="0 0 100 100"
-        className="w-full h-full"
+        className="relative z-10 w-full h-full"
         style={{ width, height }}
         preserveAspectRatio="xMidYMid meet"
         aria-label="Cadastral field boundary polygon"
       >
         <defs>
-          <pattern id="field-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(16, 44, 36, 0.05)" strokeWidth="0.5" />
-          </pattern>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#081A15" floodOpacity="0.8" />
+          </filter>
           <linearGradient id="field-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#24A06B" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#173E32" stopOpacity="0.12" />
+            <stop offset="0%" stopColor="#24A06B" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#10B981" stopOpacity="0.25" />
           </linearGradient>
         </defs>
-
-        {/* Grid pattern */}
-        <rect width="100" height="100" fill="url(#field-grid)" />
 
         {/* Boundary Polygon */}
         <polygon
           points={points}
           fill="url(#field-fill)"
-          stroke="#173E32"
-          strokeWidth="2.2"
+          stroke="#FFFFFF"
+          strokeWidth="2.4"
           strokeLinejoin="round"
           strokeLinecap="round"
-          className="transition-all duration-300 drop-shadow-sm"
+          filter="url(#glow)"
+          className="transition-all duration-300"
         />
 
         {/* Boundary vertices */}
@@ -125,23 +149,31 @@ export function FieldPolygonThumbnail({
           const x = offsetX + ((lon - minX) / rangeX) * scaleX
           const y = offsetY + ((maxY - lat) / rangeY) * scaleY
           return (
-            <circle
-              key={i}
-              cx={x}
-              cy={y}
-              r="2"
-              fill="#24A06B"
-              stroke="#FFFFFF"
-              strokeWidth="0.8"
-            />
+            <g key={i}>
+              <circle
+                cx={x}
+                cy={y}
+                r="3"
+                fill="#10B981"
+                stroke="#FFFFFF"
+                strokeWidth="1.2"
+                filter="url(#glow)"
+              />
+              <circle
+                cx={x}
+                cy={y}
+                r="1.2"
+                fill="#FFFFFF"
+              />
+            </g>
           )
         })}
 
         {/* North Compass Arrow indicator in top-right */}
-        <g transform="translate(85, 12)">
-          <circle cx="0" cy="0" r="6" fill="rgba(255,255,255,0.85)" stroke="rgba(16, 44, 36, 0.15)" strokeWidth="0.5" />
-          <path d="M 0 -4 L 2.5 3 L 0 1.5 L -2.5 3 Z" fill="#173E32" />
-          <text x="0" y="-5.5" textAnchor="middle" fontSize="4.5" fontWeight="bold" fill="#173E32" fontFamily="monospace">N</text>
+        <g transform="translate(85, 14)">
+          <circle cx="0" cy="0" r="7" fill="rgba(8, 26, 21, 0.75)" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="0.8" />
+          <path d="M 0 -4.5 L 2.8 3 L 0 1.5 L -2.8 3 Z" fill="#34D399" />
+          <text x="0" y="-6" textAnchor="middle" fontSize="4.5" fontWeight="bold" fill="#FFFFFF" fontFamily="monospace">N</text>
         </g>
       </svg>
     </div>

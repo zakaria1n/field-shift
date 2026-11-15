@@ -226,7 +226,7 @@ export default function HomeDashboard() {
                 className="btn-primary !py-2.5 text-xs inline-flex items-center gap-1.5 shadow-sm"
               >
                 <Calendar size={14} />
-                <span>{t('timeline.title')} (Update Activities)</span>
+                <span>{t('timeline.title')} ({t('home.updateActivities')})</span>
                 <ChevronRight size={13} className="rtl:rotate-180" />
               </Link>
               <Link
@@ -292,7 +292,7 @@ export default function HomeDashboard() {
             <div className="mt-3 flex flex-wrap items-center justify-between text-[11px] font-mono text-ink/60">
               {fieldDetail && (
                 <span>
-                  Centroid: <bdi>{fieldDetail.centroid_lat.toFixed(4)}°N, {fieldDetail.centroid_lon.toFixed(4)}°E</bdi>
+                  {t('home.centroid')}: <bdi>{fieldDetail.centroid_lat.toFixed(4)}°N, {fieldDetail.centroid_lon.toFixed(4)}°E</bdi>
                 </span>
               )}
               <span className="rounded bg-cream px-2 py-0.5">
@@ -306,7 +306,7 @@ export default function HomeDashboard() {
               to="/fields/list"
               className="text-xs font-bold text-forest hover:text-leaf transition-colors inline-flex items-center gap-1"
             >
-              <span>View all parcels ({dashboard.length})</span>
+              <span>{t('home.viewAllParcels', { count: dashboard.length })}</span>
               <ArrowRight size={12} className="rtl:rotate-180" />
             </Link>
           </div>
@@ -317,10 +317,10 @@ export default function HomeDashboard() {
           <div>
             <div className="flex items-center justify-between border-b border-line/60 pb-3">
               <h3 className="font-display text-base font-bold text-forest">
-                Agricultural Diagnosed Baseline
+                {t('home.diagnosedBaseline')}
               </h3>
               <span className="text-[11px] text-ink/50 font-mono">
-                {farm.last_analysis?.status === 'complete' ? 'Analysis Complete' : 'Pending'}
+                {farm.last_analysis?.status === 'complete' ? t('home.analysisComplete') : t('home.pending')}
               </span>
             </div>
 
@@ -328,20 +328,26 @@ export default function HomeDashboard() {
               <div className="rounded-xl border border-line/70 bg-cream/50 p-3.5 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 flex items-center gap-1">
                   <Droplets size={12} className="text-sky-700" />
-                  Water Regime
+                  {t('home.waterRegime')}
                 </span>
                 <p className="font-display text-sm font-bold text-forest capitalize">
-                  {farm.profile_summary?.irrigation_type.replace('_', ' ') || 'Rainfed'}
+                  {farm.profile_summary?.irrigation_type === 'rainfed'
+                    ? t('home.rainfed')
+                    : farm.profile_summary?.irrigation_type === 'irrigated'
+                      ? t('home.irrigated')
+                      : farm.profile_summary?.irrigation_type === 'mixed'
+                        ? t('home.mixed')
+                        : farm.profile_summary?.irrigation_type?.replace('_', ' ') || t('home.rainfed')}
                 </p>
                 <p className="text-[11px] text-ink/50">
-                  Documented during field onboarding diagnostic
+                  {t('home.waterRegimeNote')}
                 </p>
               </div>
 
               <div className="rounded-xl border border-line/70 bg-cream/50 p-3.5 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 flex items-center gap-1">
                   <Sprout size={12} className="text-leaf" />
-                  Production Goals
+                  {t('home.productionGoals')}
                 </span>
                 <div className="flex flex-wrap gap-1 pt-0.5">
                   {(farm.profile_summary?.purposes ?? []).length > 0 ? (
@@ -351,7 +357,7 @@ export default function HomeDashboard() {
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-ink/50">Commercial / General</span>
+                    <span className="text-xs text-ink/50">{t('home.commercialGeneral')}</span>
                   )}
                 </div>
               </div>
@@ -361,8 +367,8 @@ export default function HomeDashboard() {
             {farm.profile_summary?.priorities && (
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-xs font-semibold text-ink/70">
-                  <span>Priority Weights</span>
-                  <span className="font-mono text-[11px]">100% Allocated</span>
+                  <span>{t('home.priorityWeights')}</span>
+                  <span className="font-mono text-[11px]">{t('home.allocated100')}</span>
                 </div>
                 <div className="flex h-2 w-full overflow-hidden rounded-full border border-line bg-cream">
                   <div style={{ width: `${farm.profile_summary.priorities.water || 25}%` }} className="bg-sky" title="Water" />
@@ -377,10 +383,11 @@ export default function HomeDashboard() {
           <div className="pt-3 border-t border-line/60 flex items-center justify-between text-xs">
             <span className="text-ink/60 flex items-center gap-1">
               <ShieldCheck size={13} className="text-leaf" />
-              Private anonymous browser session
+              {t('home.privateSession')}
             </span>
-            <Link to="/settings" className="font-bold text-forest hover:text-leaf">
-              Preferences &rarr;
+            <Link to="/settings" className="font-bold text-forest hover:text-leaf inline-flex items-center gap-1">
+              <span>{t('home.preferences')}</span>
+              <ArrowRight size={12} className="rtl:rotate-180" />
             </Link>
           </div>
         </div>

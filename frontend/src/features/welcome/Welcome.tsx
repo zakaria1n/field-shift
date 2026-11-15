@@ -221,19 +221,19 @@ export default function Welcome() {
               {/* 3-Year Crop Succession Card Float */}
               <div className="absolute bottom-4 inset-x-4 rounded-2xl bg-white/95 backdrop-blur-md border border-line p-3 shadow-lg">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 block mb-1.5">
-                  Multi-Season Crop Succession
+                  {t('welcome.multiSeasonSuccession')}
                 </span>
                 <div className="flex items-center justify-between gap-1.5">
                   <div className="flex items-center gap-1.5 rounded-lg border border-line bg-cream/70 px-2 py-1 text-xs font-bold text-forest">
-                    <span>Y1</span> <span className="font-normal text-ink/70">Wheat</span>
+                    <span>Y1</span> <span className="font-normal text-ink/70">{isArabic ? 'قمح' : 'Wheat'}</span>
                   </div>
                   <span className="text-ink/30 text-xs font-bold" aria-hidden>→</span>
                   <div className="flex items-center gap-1.5 rounded-lg border border-line bg-cream/70 px-2 py-1 text-xs font-bold text-forest">
-                    <span>Y2</span> <span className="font-normal text-ink/70">Chickpea</span>
+                    <span>Y2</span> <span className="font-normal text-ink/70">{isArabic ? 'حمص' : 'Chickpea'}</span>
                   </div>
                   <span className="text-ink/30 text-xs font-bold" aria-hidden>→</span>
                   <div className="flex items-center gap-1.5 rounded-lg border border-line bg-cream/70 px-2 py-1 text-xs font-bold text-forest">
-                    <span>Y3</span> <span className="font-normal text-ink/70">Potato</span>
+                    <span>Y3</span> <span className="font-normal text-ink/70">{isArabic ? 'بطاطس' : 'Potato'}</span>
                   </div>
                 </div>
               </div>
@@ -338,15 +338,15 @@ export default function Welcome() {
                   <div className="sm:col-span-6 space-y-3">
                     <div className="rounded-xl border border-line bg-cream/50 p-4 space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-ink/60">{isArabic ? 'الموقع:' : 'Location:'}</span>
+                        <span className="text-ink/60">{t('welcome.location')}:</span>
                         <span className="font-bold text-forest">{isArabic ? selectedPreset.nameAr : selectedPreset.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-ink/60">{isArabic ? 'المساحة الجيوديسية:' : 'Geodesic Area:'}</span>
-                        <span className="font-mono font-bold text-forest">{selectedPreset.area} ha (hectares)</span>
+                        <span className="text-ink/60">{t('welcome.geodesicArea')}:</span>
+                        <span className="font-mono font-bold text-forest">{selectedPreset.area} {t('common.hectare')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-ink/60">{isArabic ? 'الإحداثيات المركزية:' : 'Centroid:'}</span>
+                        <span className="text-ink/60">{t('home.centroid')}:</span>
                         <span className="font-mono text-ink/70">{selectedPreset.lat}°N, {selectedPreset.lon}°E</span>
                       </div>
                     </div>
@@ -393,11 +393,11 @@ export default function Welcome() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 pt-2 text-xs">
                       <div className="rounded-xl bg-white p-2.5 border border-line">
-                        <span className="text-[10px] text-ink/50 uppercase block">Annual Mean Temp</span>
+                        <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.annualMeanTemp')}</span>
                         <span className="font-display text-lg font-extrabold text-forest">{selectedPreset.temp} °C</span>
                       </div>
                       <div className="rounded-xl bg-white p-2.5 border border-line">
-                        <span className="text-[10px] text-ink/50 uppercase block">Annual Rainfall</span>
+                        <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.annualRainfall')}</span>
                         <span className="font-display text-lg font-extrabold text-forest">{selectedPreset.precipMm} mm/yr</span>
                         <span className="text-[9px] font-mono text-ink/40 block">({selectedPreset.precipDaily} mm/day)</span>
                       </div>
@@ -411,12 +411,12 @@ export default function Welcome() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 pt-2 text-xs">
                       <div className="rounded-xl bg-white p-2.5 border border-line">
-                        <span className="text-[10px] text-ink/50 uppercase block">Soil pH (0-30cm)</span>
+                        <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.soilPh')}</span>
                         <span className="font-display text-lg font-extrabold text-forest">{selectedPreset.ph} pH</span>
-                        <span className="text-[9px] text-leaf font-bold block">Optimal</span>
+                        <span className="text-[9px] text-leaf font-bold block">{t('welcome.optimal')}</span>
                       </div>
                       <div className="rounded-xl bg-white p-2.5 border border-line">
-                        <span className="text-[10px] text-ink/50 uppercase block">Textural Class</span>
+                        <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.texturalClass')}</span>
                         <span className="font-display text-sm font-extrabold text-forest truncate block">{isArabic ? selectedPreset.soilTypeAr : selectedPreset.soilType}</span>
                         <span className="text-[9px] text-ink/50 block">Clay 34% / Silt 33%</span>
                       </div>
@@ -457,7 +457,7 @@ export default function Welcome() {
                     </p>
                   </div>
                   <span className="rounded-full bg-leaf/15 text-forest border border-leaf/30 px-3 py-1 text-xs font-bold">
-                    Agronomic Fit: 86 / 100
+                    {t('welcome.agronomicFit')}: 86 / 100
                   </span>
                 </div>
 
@@ -469,7 +469,7 @@ export default function Welcome() {
                       className="relative rounded-2xl border border-line bg-cream/50 p-4 flex flex-col items-center justify-between"
                     >
                       <span className="text-[10px] font-mono font-bold text-forest bg-forest/10 px-2 py-0.5 rounded self-start">
-                        Year {slot.year_number}
+                        {t('timeline.year', { n: slot.year_number })}
                       </span>
                       <div className="my-1">
                         <CropVisual
@@ -491,19 +491,19 @@ export default function Welcome() {
                 {/* Score Indicators preview */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="rounded-xl border border-line bg-cream/40 p-2 text-center">
-                    <span className="text-[10px] text-ink/50 uppercase block">Water Fit</span>
+                    <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.waterFit')}</span>
                     <span className="font-bold text-forest">84%</span>
                   </div>
                   <div className="rounded-xl border border-line bg-cream/40 p-2 text-center">
-                    <span className="text-[10px] text-ink/50 uppercase block">Soil Health</span>
+                    <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.soilHealth')}</span>
                     <span className="font-bold text-leaf">92%</span>
                   </div>
                   <div className="rounded-xl border border-line bg-cream/40 p-2 text-center">
-                    <span className="text-[10px] text-ink/50 uppercase block">Yield Baseline</span>
+                    <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.yieldBaseline')}</span>
                     <span className="font-bold text-amber-800">88%</span>
                   </div>
                   <div className="rounded-xl border border-line bg-cream/40 p-2 text-center">
-                    <span className="text-[10px] text-ink/50 uppercase block">Climate Risk</span>
+                    <span className="text-[10px] text-ink/50 uppercase block">{t('welcome.climateRisk')}</span>
                     <span className="font-bold text-forest">80%</span>
                   </div>
                 </div>
@@ -544,7 +544,7 @@ export default function Welcome() {
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 px-3 py-1 text-xs font-bold">
                     <CheckCircle2 size={13} />
-                    Agronomic Rules Passed
+                    {t('welcome.rulesPassed')}
                   </span>
                 </div>
 
@@ -600,7 +600,7 @@ export default function Welcome() {
                 {/* Final Call to Action inside Demo */}
                 <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-line">
                   <p className="text-xs text-ink/60">
-                    Ready to run this analysis on your actual field parcel?
+                    {t('welcome.readyToRun')}
                   </p>
                   <Link
                     to="/fields/new"
@@ -692,39 +692,39 @@ export default function Welcome() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line/70 pb-4">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-ink/50 block">
-              Open Science Foundation
+              {t('welcome.sources.openScience')}
             </span>
             <h3 className="font-display text-xl font-extrabold text-forest">
-              {isArabic ? 'المصادر والنزاهة العلمية' : 'Scientific Provenance & Data Sources'}
+              {t('welcome.sources.title')}
             </h3>
           </div>
           <span className="text-xs font-mono text-ink/50">
-            NASA Space Apps Hackathon Initiative
+            {t('welcome.sources.initiative')}
           </span>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-line bg-white p-4 space-y-1.5">
             <span className="font-mono text-xs font-bold text-sky-800">NASA POWER</span>
-            <h4 className="font-bold text-sm text-forest">Global Climatology</h4>
+            <h4 className="font-bold text-sm text-forest">{t('welcome.sources.climatology')}</h4>
             <p className="text-[11px] text-ink/65 leading-relaxed">
-              30-year agroclimatological normals at 0.5° × 0.5° resolution. Provides daily & annual temperature and precipitation baselines.
+              {t('welcome.sources.climatologyDesc')}
             </p>
           </div>
 
           <div className="rounded-2xl border border-line bg-white p-4 space-y-1.5">
             <span className="font-mono text-xs font-bold text-leaf">ISRIC SoilGrids 2020</span>
-            <h4 className="font-bold text-sm text-forest">Digital Soil Mapping</h4>
+            <h4 className="font-bold text-sm text-forest">{t('welcome.sources.soil')}</h4>
             <p className="text-[11px] text-ink/65 leading-relaxed">
-              Global gridded 250m machine-learning soil property estimates for 0–30 cm topsoil: pH, organic carbon, texture fractions, and nitrogen.
+              {t('welcome.sources.soilDesc')}
             </p>
           </div>
 
           <div className="rounded-2xl border border-line bg-white p-4 space-y-1.5">
             <span className="font-mono text-xs font-bold text-amber-800">FAO GAEZ v5</span>
-            <h4 className="font-bold text-sm text-forest">Agro-Ecological Zones</h4>
+            <h4 className="font-bold text-sm text-forest">{t('welcome.sources.gaez')}</h4>
             <p className="text-[11px] text-ink/65 leading-relaxed">
-              AgERA5 multi-crop potential yield reference baselines. Provides qualitative suitability references, not financial forecasts.
+              {t('welcome.sources.gaezDesc')}
             </p>
           </div>
         </div>

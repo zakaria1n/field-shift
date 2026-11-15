@@ -34,6 +34,44 @@ function referencePeriod(o: { source_id: string; period_start: string | null; pe
   return null
 }
 
+function formatLimitation(l: string, isArabic: boolean): string {
+  if (l === 'History is incomplete; baseline comparison is limited.') {
+    return isArabic
+      ? 'سجل المحاصيل السابقة غير مكتمل؛ المقارنة مع الممارسة الزراعية الأساسية محدودة.'
+      : l
+  }
+  if (l === 'No crop history provided.') {
+    return isArabic
+      ? 'لم يتم تقديم أي تاريخ للمحاصيل السابقة.'
+      : l
+  }
+  if (l.includes('Recent history is cereal-dominant; diversification potential exists.')) {
+    return isArabic
+      ? 'التاريخ الأخير يغلب عليه الحبوب؛ توجد إمكانية للتنويع الزراعي.'
+      : l
+  }
+  if (l.includes('crop_history_full_coverage')) {
+    return isArabic
+      ? 'بيانات ناقصة: تغطية كاملة لسجل المحاصيل للسنوات السابقة.'
+      : 'Missing information: Full crop history coverage for previous years.'
+  }
+  if (l.startsWith('missing: ')) {
+    const item = l.replace('missing: ', '').trim()
+    return isArabic ? `بيانات ناقصة: ${item}` : l
+  }
+  if (l.includes('unavailable')) {
+    return isArabic
+      ? l.replace('unavailable:', 'غير متوفر:').replace('no data', 'لا توجد بيانات')
+      : l
+  }
+  if (l.includes('served from cache fetched at')) {
+    return isArabic
+      ? l.replace('served from cache fetched at', 'مُقدَّم من ذاكرة التخزين المؤقت بتاريخ')
+      : l
+  }
+  return l
+}
+
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const DAYS_IN_MONTHS = [31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 const MONTH_KEYS_UPPER = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
@@ -476,16 +514,16 @@ export default function FieldInsights() {
             <span>{t('insights.limitations')}</span>
           </div>
 
-          <ul className="list-disc space-y-1.5 ps-5 text-xs text-amber-950/80 leading-relaxed">
+          <ul className="list-disc space-y-1.5 ps-5 text-xs text-amber-950/80 leading-relaxed text-start">
             {data.limitations.map((l, i) => (
               <li key={i}>
-                <bdi>{l}</bdi>
+                <bdi>{formatLimitation(l, isArabic)}</bdi>
               </li>
             ))}
           </ul>
 
-          <div className="mt-3 border-t border-amber-200/60 pt-3 space-y-1 text-xs text-amber-900/70">
-            <p className="font-semibold text-amber-950">Scientific Integrity Notice:</p>
+          <div className="mt-3 border-t border-amber-200/60 pt-3 space-y-1 text-xs text-amber-900/70 text-start">
+            <p className="font-semibold text-amber-950">{t('insights.integrityNotice')}</p>
             <p>{t('disclaimer.soil')}</p>
             <p>{t('disclaimer.yield')}</p>
           </div>

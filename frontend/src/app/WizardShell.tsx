@@ -1,15 +1,23 @@
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Sprout, Satellite, ChevronLeft } from 'lucide-react'
+import { Sprout, Satellite, Home, MapPin, Compass, BarChart2, Settings } from 'lucide-react'
 
 import LanguageSwitch from './components/LanguageSwitch'
 import WizardStepper from './components/WizardStepper'
 
-/** Shell for first-visit journey screens (welcome → … → confirmation). */
+/** Shell for first-visit journey screens (welcome → … → confirmation) harmonized with AppShell styling. */
 export default function WizardShell() {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+
+  const nav = [
+    { to: '/home', label: t('nav.home'), icon: Home },
+    { to: '/fields/list', label: t('nav.fields'), icon: MapPin },
+    { to: '/plan', label: t('nav.plan'), icon: Compass },
+    { to: '/insights', label: t('nav.insights'), icon: BarChart2 },
+    { to: '/settings', label: t('nav.settings'), icon: Settings },
+  ]
 
   const stepFor: Record<string, number> = {
     '/welcome': 0,
@@ -23,39 +31,55 @@ export default function WizardShell() {
 
   return (
     <div className="flex min-h-screen flex-col bg-cream text-ink">
-      {/* Elevated Header */}
-      <header
-        className="sticky top-0 z-40 text-white shadow-md"
-        style={{ background: 'linear-gradient(135deg, #081A15 0%, #0E2921 55%, #163E32 100%)', borderBottom: '1px solid rgba(188, 230, 206, 0.15)' }}
-      >
+      {/* Top Navigation Harmonized with AppShell */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-line shadow-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/welcome"
-              className="group flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-leaf rounded-xl p-1"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-leaf to-emerald-600 text-white shadow-glow group-hover:scale-105 transition-transform duration-200">
-                <Sprout size={22} className="drop-shadow" />
+          <div className="flex items-center gap-6">
+            <Link to="/home" className="group flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-forest to-forest-surface text-white shadow-sm group-hover:bg-leaf transition-colors">
+                <Sprout size={20} />
               </span>
               <div className="flex flex-col">
-                <span className="text-xl font-extrabold tracking-tight text-white group-hover:text-mint transition-colors">
+                <span className="text-lg font-extrabold tracking-tight text-forest">
                   {t('app.title')}
                 </span>
-                <span className="text-[10px] font-semibold text-mint/80 tracking-wide uppercase flex items-center gap-1 font-mono">
-                  <Satellite size={10} className="text-emerald-400" /> Earth Intelligence
+                <span className="text-[9px] font-semibold text-leaf tracking-wider uppercase flex items-center gap-1 font-mono">
+                  <Satellite size={9} /> Agritech Platform
                 </span>
               </div>
             </Link>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
+              {nav.map((item) => {
+                const active = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all duration-200 ${
+                      active
+                        ? 'bg-forest text-white shadow-sm ring-1 ring-forest/20'
+                        : 'text-ink-muted hover:text-forest hover:bg-forest/5'
+                    }`}
+                  >
+                    <Icon size={14} className={active ? 'text-mint' : 'text-ink-light'} />
+                    <span>{item.label}</span>
+                  </Link>
+                )
+              })}
+            </nav>
           </div>
 
-          <div className="flex items-center gap-2">
-            <LanguageSwitch variant="dark" />
+          <div className="flex items-center gap-3">
+            <LanguageSwitch variant="light" />
           </div>
         </div>
 
         {/* Stepper progress Bar */}
         {step > 0 && (
-          <div className="border-t border-white/10 bg-black/20 backdrop-blur-md">
+          <div className="border-t border-line bg-cream-warm/70 backdrop-blur-md">
             <div className="mx-auto max-w-6xl px-4 sm:px-6">
               <WizardStepper current={step} />
             </div>

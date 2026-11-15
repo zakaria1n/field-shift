@@ -27,10 +27,10 @@ export default function WizardStepper({ current }: { current: number }) {
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 font-mono ${
                     isDone
-                      ? 'bg-leaf text-white shadow-sm ring-2 ring-leaf/30'
+                      ? 'bg-forest text-white shadow-sm'
                       : isActive
-                        ? 'bg-gradient-to-r from-emerald-400 to-leaf text-white shadow-glow ring-2 ring-white/40 animate-pulse-subtle'
-                        : 'bg-white/10 text-white/50 border border-white/10'
+                        ? 'bg-leaf text-white shadow-sm ring-2 ring-leaf/30 animate-pulse-subtle'
+                        : 'bg-cream text-ink/40 border border-line'
                   }`}
                 >
                   {isDone ? <Check size={14} strokeWidth={3} /> : step.num}
@@ -38,10 +38,10 @@ export default function WizardStepper({ current }: { current: number }) {
                 <span
                   className={`text-xs font-semibold whitespace-nowrap transition-colors duration-200 ${
                     isActive
-                      ? 'text-white font-bold tracking-tight drop-shadow-sm'
+                      ? 'text-forest font-bold tracking-tight'
                       : isDone
-                        ? 'text-white/80'
-                        : 'text-white/40'
+                        ? 'text-forest/80'
+                        : 'text-ink/40'
                   }`}
                 >
                   {t(step.key)}
@@ -49,10 +49,10 @@ export default function WizardStepper({ current }: { current: number }) {
               </div>
 
               {i < steps.length - 1 && (
-                <div className="flex-1 mx-3 h-0.5 rounded-full overflow-hidden bg-white/10">
+                <div className="flex-1 mx-3 h-0.5 rounded-full overflow-hidden bg-line">
                   <div
                     className={`h-full transition-all duration-500 ${
-                      isDone ? 'bg-leaf w-full' : 'w-0'
+                      isDone ? 'bg-forest w-full' : 'w-0'
                     }`}
                   />
                 </div>
@@ -68,11 +68,11 @@ export default function WizardStepper({ current }: { current: number }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-leaf text-white font-mono font-bold text-[11px]">
             {current}
           </span>
-          <span className="font-bold text-white tracking-tight">
+          <span className="font-bold text-forest tracking-tight">
             {t(steps[Math.min(current - 1, steps.length - 1)]?.key ?? 'steps.field')}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-[11px] text-white/60">
+        <div className="flex items-center gap-1 font-mono text-[11px] text-ink/60">
           <span>{current}</span>
           <span>/</span>
           <span>{steps.length}</span>

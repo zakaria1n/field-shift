@@ -49,14 +49,22 @@ export default function FieldSelect() {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
-    const map = L.map(containerRef.current, { center: DEFAULT_CENTER, zoom: 13, zoomControl: true })
+    const map = L.map(containerRef.current, {
+      center: DEFAULT_CENTER,
+      zoom: 13,
+      minZoom: 3,
+      maxZoom: 18,
+      zoomControl: true,
+    })
 
     const standard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
+      maxNativeZoom: 18,
+      maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors',
     })
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
+      maxNativeZoom: 18,
+      maxZoom: 18,
       attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
     })
 
@@ -291,16 +299,37 @@ export default function FieldSelect() {
             <label className="label text-xs uppercase tracking-wider font-mono text-ink-light" htmlFor="place-search">
               {t('field.search.placeholder')}
             </label>
-            <div className="relative">
-              <Search className="absolute top-3 start-3.5 h-4 w-4 text-ink-light" aria-hidden />
+            <div className="relative flex items-center">
+              <div className="absolute start-3 pointer-events-none z-10 flex items-center justify-center">
+                {searching ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-leaf" />
+                ) : (
+                  <motion.div
+                    animate={{ scale: [1, 1.18, 1], rotate: [0, 4, -4, 0] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                  >
+                    <Search className="h-4 w-4 text-leaf" aria-hidden />
+                  </motion.div>
+                )}
+              </div>
               <input
                 id="place-search"
-                className="input ps-10 text-xs sm:text-sm"
+                className="input text-xs sm:text-sm"
+                style={{ paddingInlineStart: '2.5rem', paddingInlineEnd: '2.5rem' }}
                 placeholder={t('field.search.placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              {searching && <Loader2 className="absolute top-3 end-3.5 h-4 w-4 animate-spin text-leaf" />}
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute end-3 h-5 w-5 rounded-full bg-cream hover:bg-cream-warm flex items-center justify-center text-xs text-ink/50 hover:text-ink transition-colors"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {results && results.results.length === 0 && searchQuery.length >= 2 && (
