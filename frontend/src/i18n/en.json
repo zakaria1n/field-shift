@@ -271,5 +271,6 @@
   "insights.soilN": "Total nitrogen",
   "insights.plantingWindow": "Planting window",
   "settings.clearKey": "Clear this browser key",
-  "settings.clearedNote": "Browser key cleared. Reload to start fresh; old data becomes unreachable."
+  "settings.clearedNote": "Browser key cleared. Reload to start fresh; old data becomes unreachable.",
+  "insights.pixels": "Valid pixels"
 }

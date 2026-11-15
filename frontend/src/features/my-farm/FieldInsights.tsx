@@ -17,6 +17,11 @@ function statusKind(quality: string): 'live' | 'cached' | 'unavailable' | 'demo'
 function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
   const { t } = useTranslation()
   const monthly = obs.meta?.monthly as Record<string, number | null> | undefined
+  const depth = obs.meta?.depth as string | undefined
+  const nValid = obs.meta?.n_valid_pixels as number | undefined
+  const nTotal = obs.meta?.n_total_pixels as number | undefined
+  const scenario = obs.meta?.period as string | undefined
+  const inputLabel = obs.meta?.input_label as string | undefined
   return (
     <div className="rounded-xl border border-line p-3">
       <div className="flex items-start justify-between gap-2">
@@ -30,8 +35,19 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
           <><bdi>{obs.value.toLocaleString(undefined, { maximumFractionDigits: 1 })}</bdi> <span className="text-sm font-medium text-ink/60">{obs.unit}</span></>
         )}
       </p>
+      {(depth || scenario) && (
+        <p className="mt-1 text-[11px] font-medium text-ink/60">
+          {depth && <><bdi>{depth}</bdi> · </>}
+          {scenario && inputLabel && <>{scenario} · {inputLabel}</>}
+        </p>
+      )}
       <p className="mt-1 text-[11px] text-ink/50"><bdi>{obs.source_id}</bdi> · {t('status.regional')}</p>
       {obs.spatial_support && <p className="mt-0.5 text-[11px] text-ink/45"><bdi>{obs.spatial_support}</bdi></p>}
+      {typeof nValid === 'number' && (
+        <p className="mt-0.5 text-[11px] text-ink/45">
+          {t('insights.pixels')}: <bdi>{nValid}</bdi>/{bdiSafe(nTotal)}
+        </p>
+      )}
       {monthly && obs.indicator === 'monthly_mean_precipitation' && (
         <div className="mt-2 flex h-10 items-end gap-0.5 overflow-hidden" aria-hidden>
           {Object.entries(monthly).map(([m, v]) => (
@@ -46,6 +62,10 @@ function ObsCard({ obs, label }: { obs: ObservationOut; label: string }) {
       )}
     </div>
   )
+}
+
+function bdiSafe(v: number | undefined): string {
+  return v === undefined ? '–' : String(v)
 }
 
 const LABELS: Record<string, string> = {
