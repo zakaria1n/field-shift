@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     power_enabled: bool = True
     soilgrids_enabled: bool = True
-    gaez_enabled: bool = False
+    gaez_enabled: bool = True
     search_enabled: bool = True
 
     power_community: str = "AG"

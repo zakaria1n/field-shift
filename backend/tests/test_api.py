@@ -60,10 +60,14 @@ def test_analysis_runs_and_rotations_served(analyzed_field):
     plan = rot["rotations"][0]
     assert plan["score"]["total"] is not None
     assert len(plan["slots"]) == 3
-    # Yield indicator honestly unavailable with the fixture setup
+    # Yield indicator is now scored from the fixture GAEZ references (partial:
+    # only mapped crops resolve), while unmapped crops keep it honest.
     indicators = {i["key"]: i for i in plan["score"]["indicators"]}
-    assert indicators["yield"]["status"] == "unavailable"
-    assert indicators["yield"]["value"] is None
+    assert indicators["yield"]["status"] in ("available", "partial")
+    assert indicators["yield"]["value"] is not None
+    src_status = {s["source_id"]: s["status"] for s in job["sources"]}
+    assert src_status["gaez_v5"] == "live"
+    assert "fixture" in (next(s for s in job["sources"] if s["source_id"] == "gaez_v5")["detail"] or "").lower()
 
 
 def test_substitutes_exclude_other_slots_and_hard_excluded_crops(analyzed_field):

@@ -159,10 +159,11 @@ def run_analysis(job_id: str, field_id: str) -> None:
         else:
             tracker.set("climate", "failed", power.detail)
 
-        # Stage: soil estimates (SoilGrids; gracefully unavailable)
+        # Stage: soil estimates (SoilGrids WebDAV tiles over the field polygon)
         tracker.set("soil", "running")
         session.commit()
-        soil = soilgrids.fetch_soil(session, field.centroid_lat, field.centroid_lon)
+        field_geometry = json.loads(field.geometry_geojson) if field.geometry_geojson else None
+        soil = soilgrids.fetch_soil(session, field.centroid_lat, field.centroid_lon, field_geometry)
         sources["soilgrids"] = {
             "source_id": "soilgrids", "status": soil.status,
             "detail": soil.detail, "fetched_at": soil.fetched_at,
@@ -170,6 +171,8 @@ def run_analysis(job_id: str, field_id: str) -> None:
         }
         if soil.ok:
             tracker.set("soil", "complete", soil.detail or soil.status)
+            for o in soil.observations:
+                o["quality_status"] = soil.status
             obs_rows.extend(soil.observations)
         else:
             tracker.set("soil", "skipped", soil.detail or soil.status)
@@ -223,17 +226,28 @@ def run_analysis(job_id: str, field_id: str) -> None:
         tracker.set("yield_reference", "running")
         session.commit()
         pool_ids = [r.crop.crop_id for r in eligible]
-        yield_refs, yield_results = assess_pool(pool_ids, field.centroid_lat, field.centroid_lon)
+        irrigation_type = profile.get("irrigation_type") or "unknown"
+        yield_refs, yield_results = assess_pool(
+            pool_ids, field.centroid_lat, field.centroid_lon, irrigation_type,
+        )
+        n_resolved = sum(1 for v in yield_refs.values() if v is not None)
+        n_unmapped = sum(1 for r in yield_results
+                         if "no GAEZ v5 layer exists for crop" in (r.detail or ""))
         yield_status = "unavailable"
-        if any(v is not None for v in yield_refs.values()):
+        if n_resolved:
             yield_status = "live" if any(r.status == STATUS_LIVE for r in yield_results) else "demo_fixture"
         sources["gaez_v5"] = {
             "source_id": "gaez_v5", "status": yield_status,
-            "detail": yield_results[0].detail if yield_results else "not evaluated",
-            "data_period": None,
+            "detail": (
+                f"attainable-yield references resolved for {n_resolved}/{len(pool_ids)} "
+                f"eligible crops ({n_unmapped} crops have no GAEZ v5 layer)"
+                if yield_results else "not evaluated"
+            ),
+            "data_period": next((r.data_period for r in yield_results if r.data_period), None),
         }
         tracker.set("yield_reference", "complete" if yield_status != "unavailable" else "skipped",
-                    "attainable-yield references resolved" if yield_status != "unavailable"
+                    f"{n_resolved}/{len(pool_ids)} crops matched to GAEZ v5 layers"
+                    if yield_status != "unavailable"
                     else "GAEZ layers unavailable; yield indicator reported as unavailable")
 
         tracker.set("rotation", "running")

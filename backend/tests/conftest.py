@@ -110,13 +110,23 @@ def analyzed_field(field_with_profile, monkeypatch):
         return ProviderResult(source_id="nasa_power", status="live", observations=results,
                               data_period="FIXTURE climatology (labelled sample)")
 
-    def fake_soil(session, lat, lon):
+    def fake_soil(session, lat, lon, geometry=None):
         return ProviderResult(source_id="soilgrids", status="unavailable",
                               detail="paused service (fixture path)")
+
+    def fake_assess_pool(crop_ids, lat, lon, irrigation_type=None):
+        # Clearly-labelled fixture references: only a few mapped crops resolve.
+        fixture_refs = {"bread_wheat": 4500.0, "durum_wheat": 4300.0, "barley": 3800.0}
+        from app.data_providers.interfaces import ProviderResult as PR
+        refs = {cid: fixture_refs.get(cid) for cid in crop_ids}
+        results = [PR(source_id="gaez_v5", status="live",
+                      detail="FIXTURE references for tests (never shown as live data)")]
+        return refs, results
 
     import app.services.analysis as analysis_mod
     monkeypatch.setattr(analysis_mod.nasa_power, "fetch_climate", fake_climate)
     monkeypatch.setattr(analysis_mod.soilgrids, "fetch_soil", fake_soil)
+    monkeypatch.setattr(analysis_mod, "assess_pool", fake_assess_pool)
 
     r = c.post(f"/api/v1/fields/{field_id}/analyses", json={})
     assert r.status_code == 202, r.text
