@@ -15,9 +15,9 @@ export const PARCEL_CORNERS: Array<[number, number]> = [
 
 export const GOLD = '#F6C445'
 
-/** Draw window inside global progress: starts after a short beat, completes
- * before the hero hands over to the soil scene. */
-export const OUTLINE_DRAW: [number, number] = [0.02, 0.14]
+/** The hero outline draws ONCE on page entry (time-based, scroll-free):
+ * short beat after the hero appears, then a single eased pass. */
+export const AUTO_OUTLINE = { delayMs: 700, durationMs: 2200 } as const
 
 /** Visibility windows: hero, then again during the rotation scene. */
 export const OUTLINE_VISIBILITY: Array<[number, number, number]> = [

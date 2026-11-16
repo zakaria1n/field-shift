@@ -8,7 +8,7 @@ import { ChevronDown } from 'lucide-react'
 
 import { useCoverLayout } from '../hooks/useCoverLayout'
 import { useWelcomeScroll } from '../hooks/useWelcomeScroll'
-import { OUTLINE_DRAW, OUTLINE_VISIBILITY } from '../animations/heroOutline'
+import { OUTLINE_VISIBILITY } from '../animations/heroOutline'
 import { ASSETS, SCENES, SCENE_COUNT } from '../config/welcomeScenes'
 import { useSceneReveal, useWindowOpacity } from '../animations/scrollTimeline'
 
@@ -21,6 +21,7 @@ import RotationScene from './RotationScene'
 import FinalCTAScene from './FinalCTAScene'
 import PlantGrowth from './PlantGrowth'
 import FieldOutline from './FieldOutline'
+import { useAutoOutline } from '../hooks/useAutoOutline'
 import { CoverPlate } from './ScenePrimitives'
 
 /** Pointer-events window: a scene layer only accepts clicks while its
@@ -75,9 +76,10 @@ export default function CinematicStory() {
   const aerialOpacity = useTransform(progress, [0, 0.15, 0.28, 0.68, 0.8, 1], [1, 1, 0, 0, 1, 1])
   const soilOpacity = useTransform(progress, [0, 0.15, 0.28, 0.68, 0.8, 1], [0, 0, 1, 1, 0, 0])
 
-  /* golden outline: draws 0.02→0.14, reappears for the rotation scene */
-  const drawOffset = useTransform(progress, OUTLINE_DRAW, [1, 0])
-  const outlineFill = useTransform(drawOffset, [1, 0.2, 0], [0, 0.35, 1])
+  /* golden outline: draws automatically on entry (scroll-free), and stays
+   * complete; the scroll-driven visibility windows re-show it later */
+  const outlineAuto = useAutoOutline()
+  const drawOffset = useTransform(outlineAuto, [0, 1], [1, 0])
   const outlineVisibility = useTransform(
     progress,
     OUTLINE_VISIBILITY.flatMap(([a, b, c]) => [a, b, c]),
