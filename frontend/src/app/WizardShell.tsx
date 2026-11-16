@@ -46,10 +46,10 @@ export default function WizardShell() {
   const isPlansRoute = location.pathname.includes('/rotations')
   const step = isAnalysisRoute ? 4 : isPlansRoute ? 5 : (stepFor[location.pathname] ?? 0)
 
-  // Immersive mode: the Welcome page renders its own cinematic overlay
-  // navigation, so the app shell chrome is removed there.
-  const isImmersiveWelcome = location.pathname === '/welcome'
-  if (isImmersiveWelcome) {
+  // Immersive mode: the Welcome page and the Earth Observatory render their
+  // own cinematic overlay navigation, so the app shell chrome is removed there.
+  const isImmersive = location.pathname === '/welcome' || location.pathname === '/fields/new'
+  if (isImmersive) {
     return (
       <div className="flex min-h-screen flex-col bg-forest-dark text-ink">
         <main className="flex-1">

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from './AppShell'
 import WizardShell from './WizardShell'
 import Welcome from '../features/welcome/Welcome'
-import FieldSelect from '../features/field-map/FieldSelect'
+import EarthObservatoryPage from '../features/earth-observatory/EarthObservatoryPage'
 import Questions from '../features/farm-profile/Questions'
 import Priorities from '../features/priorities/Priorities'
 import AnalysisProgress from '../features/analysis/AnalysisProgress'
@@ -41,7 +41,7 @@ export default function App() {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/welcome" element={<Welcome />} />
       <Route element={<WizardShell />}>
-        <Route path="/fields/new" element={<FieldSelect />} />
+        <Route path="/fields/new" element={<EarthObservatoryPage />} />
         <Route path="/setup/questions" element={<Questions />} />
         <Route path="/setup/priorities" element={<Priorities />} />
         <Route path="/analyses/:jobId/progress" element={<AnalysisProgress />} />

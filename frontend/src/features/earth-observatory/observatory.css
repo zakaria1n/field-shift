@@ -1,0 +1,60 @@
+/* Earth Observatory — scoped styling for the globe canvas, starfield and the
+ * Leaflet/geoman drawing stage so they match the canonical dark references. */
+
+.earth-observatory {
+  color-scheme: dark;
+}
+
+/* --- Starfield behind the globe UI (pure CSS, no image payload) ---------- */
+.observatory-stars {
+  z-index: 5;
+  opacity: 0.85;
+  background-image:
+    radial-gradient(1.5px 1.5px at 22px 34px, rgba(255, 255, 255, 0.9), transparent 60%),
+    radial-gradient(1px 1px at 120px 88px, rgba(255, 255, 255, 0.7), transparent 60%),
+    radial-gradient(2px 2px at 210px 40px, rgba(214, 232, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 300px 150px, rgba(255, 255, 255, 0.65), transparent 60%),
+    radial-gradient(1.5px 1.5px at 68px 190px, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(1px 1px at 260px 240px, rgba(255, 255, 255, 0.55), transparent 60%),
+    radial-gradient(1.5px 1.5px at 340px 90px, rgba(255, 255, 255, 0.7), transparent 60%);
+  background-size: 380px 280px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.9) 35%, rgba(0, 0, 0, 0.25) 75%, transparent 100%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.9) 35%, rgba(0, 0, 0, 0.25) 75%, transparent 100%);
+}
+
+/* --- Map stage ------------------------------------------------------------ */
+.earth-observatory-map .leaflet-container {
+  background: #04070C;
+  font-family: inherit;
+}
+/* Provider credits render in the page-level AttributionBadge; the engines'
+ * built-in attribution controls are disabled, so no duplicate pills. */
+
+/* Scale bar, light on dark (bottom-left in the references). */
+.earth-observatory-map .leaflet-control-scale-line {
+  background: rgba(6, 14, 11, 0.55);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* --- Geoman drawing styling ----------------------------------------------- */
+/* Vertices: white dots with a lime halo (06_Draw_Field_Polygon.png). */
+.observatory-vertex {
+  background: #ffffff;
+  border: 2px solid #A3E635;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(163, 230, 117, 0.9);
+}
+.leaflet-marker-icon.marker-icon,
+.leaflet-marker-icon.marker-icon-middle {
+  background: #ffffff;
+  border: 2px solid #A3E635;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(163, 230, 117, 0.9);
+}
+.leaflet-marker-icon.marker-icon-middle {
+  background: rgba(255, 255, 255, 0.75);
+}
