@@ -34,10 +34,12 @@ describe('Welcome', () => {
   it('shows the value proposition and the primary action', async () => {
     mocks.get.mockResolvedValue([])
     renderWelcome()
-    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/Earth data/)
-    const cta = screen.getByRole('link', { name: /Analyze my field/ })
-    expect(cta).toHaveAttribute('href', '/fields/new')
-    expect(screen.queryByRole('link', { name: /Continue my farm/ })).toBeNull()
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/understood precisely/)
+    // the cinematic page repeats the CTA across scenes; every instance
+    // must point at the real field-selection workflow
+    const ctas = await screen.findAllByRole('link', { name: /Analyze My Field/i })
+    expect(ctas.length).toBeGreaterThan(0)
+    for (const cta of ctas) expect(cta).toHaveAttribute('href', '/fields/new')
   })
 
   it('offers returning users a way back to their farm (T20 entry)', async () => {
@@ -46,10 +48,12 @@ describe('Welcome', () => {
     expect(await screen.findByRole('link', { name: /Continue my farm/ })).toHaveAttribute('href', '/home')
   })
 
-  it('shows the no-account notice and NASA attribution', async () => {
+  it('shows the no-account notice and honesty notes', async () => {
     mocks.get.mockResolvedValue([])
     renderWelcome()
-    expect(await screen.findByText(/No account needed/)).toBeInTheDocument()
-    expect(screen.getByText(/consult a local agronomist/)).toBeInTheDocument()
+    expect((await screen.findAllByText(/No account needed/))[0]).toBeInTheDocument()
+    expect((await screen.findAllByText(/consult a local agronomist/))[0]).toBeInTheDocument()
+    // illustrative card values are labelled as examples, never live data
+    expect(screen.getAllByText(/Illustrative example/)[0]).toBeInTheDocument()
   })
 })

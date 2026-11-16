@@ -39,8 +39,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />
+      <Route path="/welcome" element={<Welcome />} />
       <Route element={<WizardShell />}>
-        <Route path="/welcome" element={<Welcome />} />
         <Route path="/fields/new" element={<FieldSelect />} />
         <Route path="/setup/questions" element={<Questions />} />
         <Route path="/setup/priorities" element={<Priorities />} />

@@ -46,6 +46,19 @@ export default function WizardShell() {
   const isPlansRoute = location.pathname.includes('/rotations')
   const step = isAnalysisRoute ? 4 : isPlansRoute ? 5 : (stepFor[location.pathname] ?? 0)
 
+  // Immersive mode: the Welcome page renders its own cinematic overlay
+  // navigation, so the app shell chrome is removed there.
+  const isImmersiveWelcome = location.pathname === '/welcome'
+  if (isImmersiveWelcome) {
+    return (
+      <div className="flex min-h-screen flex-col bg-forest-dark text-ink">
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    )
+  }
+
   // Navigation items are ONLY shown on the Welcome page (step === 0) AND ONLY if a rotation plan has already been saved.
   // During any wizard step (1 to 5), nav links are completely hidden to prevent premature navigation to empty pages.
   const showNav = step === 0 && hasSavedPlan

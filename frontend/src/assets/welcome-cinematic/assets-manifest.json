@@ -93,7 +93,7 @@
       "dimensions": null,
       "role": "seed",
       "origin": "missing",
-      "status": "missing; aligned transparent sequence required",
+      "status": "superseded by candidate sequence; see plant-growth entries",
       "scenes": [
         1,
         2,
@@ -105,7 +105,7 @@
       "dimensions": null,
       "role": "germination",
       "origin": "missing",
-      "status": "missing; aligned transparent sequence required",
+      "status": "superseded by candidate sequence; see plant-growth entries",
       "scenes": [
         1,
         2,
@@ -117,7 +117,7 @@
       "dimensions": null,
       "role": "emerging-sprout",
       "origin": "missing",
-      "status": "missing; aligned transparent sequence required",
+      "status": "superseded by candidate sequence; see plant-growth entries",
       "scenes": [
         1,
         2,
@@ -129,7 +129,7 @@
       "dimensions": null,
       "role": "young-seedling",
       "origin": "missing",
-      "status": "missing; aligned transparent sequence required",
+      "status": "superseded by candidate sequence; see plant-growth entries",
       "scenes": [
         1,
         2,
@@ -141,7 +141,7 @@
       "dimensions": null,
       "role": "developed-plant",
       "origin": "missing",
-      "status": "missing; aligned transparent sequence required",
+      "status": "superseded by candidate sequence; see plant-growth entries",
       "scenes": [
         1,
         2,
@@ -153,7 +153,7 @@
       "dimensions": null,
       "role": "mature-plant",
       "origin": "missing",
-      "status": "missing; aligned transparent sequence required",
+      "status": "superseded by candidate sequence; see plant-growth entries",
       "scenes": [
         1,
         2,
@@ -179,6 +179,248 @@
       "scenes": [
         5
       ]
+    },
+    {
+      "path": "plant-growth/growth_00_seed.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 0",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        634,
+        780,
+        903,
+        956
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "plant-growth/growth_01_germination.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 1",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference and seed-stage edit",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        632,
+        780,
+        903,
+        974
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "plant-growth/growth_02_emergence.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 2",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        538,
+        492,
+        924,
+        951
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "plant-growth/growth_03_seedling.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 3",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        480,
+        392,
+        1034,
+        952
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "plant-growth/growth_04_intermediate.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 4",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        187,
+        139,
+        1301,
+        952
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "plant-growth/growth_05_advanced.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 5",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        190,
+        21,
+        1307,
+        952
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "plant-growth/growth_06_developed.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "growth stage 6",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "generated using seedling reference",
+      "status": "candidate; visual continuity and halo repair required",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "opaque_bbox": [
+        232,
+        15,
+        1258,
+        954
+      ],
+      "intended_anchor_px": [
+        768,
+        952
+      ]
+    },
+    {
+      "path": "previews/growth_contact_sheet.png",
+      "dimensions": [
+        1400,
+        650
+      ],
+      "role": "verification preview",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "browser composite",
+      "status": "preview"
+    },
+    {
+      "path": "previews/growth_on_soil.png",
+      "dimensions": [
+        1400,
+        650
+      ],
+      "role": "verification preview",
+      "scenes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "origin": "browser composite",
+      "status": "preview"
     }
   ],
   "note": "Paths relative to this manifest. Candidate plant requires alpha and continuity verification; missing stages are not fabricated."
