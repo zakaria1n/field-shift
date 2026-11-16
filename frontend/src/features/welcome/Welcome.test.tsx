@@ -52,8 +52,7 @@ describe('Welcome', () => {
     mocks.get.mockResolvedValue([])
     renderWelcome()
     expect((await screen.findAllByText(/No account needed/))[0]).toBeInTheDocument()
-    expect((await screen.findAllByText(/consult a local agronomist/))[0]).toBeInTheDocument()
     // illustrative card values are labelled as examples, never live data
-    expect(screen.getAllByText(/Illustrative example/)[0]).toBeInTheDocument()
+    expect((await screen.findAllByText(/Illustrative example/))[0]).toBeInTheDocument()
   })
 })

@@ -2,7 +2,7 @@
  * golden outline, plant growth and six scene content layers all derive from
  * one normalized, spring-smoothed progress value. This component composes
  * the layers; each scene's content lives in its own component file. */
-import { motion, useTransform } from 'framer-motion'
+import { motion, useTransform, type MotionValue } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
 
@@ -23,6 +23,16 @@ import PlantGrowth from './PlantGrowth'
 import FieldOutline from './FieldOutline'
 import { CoverPlate } from './ScenePrimitives'
 
+/** Pointer-events window: a scene layer only accepts clicks while its
+ * content is on screen; hidden layers must never block the scenes below. */
+function useLayerPointerEvents(progress: MotionValue<number>, start: number, end: number) {
+  return useTransform(
+    progress,
+    [start - 0.04, start + 0.03, end - 0.03, end + 0.04],
+    ['none', 'auto', 'auto', 'none'],
+  )
+}
+
 /** Scene content wrapper: reveal transforms + standard placement. */
 function SceneLayer({
   progress,
@@ -36,8 +46,9 @@ function SceneLayer({
   children: React.ReactNode
 }) {
   const reveal = useSceneReveal(progress, start, end)
+  const pointerEvents = useLayerPointerEvents(progress, start, end)
   return (
-    <motion.div className="absolute inset-0" style={{ opacity: reveal.opacity, y: reveal.y }}>
+    <motion.div className="absolute inset-0" style={{ opacity: reveal.opacity, y: reveal.y, pointerEvents }}>
       <div className="absolute inset-0 flex items-center">
         <div className="mx-auto w-full max-w-7xl px-6 pt-16 sm:px-12">{children}</div>
       </div>
@@ -77,8 +88,10 @@ export default function CinematicStory() {
   // closing scene: fades in and STAYS visible until the end of the page
   const ctaOpacity = useTransform(progress, [0.86, 0.92], [0, 1])
   const ctaY = useTransform(progress, [0.86, 0.94], [40, 0])
+  const ctaPointerEvents = useTransform(progress, [0.85, 0.88], ['none', 'auto'])
   // hero copy: fully visible at p=0, fades out as the outline scene closes
   const heroCopyOpacity = useTransform(progress, [0, SCENES.hero.copyOut[0], SCENES.hero.copyOut[1]], [1, 1, 0])
+  const heroPointerEvents = useTransform(progress, [0.13, 0.17], ['auto', 'none'])
 
   return (
     <div>
@@ -115,7 +128,10 @@ export default function CinematicStory() {
           />
 
           {/* ------- scene content layers ------- */}
-          <motion.div className="absolute inset-0 z-10" style={{ opacity: heroCopyOpacity }}>
+          <motion.div
+            className="absolute inset-0 z-10"
+            style={{ opacity: heroCopyOpacity, pointerEvents: heroPointerEvents }}
+          >
             <div className="absolute inset-0 flex items-center">
               <div className="mx-auto w-full max-w-7xl px-6 pt-16 sm:px-12">
                 <HeroScene />
@@ -160,7 +176,7 @@ export default function CinematicStory() {
 
           <motion.div
             className="absolute inset-0"
-            style={{ opacity: ctaOpacity, y: ctaY }}
+            style={{ opacity: ctaOpacity, y: ctaY, pointerEvents: ctaPointerEvents }}
           >
             <div className="absolute inset-0 bg-[#081A15]/70" />
             <div className="absolute inset-0 flex items-center">
