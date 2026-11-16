@@ -1,0 +1,185 @@
+{
+  "assets": [
+    {
+      "path": "backgrounds/hero-aerial.png",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "role": "backgrounds/hero-aerial.png",
+      "origin": "generated",
+      "status": "ready",
+      "scenes": [
+        0,
+        4,
+        5
+      ]
+    },
+    {
+      "path": "backgrounds/hero-aerial.webp",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "role": "optimized background",
+      "origin": "generated conversion",
+      "status": "ready",
+      "scenes": [
+        0,
+        4,
+        5
+      ]
+    },
+    {
+      "path": "backgrounds/soil-plate.png",
+      "dimensions": [
+        1671,
+        941
+      ],
+      "role": "backgrounds/soil-plate.png",
+      "origin": "generated",
+      "status": "ready",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": "backgrounds/soil-plate.webp",
+      "dimensions": [
+        1671,
+        941
+      ],
+      "role": "optimized background",
+      "origin": "generated conversion",
+      "status": "ready",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": "plants/seedling-candidate.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "role": "plants/seedling-candidate.png",
+      "origin": "generated",
+      "status": "candidate",
+      "scenes": [
+        3
+      ]
+    },
+    {
+      "path": "geometry/hero-field.svg",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "role": "field boundary vector; provisional visual trace",
+      "origin": "hand traced",
+      "status": "visually checked at native aspect; responsive alignment QA pending",
+      "scenes": [
+        0,
+        4,
+        5
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "seed",
+      "origin": "missing",
+      "status": "missing; aligned transparent sequence required",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "germination",
+      "origin": "missing",
+      "status": "missing; aligned transparent sequence required",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "emerging-sprout",
+      "origin": "missing",
+      "status": "missing; aligned transparent sequence required",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "young-seedling",
+      "origin": "missing",
+      "status": "missing; aligned transparent sequence required",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "developed-plant",
+      "origin": "missing",
+      "status": "missing; aligned transparent sequence required",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "mature-plant",
+      "origin": "missing",
+      "status": "missing; aligned transparent sequence required",
+      "scenes": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "planted-field aerial variant",
+      "origin": "missing",
+      "status": "missing",
+      "scenes": [
+        4
+      ]
+    },
+    {
+      "path": null,
+      "dimensions": null,
+      "role": "wheat final CTA background",
+      "origin": "missing",
+      "status": "missing",
+      "scenes": [
+        5
+      ]
+    }
+  ],
+  "note": "Paths relative to this manifest. Candidate plant requires alpha and continuity verification; missing stages are not fabricated."
+}
