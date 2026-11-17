@@ -9,7 +9,6 @@ import {
   Calendar,
   Compass,
   CheckCircle2,
-  Sliders,
   ShieldAlert,
   ArrowRight,
   Database,
@@ -264,13 +263,6 @@ export default function PlanDetails() {
             <span>{t('plan.useThis')}</span>
           </Link>
 
-          <Link
-            to={`/rotations/${plan.plan_id}/customize`}
-            className="btn-secondary text-sm px-6 py-3"
-          >
-            <Sliders size={15} className="text-leaf" />
-            <span>{t('plan.customize')}</span>
-          </Link>
         </div>
 
         <Link

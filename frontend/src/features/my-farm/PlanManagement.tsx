@@ -8,7 +8,6 @@ import {
   Sparkles,
   Layers,
   Calendar,
-  SlidersHorizontal,
   ChevronRight,
   ShieldCheck,
   Satellite
@@ -169,13 +168,6 @@ export default function PlanManagement() {
               >
                 <Sparkles size={14} />
                 <span>{t('plans.viewDetails')}</span>
-              </Link>
-              <Link
-                to={`/rotations/${plan.plan_id}/customize`}
-                className="btn-secondary !py-2.5 text-xs inline-flex items-center gap-1.5"
-              >
-                <SlidersHorizontal size={14} />
-                <span>{t('plan.customize')}</span>
               </Link>
               <Link
                 to={`/fields/${fieldId}/insights`}

@@ -10,7 +10,6 @@ import {
   Compass,
   Sparkles,
   Layers,
-  SlidersHorizontal,
   ChevronRight,
   Plus,
   Droplets,
@@ -228,13 +227,6 @@ export default function HomeDashboard() {
                 <Calendar size={14} />
                 <span>{t('timeline.title')} ({t('home.updateActivities')})</span>
                 <ChevronRight size={13} className="rtl:rotate-180" />
-              </Link>
-              <Link
-                to={`/rotations/${activePlan.plan_id}/customize`}
-                className="btn-secondary !py-2.5 text-xs inline-flex items-center gap-1.5"
-              >
-                <SlidersHorizontal size={14} />
-                <span>{t('plan.customize')}</span>
               </Link>
               <Link
                 to={`/fields/${farm.field_id}/insights`}

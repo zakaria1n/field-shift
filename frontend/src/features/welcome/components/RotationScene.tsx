@@ -1,10 +1,10 @@
 /** Scene 4 content — "Explore your next rotation." with the illustrative
- * 3-year rotation card, compare/customize affordances and benefits
+ * 3-year rotation card, comparison and benefits
  * (reference: 05_Scroll_Rotation_Exploration.png).
  * The rotation shown here explains the workflow; it is not a fabricated
  * live recommendation. */
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, CheckCircle2, Scale, Settings2, Sprout } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Scale, Sprout } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useWizard } from '../../../state/wizard'
 import { SceneCopy } from './ScenePrimitives'
@@ -55,15 +55,11 @@ export default function RotationScene() {
         </div>
       </div>
 
-      {/* compare / customize affordances */}
+      {/* comparison */}
       <div className="flex items-center gap-5 text-xs font-semibold text-white/85">
         <span className="flex items-center gap-1.5">
           <Scale size={14} className="text-lime-300" />
           {t('welcome.cin.rotation.compare')}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Settings2 size={14} className="text-lime-300" />
-          {t('welcome.cin.rotation.customize')}
         </span>
       </div>
 

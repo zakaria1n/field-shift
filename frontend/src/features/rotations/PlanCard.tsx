@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, Calendar, Sliders, Sparkles, TriangleAlert } from 'lucide-react'
+import { ArrowRight, Calendar, Sparkles, TriangleAlert } from 'lucide-react'
 import type { RotationOut } from '../../api/client'
 import { CropVisual } from '../../app/components/CropVisual'
 import { IndicatorRow } from '../../app/components/ui'
@@ -75,9 +75,6 @@ export function PlanCard({ plan }: { plan: RotationOut }) {
     <div className="mt-auto space-y-2 pt-4">
       <Link to={`/rotations/${plan.plan_id}`} className={`${plan.is_recommended ? 'btn-leaf' : 'btn-primary'} w-full !py-2.5 text-xs`}>
         {t('plans.viewDetails')}<ArrowRight size={14} className="rtl:rotate-180" aria-hidden />
-      </Link>
-      <Link to={`/rotations/${plan.plan_id}/customize`} className="btn-secondary w-full !py-2 text-xs">
-        <Sliders size={13} aria-hidden />{t('plan.customize')}
       </Link>
     </div>
   </article>

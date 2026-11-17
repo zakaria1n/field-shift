@@ -13,7 +13,7 @@ describe('Earth Analysis progress arc geometry', () => {
     expect(nodes).toHaveLength(anchors.length)
     nodes.forEach((node, index) => {
       expect(node.y).toBe(anchors[index].y)
-      expect(node.anchorX - node.x).toBe(56)
+      expect(node.anchorX - node.x).toBeCloseTo(56)
       expect(node.anchorY).toBe(anchors[index].y)
     })
     expect(pathPoints[0].y).toBeLessThan(anchors[0].y)

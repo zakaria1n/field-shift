@@ -28,8 +28,6 @@ function FarmProfileFallback() {
 const EarthAnalysisPage = lazy(() => import('../features/earth-analysis/EarthAnalysisPage'))
 import RotationExplorer from '../features/rotations/RotationExplorer'
 import PlanDetails from '../features/rotations/PlanDetails'
-import CustomizePlan from '../features/plan-editor/CustomizePlan'
-import CompareChanges from '../features/comparison/CompareChanges'
 import ConfirmPlan from '../features/rotations/ConfirmPlan'
 import HomeDashboard from '../features/my-farm/HomeDashboard'
 import FieldsList from '../features/my-farm/FieldsList'
@@ -61,14 +59,12 @@ export default function App() {
       <Route path="/welcome" element={<Welcome />} />
       {/* Earth Analysis owns its full viewport — rendered outside the wizard shell */}
       <Route path="/analyses/:jobId/progress" element={<Suspense fallback={<FarmProfileFallback />}><EarthAnalysisPage /></Suspense>} />
+      <Route path="/fields/:fieldId/rotations" element={<RotationExplorer />} />
       <Route element={<WizardShell />}>
         <Route path="/fields/new" element={<EarthObservatoryPage />} />
         <Route path="/setup/questions" element={<Suspense fallback={<FarmProfileFallback />}><FarmProfilePage /></Suspense>} />
         <Route path="/setup/priorities" element={<PrioritiesRedirect />} />
-        <Route path="/fields/:fieldId/rotations" element={<RotationExplorer />} />
         <Route path="/rotations/:ref" element={<PlanDetails />} />
-        <Route path="/rotations/:ref/customize" element={<CustomizePlan />} />
-        <Route path="/rotations/:ref/compare" element={<CompareChanges />} />
         <Route path="/rotations/:ref/confirmation" element={<ConfirmPlan />} />
       </Route>
       <Route element={<AppShell />}>

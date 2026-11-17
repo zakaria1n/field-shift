@@ -26,7 +26,7 @@ test('compact card preserves server rank, score, crops, indicators and navigatio
   expect(screen.queryByTestId('score-evidence')).toBeNull()
   expect(screen.queryByText('Full rationale')).toBeNull()
   expect(screen.getByRole('link',{name:'View details'})).toHaveAttribute('href','/rotations/job-test--3')
-  expect(screen.getByRole('link',{name:'Customize this plan'})).toHaveAttribute('href','/rotations/job-test--3/customize')
+  expect(screen.queryByRole('link',{name:'Customize this plan'})).toBeNull()
   expect(JSON.stringify(plan)).toBe(snapshot)
 })
 

@@ -151,6 +151,13 @@ def run_analysis(job_id: str, field_id: str) -> None:
         job.stages_json = tracker.as_json()
         session.commit()
 
+        def publish_progress() -> None:
+            # A commit alone does not persist changes to the in-memory tracker.
+            # Publish stages and source provenance together for polling clients.
+            job.stages_json = tracker.as_json()
+            job.source_status_json = json.dumps(sources)
+            session.commit()
+
         profile_row = field.profile
         profile = {}
         if profile_row is not None:
@@ -167,6 +174,8 @@ def run_analysis(job_id: str, field_id: str) -> None:
         # Stage: geometry (validated at save time; re-affirm here from record)
         from app.services.geometry import validate_field_geometry
         from app.data_providers.landcover import require_terrestrial_field
+        tracker.set("geometry", "running")
+        publish_progress()
         selected_geometry = json.loads(field.geometry_geojson)
         validate_field_geometry(selected_geometry)
         field.geographic_validation_json = json.dumps(asdict(require_terrestrial_field(session, selected_geometry)))
@@ -174,7 +183,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
 
         # Stage: NASA POWER climate (live fetch, honest cache fallback)
         tracker.set("climate", "running")
-        session.commit()
+        publish_progress()
         power = nasa_power.fetch_climate(session, field.centroid_lat, field.centroid_lon)
         sources["nasa_power"] = {
             "source_id": "nasa_power", "status": power.status,
@@ -192,7 +201,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
 
         # Stage: soil estimates (SoilGrids WebDAV tiles over the field polygon)
         tracker.set("soil", "running")
-        session.commit()
+        publish_progress()
         field_geometry = json.loads(field.geometry_geojson) if field.geometry_geojson else None
         soil = soilgrids.fetch_soil(session, field.centroid_lat, field.centroid_lon, field_geometry)
         sources["soilgrids"] = {
@@ -229,7 +238,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
             )
             for i, o in enumerate(obs_rows)
         ])
-        session.commit()
+        publish_progress()
 
         # Stages: suitability + rotation (deterministic engine work)
         climate_ok = power.ok
@@ -260,7 +269,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
             return
 
         tracker.set("suitability", "running")
-        session.commit()
+        publish_progress()
         results = screen_all(ctx)
         eligible = [r for r in results if r.is_eligible]
         excluded_count = len(results) - len(eligible)
@@ -268,7 +277,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
                     f"{len(eligible)} crops eligible, {excluded_count} excluded by constraints")
 
         tracker.set("yield_reference", "running")
-        session.commit()
+        publish_progress()
         pool_ids = [r.crop.crop_id for r in eligible]
         irrigation_type = profile.get("irrigation_type") or "unknown"
         yield_refs, yield_results = assess_pool(
@@ -299,7 +308,7 @@ def run_analysis(job_id: str, field_id: str) -> None:
                     else "GAEZ layers unavailable; yield indicator reported as unavailable")
 
         tracker.set("rotation", "running")
-        session.commit()
+        publish_progress()
         hist = history_from_entries(field.crop_history)
         candidates, insufficiency = generate_candidates(
             ctx, eligible, priorities, hist, yield_refs, monthly_precip,
@@ -392,6 +401,10 @@ def run_analysis(job_id: str, field_id: str) -> None:
     except Exception as exc:  # noqa: BLE001 - job isolation; report, don't crash the app
         log.exception("analysis %s failed", job_id)
         try:
+            session.rollback()
+            for key, stage in tracker.stages.items():
+                if stage["status"] == "running":
+                    tracker.set(key, "failed", str(exc))
             job = session.get(AnalysisJob, job_id)
             if job is not None:
                 job.status = "failed"
