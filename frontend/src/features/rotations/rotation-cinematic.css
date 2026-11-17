@@ -65,7 +65,10 @@
 @keyframes re-ui-enter { from { translate:0 12px; } to { translate:0 0; } }
 @keyframes re-icon-breathe { 0%,100% { box-shadow:0 0 0 #cce98d00; } 50% { box-shadow:0 0 16px #cce98d44; } }
 @keyframes re-arrow-glow { 0%,100% { opacity:.55; } 50% { opacity:1; } }
-.re-plan--muted { opacity:.17; transform:scale(.97); filter:blur(2px); pointer-events:none; }
+.re-plan--muted { opacity:.08; transform:scale(.97); filter:blur(2px); pointer-events:none; }
+.re-overview-heading,.re-overview .re-notice,.re-overview .re-art-note { transition:opacity .35s ease; }
+.re-page--focusing .re-overview-heading,.re-page--focusing .re-overview .re-notice,.re-page--focusing .re-overview .re-art-note { opacity:0; }
+.re-page--focusing .re-plan--muted { opacity:.05; }
 .re-plan--selected { transform:translateY(-5px) scale(1.025); }
 .re-overview--returned .re-overview-heading,.re-overview--returned .re-plan > .re-badge-space,.re-overview--returned .re-plan > h2,.re-overview--returned .re-plan > .re-years,.re-overview--returned .re-plan > .re-score,.re-overview--returned .re-plan > .re-button { animation:re-return-enter .45s both ease-out; }
 .re-overview--returned .re-plan:nth-child(2) > * { animation-delay:.08s; }

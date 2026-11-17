@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Leaf } from 'lucide-react'
 import { api, type RotationListOut } from '../../api/client'
+import { userPrefersReducedMotion } from '../../state/motionPreference'
 import LanguageSwitch from '../../app/components/LanguageSwitch'
 import { RotationImageComposition } from './RotationImageComposition'
 import { LandscapeAtmosphere } from './LandscapeAtmosphere'
@@ -17,7 +18,7 @@ export default function RotationExplorer() {
   const ar = i18n.language === 'ar'
   const [params, setParams] = useSearchParams()
   const location = useLocation()
-  const reduced = useReducedMotion()
+  const reduced = Boolean(useReducedMotion()) || userPrefersReducedMotion()
   const [approaching, setApproaching] = useState<number | null>(null)
   const [hovered, setHovered] = useState<number | null>(null)
   const [hasDeparted, setHasDeparted] = useState(false)
@@ -72,7 +73,7 @@ export default function RotationExplorer() {
     setApproaching(index)
     transitionTimer.current = setTimeout(() => { transitionTimer.current = null; select(id) }, 700)
   }
-  return <main className={`re-page ${pageHidden ? 're-page--hidden' : ''} ${isWiping ? 're-page--wiping' : ''}`} dir={ar ? 'rtl' : 'ltr'}>
+  return <main className={`re-page ${pageHidden ? 're-page--hidden' : ''} ${isWiping ? 're-page--wiping' : ''} ${approaching !== null || isWiping ? 're-page--focusing' : ''}`} dir={ar ? 'rtl' : 'ltr'}>
     <div className="re-scene" aria-hidden="true">
       <RotationImageComposition selected={selected ? selectedIndex : null} emphasis={focusIndex} reduced={Boolean(reduced)} onMotionState={setIsWiping} />
       <LandscapeAtmosphere />
@@ -85,7 +86,7 @@ export default function RotationExplorer() {
       <YearSequence slots={selected.slots}/><p className="re-score">{t('plans.overallScore')}: {selected.score.total == null ? '—' : `${selected.score.total.toFixed(1)}/100`}</p>
     </motion.div>}</AnimatePresence>
     {isLoading ? <div className="re-message">{t('common.loading')}</div> : error || !data ? <div className="re-message" role="alert">{t('error.generic')}</div> : <AnimatePresence mode="wait" initial={false}>
-      {selected ? <motion.section key={selected.plan_id} className="re-content" initial={{opacity:0,y:reduced ? 0 : 12}} animate={{opacity:isWiping ? 0 : 1,y:isWiping && !reduced ? 12 : 0}} exit={{opacity:0, transition:{duration:reduced ? 0 : .3}}} transition={{duration:reduced ? 0 : .45}}><RotationDetails plan={selected} back={() => select(null)}/></motion.section> :
+      {selected ? <motion.section key={selected.plan_id} className="re-content" initial={{opacity:0}} animate={{opacity:isWiping ? 0 : 1}} exit={{opacity:0, transition:{duration:reduced ? 0 : .3}}} transition={{duration:reduced ? 0 : .25}}>{!isWiping && <RotationDetails plan={selected} back={() => select(null)}/>}</motion.section> :
       <motion.section key="overview" className={`re-content re-overview ${hasDeparted && !isWiping ? 're-overview--returned' : ''}`} initial={{opacity:0}} animate={{opacity:isWiping ? 0 : 1}} aria-hidden={isWiping} style={{pointerEvents:isWiping ? 'none' : undefined}} exit={{opacity:0}} transition={{duration:reduced ? 0 : .4}}>
         <div className="re-overview-heading"><div className="re-kicker">{ar ? 'مستكشف الدورات' : 'Rotation Explorer'}</div><h1>{ar ? <>حقل واحد. <span>ثلاثة مسارات ممكنة.</span></> : <>One field. <span>Three possible futures.</span></>}</h1></div>
         {data.insufficient_data_note && <p className="re-notice">{data.insufficient_data_note}</p>}
