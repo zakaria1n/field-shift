@@ -547,6 +547,8 @@
   "ea.stage.geometry.desc": "Verifying field shape and area...",
   "ea.stage.climate.desc": "Retrieving weather and climate data...",
   "ea.stage.soil.desc": "Retrieving soil characteristics...",
+  "ea.stage.yield_reference.completeDetail": "Yield references retrieved.",
+  "ea.stage.yield_reference.partialDetail": "Some yield references are unavailable.",
   "ea.stage.yield_reference.desc": "Consulting reference yield datasets...",
   "ea.stage.suitability.desc": "Applying agricultural compatibility rules...",
   "ea.stage.rotation.desc": "Building and evaluating crop rotations...",

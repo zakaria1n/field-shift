@@ -13,7 +13,6 @@ import {
   Flower,
   HelpCircle,
   Leaf,
-  Leaf as LeafIcon,
   Plus,
   Salad,
   ShieldAlert,
@@ -30,6 +29,7 @@ import {
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
+import FieldShiftBrand from '../../app/components/FieldShiftBrand'
 import { api, type CropOut } from '../../api/client'
 import { useWizard, type CropHistoryRow } from '../../state/wizard'
 import { cropHasOwnImage, getCropAsset } from '../../assets/crops/cropRegistry'
@@ -68,18 +68,7 @@ function FarmProfileProgress({
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-30">
       <div className="pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-7 sm:py-4">
-        <span className="flex shrink-0 items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#229E65]">
-            <LeafIcon size={18} className="text-white" />
-          </span>
-          <span className="font-display text-xl font-extrabold tracking-tight">
-            <span className="text-white">Field</span>
-            <span className="text-[#8FE627]">Shift</span>
-          </span>
-        </span>
-        <span className="hidden max-w-md truncate text-sm font-bold text-white lg:block">
-          {t('fp.brand.tagline')}
-        </span>
+        <FieldShiftBrand title={isArabic ? 'الملف الزراعي' : 'Farm Profile'} />
         <div className="flex shrink-0 items-center gap-2 text-xs font-bold">
           <button type="button" onClick={() => onLang('en')} aria-pressed={!isArabic} className={`rounded-full border px-3 py-1 transition-colors ${!isArabic ? 'border-lime-300/70 bg-black/25 text-white' : 'border-white/30 text-white/75 hover:text-white'}`}>
             EN

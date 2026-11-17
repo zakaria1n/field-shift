@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Leaf } from 'lucide-react'
 import { api, type RotationListOut } from '../../api/client'
 import { userPrefersReducedMotion } from '../../state/motionPreference'
+import FieldShiftBrand from '../../app/components/FieldShiftBrand'
 import LanguageSwitch from '../../app/components/LanguageSwitch'
 import { RotationImageComposition } from './RotationImageComposition'
 import { LandscapeAtmosphere } from './LandscapeAtmosphere'
@@ -79,7 +80,7 @@ export default function RotationExplorer() {
       <LandscapeAtmosphere />
       <div className="re-shade" />
     </div>
-    <header className="re-header"><div className="re-brand"><Leaf size={25}/><strong>Field<span>Shift</span></strong><i /> <b>{ar ? 'مستكشف الدورات' : 'Rotation Explorer'}</b></div><LanguageSwitch variant="dark"/></header>
+    <header className="re-header"><FieldShiftBrand title={ar ? 'مستكشف الدورات' : 'Rotation Explorer'} /><LanguageSwitch variant="dark"/></header>
     <AnimatePresence>{selected && !reduced && <motion.div key={`focus-${selected.plan_id}`} className="re-transition-content" aria-hidden="true" initial={{ opacity:0, scale:.94 }} animate={{ opacity:[0,1,1,0], scale:[.94,1,1.03,1.05] }} exit={{ opacity:0 }} transition={{ duration:1.9, times:[0,.22,.67,1], ease:'easeInOut' }}>
       {selected.is_recommended && <span className="re-badge">✓ {t('plans.recommended')}</span>}
       <h2><Leaf size={25}/> {rotationLabel(selected.label)}</h2>

@@ -29,7 +29,7 @@ export default function WelcomePage() {
 
   return (
     <div
-      className="relative min-h-screen overflow-x-clip bg-forest-dark text-white"
+      className="welcome-page relative min-h-screen overflow-x-clip bg-forest-dark text-white"
     >
       {/* preload the critical hero asset */}
       <link rel="preload" as="image" href={ASSETS.heroAerial} />
@@ -43,7 +43,7 @@ export default function WelcomePage() {
               {savedFarm.area_ha != null && ` (${savedFarm.area_ha.toFixed(1)} ha)`}
             </p>
             <Link
-              to="/home"
+              to={savedFarm.last_analysis ? `/fields/${savedFarm.field_id}/rotations` : `/setup/questions?field=${encodeURIComponent(savedFarm.field_id)}`}
               className="inline-flex items-center gap-1.5 rounded-full bg-[#8FE627] px-4 py-1.5 text-xs font-bold text-[#0E2921]"
             >
               {t('welcome.reprise')}

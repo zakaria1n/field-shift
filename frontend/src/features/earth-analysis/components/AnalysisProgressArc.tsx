@@ -158,7 +158,7 @@ export default function AnalysisProgressArc({
 
       {nodes.map((node, index) => {
         const status = stages[index].status
-        const fill = status === 'complete' ? '#A3E635'
+        const fill = status === 'complete' || stages[index].goodCoverage ? '#A3E635'
           : status === 'running' ? '#E9FFC4'
             : status === 'partial' || status === 'unavailable' ? '#E8C66B'
               : status === 'failed' ? '#F09A8F'
@@ -170,7 +170,7 @@ export default function AnalysisProgressArc({
             cy={node.y}
             r={status === 'running' ? 5.2 : 3.8}
             fill={fill}
-            filter={status === 'running' || status === 'complete' ? `url(#${id}-node-glow)` : undefined}
+            filter={status === 'running' || status === 'complete' || stages[index].goodCoverage ? `url(#${id}-node-glow)` : undefined}
             data-testid={`arc-node-${stages[index].key}`}
             data-stage-center-y={node.y.toFixed(2)}
           />

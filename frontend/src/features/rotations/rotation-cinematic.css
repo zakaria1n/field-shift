@@ -38,7 +38,7 @@
 @keyframes re-light-trace { from {stroke-dashoffset:1; opacity:0} 20% {opacity:1} to {stroke-dashoffset:0; opacity:0} }
 @keyframes re-trace { to {stroke-dashoffset:0} }
 .re-shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,20,14,.68),transparent 37%,rgba(0,14,8,.35) 75%,rgba(0,15,9,.74)),linear-gradient(90deg,rgba(0,19,13,.35),transparent 55%); }
-.re-header { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:1rem clamp(1.25rem,4vw,4rem); background:rgba(0,27,19,.52); border-bottom:1px solid #ffffff18; }
+.re-header { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:1rem clamp(1.25rem,4vw,4rem); background:transparent; }
 .re-brand { display:flex; align-items:center; gap:.65rem; font-size:1.4rem; } .re-brand svg,.re-brand span {color:#b2f15b}.re-brand i {height:2rem; width:1px; background:#ffffff55; margin:0 1rem}.re-brand b {font-size:1rem}
 .re-content {position:relative; z-index:1; width:min(1500px,100%); margin:auto; padding:clamp(1.5rem,4vh,3rem) clamp(1.5rem,5vw,5rem);}
 .re-overview {min-height:calc(100svh - 68px); display:flex; flex-direction:column;}

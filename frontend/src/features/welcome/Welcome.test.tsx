@@ -45,7 +45,7 @@ describe('Welcome', () => {
   it('offers returning users a way back to their farm (T20 entry)', async () => {
     mocks.get.mockResolvedValue([{ field_id: 'f1' }])
     renderWelcome()
-    expect(await screen.findByRole('link', { name: /Continue my farm/ })).toHaveAttribute('href', '/home')
+    expect(await screen.findByRole('link', { name: /Continue my farm/ })).toHaveAttribute('href', '/setup/questions?field=f1')
   })
 
   it('shows the no-account notice and honesty notes', async () => {

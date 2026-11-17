@@ -2,7 +2,7 @@
  * Transparent, overlays the hero. Links scroll to their scenes; the
  * language controls reuse the canonical switching behavior. */
 import { useTranslation } from 'react-i18next'
-import { Leaf } from 'lucide-react'
+import FieldShiftBrand from '../../../app/components/FieldShiftBrand'
 import { useWizard } from '../../../state/wizard'
 import { NAV_TARGETS } from '../config/welcomeScenes'
 import type { Lang } from '../../../i18n'
@@ -50,13 +50,7 @@ export default function WelcomeNavbar({ activeScene }: { activeScene: number }) 
           className="flex items-center gap-2"
           aria-label="Field Shift"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#229E65]">
-            <Leaf size={18} className="text-white" />
-          </span>
-          <span className="font-display text-xl font-extrabold tracking-tight">
-            <span className="text-white">Field</span>
-            <span className="text-[#8FE627]">Shift</span>
-          </span>
+          <FieldShiftBrand />
         </button>
 
         <div className="hidden items-center gap-8 md:flex">
@@ -118,15 +112,7 @@ export function StaticWelcomeNav() {
   return (
     <nav className="fixed inset-x-0 top-0 z-40 bg-gradient-to-b from-[#081A15]/80 to-transparent">
       <div className="flex items-center justify-between px-5 py-4 sm:px-10 sm:py-5">
-        <span className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#229E65]">
-            <Leaf size={18} className="text-white" />
-          </span>
-          <span className="font-display text-xl font-extrabold tracking-tight">
-            <span className="text-white">Field</span>
-            <span className="text-[#8FE627]">Shift</span>
-          </span>
-        </span>
+        <FieldShiftBrand />
         <div className="flex items-center gap-2 text-xs font-bold">
           <button
             type="button"

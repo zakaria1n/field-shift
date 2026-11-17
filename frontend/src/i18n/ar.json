@@ -547,6 +547,8 @@
   "ea.stage.geometry.desc": "التحقق من شكل الحقل ومساحته...",
   "ea.stage.climate.desc": "استرجاع بيانات الطقس والمناخ...",
   "ea.stage.soil.desc": "استرجاع خصائص التربة...",
+  "ea.stage.yield_reference.completeDetail": "تم الحصول على مراجع الإنتاج.",
+  "ea.stage.yield_reference.partialDetail": "بعض مراجع الإنتاج غير متوفرة.",
   "ea.stage.yield_reference.desc": "استشارة قواعد بيانات المردود المرجعي...",
   "ea.stage.suitability.desc": "تطبيق قواعد الملاءمة الزراعية...",
   "ea.stage.rotation.desc": "بناء وتقييم دورات المحاصيل...",

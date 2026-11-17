@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { RotateCcw, TriangleAlert } from 'lucide-react'
 
-import { api, type AnalysisJobOut } from '../../api/client'
+import { api, type AnalysisJobOut, type FieldOut } from '../../api/client'
 import { useWizard } from '../../state/wizard'
+import FieldShiftBrand from '../../app/components/FieldShiftBrand'
 import LanguageSwitch from '../../app/components/LanguageSwitch'
 import AnalysisBackground from './components/AnalysisBackground'
 import AnalysisHeadline from './components/AnalysisHeadline'
@@ -19,7 +21,7 @@ export default function EarthAnalysisPage() {
   const { jobId } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { field } = useWizard()
+  const { field, fieldId } = useWizard()
   const [job, setJob] = useState<AnalysisJobOut | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,6 +30,13 @@ export default function EarthAnalysisPage() {
   const previewParam = searchParams.get('ea-preview') as PreviewState | null
   const previewJob = previewParam && previewParam in PREVIEW_FIXTURES ? PREVIEW_FIXTURES[previewParam] : null
   const previewActive = Boolean(previewJob)
+  const { data: savedField } = useQuery({
+    queryKey: ['analysis-field', job?.field_id],
+    queryFn: () => api.get<FieldOut>(`/api/v1/fields/${job!.field_id}`),
+    enabled: Boolean(!previewActive && job?.field_id && (!field || fieldId !== job.field_id)),
+    retry: false,
+  })
+  const visibleField = !previewActive && job && fieldId !== job.field_id ? null : field
 
   const stages = useMemo(
     () => deriveStages(previewJob ?? job),
@@ -69,18 +78,7 @@ export default function EarthAnalysisPage() {
 
       {/* top navigation */}
       <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 sm:px-10">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#229E65]">
-              <LeafMark />
-            </span>
-            <span className="font-display text-xl font-extrabold tracking-tight">
-              <span className="text-white">Field</span>
-              <span className="text-[#8FE627]">Shift</span>
-            </span>
-          </span>
-          <span className="hidden text-sm font-bold text-white/85 sm:block">| {t('ea.navTitle')}</span>
-        </div>
+        <FieldShiftBrand title={t('ea.navTitle')} />
         <LanguageSwitch variant="dark" />
       </div>
 
@@ -110,13 +108,13 @@ export default function EarthAnalysisPage() {
             </motion.div>
           )}
           <AnalysisHeadline
-            fieldAreaHa={field?.area_ha ?? null}
-            fieldName={field?.name ?? null}
+            fieldAreaHa={visibleField?.area_ha ?? savedField?.area_ha ?? null}
+            fieldName={visibleField?.name ?? savedField?.name ?? null}
             stages={stages}
             failed={failed}
           />
           <div className="ea-field-visual-slot mt-3 w-full lg:mt-4">
-            <SelectedFieldVisualization geometry={field?.geometry ?? null} />
+            <SelectedFieldVisualization geometry={visibleField?.geometry ?? savedField?.geometry_geojson ?? null} />
           </div>
         </div>
 
@@ -150,13 +148,5 @@ export default function EarthAnalysisPage() {
         </div>
       )}
     </div>
-  )
-}
-
-function LeafMark() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5 text-white" fill="currentColor" aria-hidden="true">
-      <path d="M12 2C7 6 4 10 4 14a8 8 0 0 0 16 0c0-4-3-8-8-12zm0 4.5c1.8 1.9 3 3.6 3.6 5.1-.9-.4-2.1-.6-3.6-.6s-2.7.2-3.6.6c.6-1.5 1.8-3.2 3.6-5.1z" />
-    </svg>
   )
 }

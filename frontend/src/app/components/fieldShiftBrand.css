@@ -1,0 +1,14 @@
+.fieldshift-brand { display:inline-flex; align-items:center; gap:.65rem; flex-shrink:0; color:white; font-size:1.4rem; line-height:1.1; }
+.fieldshift-brand__identity { display:flex; flex-direction:column; gap:.22rem; }
+.fieldshift-brand__wordmark { display:flex; align-items:center; gap:.65rem; direction:ltr; white-space:nowrap; }
+.fieldshift-brand__wordmark svg,.fieldshift-brand__wordmark strong span { color:#b2f15b; }
+.fieldshift-brand__wordmark strong { font-weight:800; }
+.fieldshift-brand small { font-size:.54rem; font-weight:600; letter-spacing:.045em; color:#e5f2d3bf; white-space:nowrap; padding-inline-start:2.2rem; }
+.fieldshift-brand > i { height:2rem; width:1px; background:#ffffff55; margin:0 1rem; }
+.fieldshift-brand > b { font-size:1rem; white-space:nowrap; }
+@media(max-width:600px) { .fieldshift-brand { font-size:1.1rem; gap:.4rem; } .fieldshift-brand > i { margin:0 .35rem; } .fieldshift-brand > b { font-size:.78rem; } .fieldshift-brand small { font-size:.48rem; } }
+/* Cinematic pages keep scrolling while hiding the bright browser scrollbar. */
+html:has(.welcome-page), html:has(.farm-profile-shell), html:has(.re-overview) { scrollbar-width:none; }
+html:has(.welcome-page)::-webkit-scrollbar, html:has(.farm-profile-shell)::-webkit-scrollbar, html:has(.re-overview)::-webkit-scrollbar { display:none; }
+.farm-profile-shell .farm-scroll { scrollbar-width:thin; scrollbar-color:#668d4e #10291d; }
+@media(min-width:1100px) and (min-height:720px) { html:has(.re-overview) { overflow:hidden; } }

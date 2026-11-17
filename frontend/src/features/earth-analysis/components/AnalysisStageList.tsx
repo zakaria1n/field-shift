@@ -20,7 +20,7 @@ function StageIcon({ stage, offset }: { stage: StageUi; offset: number }) {
 
   return (
     <span
-      className={`ea-stage-icon ea-stage-icon--${stage.status} ea-stage-icon--curved`}
+      className={`ea-stage-icon ea-stage-icon--${stage.goodCoverage ? 'complete' : stage.status} ea-stage-icon--curved`}
       style={{ '--ea-stage-curve-shift': `${offset}px` } as CSSProperties}
       data-stage-anchor={stage.key}
       role="img"
@@ -29,7 +29,7 @@ function StageIcon({ stage, offset }: { stage: StageUi; offset: number }) {
     >
       <Icon size={30} strokeWidth={2.1} aria-hidden="true" />
       {stage.status === 'complete' && <span className="ea-stage-mark ea-stage-mark--complete"><Check size={11} strokeWidth={3} /></span>}
-      {stage.status === 'partial' && <span className="ea-stage-mark ea-stage-mark--partial"><AlertTriangle size={11} strokeWidth={2.6} /></span>}
+      {stage.status === 'partial' && <span className={`ea-stage-mark ea-stage-mark--${stage.goodCoverage ? 'complete' : 'partial'}`}><AlertTriangle size={11} strokeWidth={2.6} /></span>}
       {stage.status === 'unavailable' && <span className="ea-stage-mark ea-stage-mark--unavailable"><AlertTriangle size={11} strokeWidth={2.6} /></span>}
       {stage.status === 'failed' && <span className="ea-stage-mark ea-stage-mark--failed"><X size={12} strokeWidth={3} /></span>}
       {stage.status === 'running' && <span className="sr-only">{t('ea.status.running')}</span>}
@@ -46,12 +46,12 @@ const PILL_CLASS: Record<StageUiStatus, string> = {
   failed: 'border-red-300/40 bg-red-400/10 text-red-200',
 }
 
-function StatusLabel({ status }: { status: StageUiStatus }) {
+function StatusLabel({ status, goodCoverage }: { status: StageUiStatus; goodCoverage?: boolean }) {
   const { t } = useTranslation()
   if (status === 'pending' || status === 'complete') return null
   return (
     <span
-      className={`ea-stage-status inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-bold ${PILL_CLASS[status]}`}
+      className={`ea-stage-status inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-bold ${goodCoverage ? PILL_CLASS.running : PILL_CLASS[status]}`}
       data-testid={`stage-status-${status}`}
     >
       {t(`ea.status.${status}`)}
@@ -77,10 +77,12 @@ export default function AnalysisStageList({ stages, offsets = [] }: { stages: St
               <p className={`ea-stage-title ${stage.status === 'pending' ? 'text-white/75' : 'text-white'}`}>
                 {t(`ea.stage.${stage.key}`)}
               </p>
-              <StatusLabel status={stage.status} />
+              <StatusLabel status={stage.status} goodCoverage={stage.goodCoverage} />
             </div>
             <p className={`ea-stage-detail ${stage.status === 'running' ? 'text-[#D9F99D]' : 'text-white/70'}`}>
-              {stage.key === 'soil' && stage.status === 'complete' && stage.sourceNote === 'source_cached'
+              {stage.key === 'yield_reference' && (stage.status === 'complete' || stage.status === 'partial')
+                ? t(stage.status === 'partial' ? 'ea.stage.yield_reference.partialDetail' : 'ea.stage.yield_reference.completeDetail')
+                : stage.key === 'soil' && stage.status === 'complete' && stage.sourceNote === 'source_cached'
                 ? t('ea.stage.soil.cachedDetail')
                 : stage.key === 'soil' && stage.status === 'complete'
                   ? t('ea.stage.soil.completeDetail')
@@ -90,7 +92,7 @@ export default function AnalysisStageList({ stages, offsets = [] }: { stages: St
                   ? t('ea.stage.soil.partialDetail')
                   : stage.detail || t(`ea.stage.${stage.key}.desc`)}
             </p>
-            {stage.sourceNote && !(stage.key === 'soil' && stage.status === 'unavailable') && !(stage.key === 'soil' && stage.status === 'complete' && stage.sourceNote === 'source_cached') && (
+            {stage.sourceNote && !(stage.key === 'yield_reference' && stage.sourceNote === 'source_partial') && !(stage.key === 'soil' && stage.status === 'unavailable') && !(stage.key === 'soil' && stage.status === 'complete' && stage.sourceNote === 'source_cached') && (
               <p className="ea-stage-source-note">{t(`ea.source.${stage.sourceNote}`)}</p>
             )}
           </div>

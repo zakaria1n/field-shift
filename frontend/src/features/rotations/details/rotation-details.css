@@ -528,6 +528,10 @@ html:has(.rd-detail)::-webkit-scrollbar { display: none; }
 }
 .rd-evidence-link:hover { text-decoration-style: solid; }
 .rd-actions .rd-art-note { font-size: .62rem; color: #fffce2a0; text-align: center; }
+.rd-save-status { flex-basis:100%; text-align:end; font-size:.8rem; color:#d7f5bd; }
+.rd-save-status:empty { display:none; }
+.rd-save-status[role="alert"] { color:#ffd1bd; }
+.re-use-button:disabled { opacity:.75; cursor:default; }
 
 /* ---- keyframes -------------------------------------------------------------- */
 

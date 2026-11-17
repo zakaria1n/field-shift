@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Leaf } from 'lucide-react'
+import FieldShiftBrand from '../../../app/components/FieldShiftBrand'
 import { useWizard } from '../../../state/wizard'
 
 import LocationSearch from './LocationSearch'
@@ -23,15 +23,7 @@ export default function ObservatoryNavbar({
   return (
     <nav className="absolute inset-x-0 top-0 z-30">
       <div className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-7 sm:py-4">
-        <span className="flex shrink-0 items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#229E65]">
-            <Leaf size={18} className="text-white" />
-          </span>
-          <span className="font-display text-xl font-extrabold tracking-tight">
-            <span className="text-white">Field</span>
-            <span className="text-[#8FE627]">Shift</span>
-          </span>
-        </span>
+        <FieldShiftBrand />
 
         <div className="mx-auto w-full max-w-xl sm:max-w-2xl">
           <LocationSearch

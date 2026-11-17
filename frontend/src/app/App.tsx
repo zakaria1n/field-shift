@@ -1,8 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom'
 
-import AppShell from './AppShell'
-import WizardShell from './WizardShell'
 import Welcome from '../features/welcome/Welcome'
 import EarthObservatoryPage from '../features/earth-observatory/EarthObservatoryPage'
 
@@ -27,57 +25,19 @@ function FarmProfileFallback() {
 }
 const EarthAnalysisPage = lazy(() => import('../features/earth-analysis/EarthAnalysisPage'))
 import RotationExplorer from '../features/rotations/RotationExplorer'
-import PlanDetails from '../features/rotations/PlanDetails'
-import ConfirmPlan from '../features/rotations/ConfirmPlan'
-import HomeDashboard from '../features/my-farm/HomeDashboard'
-import FieldsList from '../features/my-farm/FieldsList'
-import DashboardRedirect from '../features/my-farm/DashboardRedirect'
-import RotationTimeline from '../features/my-farm/RotationTimeline'
-import FieldInsights from '../features/my-farm/FieldInsights'
-import PlanManagement from '../features/my-farm/PlanManagement'
-import Settings from '../features/settings/Settings'
-
-import { useQuery } from '@tanstack/react-query'
-import { api, type DashboardItem } from '../api/client'
-
-function RootRedirect() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: () => api.get<DashboardItem[]>('/api/v1/dashboard'),
-    staleTime: 10_000,
-  })
-  if (isLoading) return null
-  const hasSavedPlan = Boolean(data?.some((f) => Boolean(f.active_plan)))
-  if (hasSavedPlan) return <Navigate to="/home" replace />
-  return <Navigate to="/welcome" replace />
-}
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<RootRedirect />} />
+      <Route path="/" element={<Navigate to="/welcome" replace />} />
       <Route path="/welcome" element={<Welcome />} />
       {/* Earth Analysis owns its full viewport — rendered outside the wizard shell */}
       <Route path="/analyses/:jobId/progress" element={<Suspense fallback={<FarmProfileFallback />}><EarthAnalysisPage /></Suspense>} />
       <Route path="/fields/:fieldId/rotations" element={<RotationExplorer />} />
-      <Route element={<WizardShell />}>
-        <Route path="/fields/new" element={<EarthObservatoryPage />} />
-        <Route path="/setup/questions" element={<Suspense fallback={<FarmProfileFallback />}><FarmProfilePage /></Suspense>} />
-        <Route path="/setup/priorities" element={<PrioritiesRedirect />} />
-        <Route path="/rotations/:ref" element={<PlanDetails />} />
-        <Route path="/rotations/:ref/confirmation" element={<ConfirmPlan />} />
-      </Route>
-      <Route element={<AppShell />}>
-        <Route path="/home" element={<HomeDashboard />} />
-        <Route path="/fields/list" element={<FieldsList />} />
-        <Route path="/fields/:fieldId/timeline" element={<RotationTimeline />} />
-        <Route path="/fields/:fieldId/insights" element={<FieldInsights />} />
-        <Route path="/fields/:fieldId/plans" element={<PlanManagement />} />
-        <Route path="/plan" element={<DashboardRedirect target="plans" />} />
-        <Route path="/insights" element={<DashboardRedirect target="insights" />} />
-        <Route path="/settings" element={<Settings />} />
-      </Route>
-      <Route path="*" element={<RootRedirect />} />
+      <Route path="/fields/new" element={<EarthObservatoryPage />} />
+      <Route path="/setup/questions" element={<Suspense fallback={<FarmProfileFallback />}><FarmProfilePage /></Suspense>} />
+      <Route path="/setup/priorities" element={<PrioritiesRedirect />} />
+      <Route path="*" element={<Navigate to="/welcome" replace />} />
     </Routes>
   )
 }

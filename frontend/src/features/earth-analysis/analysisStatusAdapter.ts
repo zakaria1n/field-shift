@@ -13,6 +13,8 @@ export interface StageUi {
   detail: string | null
   /** Source-level caveat (e.g. SoilGrids unreachable) shown as a note. */
   sourceNote: string | null
+  /** Visual emphasis only; partial coverage remains explicitly partial. */
+  goodCoverage?: boolean
 }
 
 const STAGE_KEYS: StageUi['key'][] = ['geometry', 'climate', 'soil', 'yield_reference', 'suitability', 'rotation']
@@ -92,7 +94,9 @@ export function deriveStages(job: AnalysisJobOut | null): StageUi[] {
       }
     }
 
-    return { key, status, detail: stage?.detail ?? null, sourceNote }
+    const yieldCoverage = key === 'yield_reference' ? stage?.detail?.match(/(\d+)\s*\/\s*(\d+)/) : null
+    const goodCoverage = status === 'partial' && !!yieldCoverage && Number(yieldCoverage[1]) > 4 && ['ok', 'cached'].includes(sourceState(job, sourceId))
+    return { key, status, detail: stage?.detail ?? null, sourceNote, goodCoverage }
   })
 }
 

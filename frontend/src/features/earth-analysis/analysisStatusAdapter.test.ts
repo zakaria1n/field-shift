@@ -38,4 +38,17 @@ describe('Earth Analysis stage status mapping', () => {
       status: 'complete', sourceNote: 'source_cached',
     })
   })
+
+  it.each([[4, false], [5, true], [8, false]])('keeps coverage truthful while emphasizing %s resolved references', (known, green) => {
+    const job = {
+      ...PREVIEW_FIXTURES.complete,
+      stages: PREVIEW_FIXTURES.complete.stages.map(stage => stage.key === 'yield_reference'
+        ? { ...stage, status: 'complete' as const, detail: `${known}/8 crops matched to GAEZ v5 layers` } : stage),
+      sources: PREVIEW_FIXTURES.complete.sources.map(source => source.source_id === 'gaez_v5'
+        ? { ...source, status: 'live' as const } : source),
+    }
+    const result = deriveStages(job).find(stage => stage.key === 'yield_reference')!
+    expect(result.status).toBe(known === 8 ? 'complete' : 'partial')
+    expect(result.goodCoverage).toBe(green)
+  })
 })
