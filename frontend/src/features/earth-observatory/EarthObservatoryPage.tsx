@@ -313,7 +313,7 @@ export default function EarthObservatoryPage() {
         setFieldId(created.field_id)
         queryClient.invalidateQueries({ queryKey: ['dashboard'] })
         navigate(`/setup/questions?field=${created.field_id}`, {
-          state: { fieldId: created.field_id, areaHa: created.area_ha },
+          state: { fieldId: created.field_id, areaHa: created.area_ha, fieldTransition: true },
         })
       })
       .catch((err) => setGeoError(err.message ?? t('error.generic')))

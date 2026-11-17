@@ -8,7 +8,6 @@ import {
   Beef,
   Carrot,
   Check,
-  CircleHelp,
   CloudRain,
   Droplets,
   Flower,
@@ -164,7 +163,7 @@ export default function FarmProfilePage() {
   } = useWizard()
   const isArabic = i18n.language === 'ar'
 
-  const routeState = (location.state as { fieldId?: string; areaHa?: number } | null) ?? {}
+  const routeState = (location.state as { fieldId?: string; areaHa?: number; fieldTransition?: boolean } | null) ?? {}
   const fieldId = routeState.fieldId || searchParams.get('field') || wizardFieldId
 
   const [step, setStep] = useState<Step>(0)
@@ -440,18 +439,24 @@ export default function FarmProfilePage() {
   ]
 
   return (
-    <div className="earth-observatory relative flex min-h-[100svh] flex-col overflow-x-hidden bg-[#04120D] lg:h-[100svh] lg:overflow-hidden" data-testid="farm-profile-page">
+    <motion.div
+      className="earth-observatory relative flex min-h-[100svh] flex-col overflow-x-hidden bg-[#04120D] lg:h-[100svh] lg:overflow-hidden"
+      data-testid="farm-profile-page"
+      initial={routeState.fieldTransition ? { opacity: 0, y: 16 } : false}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: routeState.fieldTransition ? 0.72 : 0.35, ease: [0.22, 1, 0.36, 1] }}
+    >
       {/* prepared cinematic agricultural backdrop, blended into the emerald scene */}
       <motion.div
         key={step === 4 ? 'bg-priorities' : 'bg-questionnaire'}
         className="pointer-events-none absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${step === 4 ? bgPriorities : bgQuestionnaire})`,
+          backgroundImage: step === 3 ? 'none' : `url(${step === 4 ? bgPriorities : bgQuestionnaire})`,
           mixBlendMode: 'screen',
         }}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.34 }}
-        transition={{ duration: 0.9 }}
+        animate={{ opacity: step === 3 ? 0 : 0.34 }}
+        transition={{ duration: 0.7 }}
         aria-hidden
       />
       {/* cinematic emerald atmosphere: gradients, glow fields, soft waves */}
@@ -497,22 +502,22 @@ export default function FarmProfilePage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
-              initial={{ opacity: 0, x: isArabic ? -18 : 18 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: isArabic ? 18 : -18 }}
-              transition={{ duration: 0.28 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
               className="flex min-h-0 flex-1 flex-col"
             >
               <p className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#9BE870]">
                 <span className="inline-block h-3.5 w-1 rounded bg-[#A3E635]" aria-hidden />
                 {t('fp.step.kicker', { n: step + 1 })}
               </p>
-              <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+              <h1 className={`${step === 4 ? 'mt-1 text-3xl sm:text-4xl' : 'mt-2 text-3xl sm:text-5xl'} font-display font-extrabold tracking-tight text-white`}>
                 {stepTitles[step].title}
               </h1>
-              <p className="mt-3 text-base text-white/75 sm:text-lg">{stepTitles[step].subtitle}</p>
+              <p className={`${step === 4 ? 'mt-1 text-sm sm:text-base' : 'mt-3 text-base sm:text-lg'} text-white/75`}>{stepTitles[step].subtitle}</p>
 
-              <div className="farm-scroll mt-5 min-h-0 flex-1 overflow-y-auto pe-1.5">
+              <div className={`${step === 4 ? 'mt-2 farm-priorities-content' : 'mt-5 farm-scroll overflow-y-auto'} min-h-0 flex-1 pe-1.5`}>
                 {step === 0 && <IrrigationStep answers={answers} set={set} isArabic={isArabic} t={t} />}
                 {step === 1 && <HistoryStep answers={answers} set={set} years={years} crops={crops} isArabic={isArabic} t={t} />}
                 {step === 2 && <PurposeStep answers={answers} set={set} isArabic={isArabic} t={t} />}
@@ -586,7 +591,7 @@ export default function FarmProfilePage() {
           </div>
         </aside>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -748,10 +753,10 @@ function HistoryStep({
               {year - 1}–{year}
             </p>
             <div className="space-y-3 p-3.5">
-              <div className="relative h-36 overflow-hidden rounded-xl border border-white/15 bg-[#0A241A]">
+              <div className="relative flex h-36 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-[#0A241A]">
                 {mainRow?.status === 'planted' && asset ? (
                   mainRow.crop_id && cropHasOwnImage(mainRow.crop_id) && asset.image ? (
-                    <img src={asset.image} alt="" className="h-full w-full object-cover" />
+                    <img src={asset.image} alt="" className="max-h-full max-w-full object-contain p-2" />
                   ) : (
                     <div
                       className="flex h-full w-full items-center justify-center"
@@ -932,7 +937,7 @@ function ConstraintsStep({
               <img
                 src={asset!.image}
                 alt=""
-                className={`h-16 w-full rounded-lg object-cover transition-all ${excluded ? 'opacity-55 saturate-50' : 'opacity-80 group-hover:opacity-100'}`}
+                className={`h-16 w-full rounded-lg object-contain p-1 transition-all ${excluded ? 'opacity-55 saturate-50' : 'opacity-80 group-hover:opacity-100'}`}
               />
             ) : (
               <div
@@ -1006,7 +1011,7 @@ function PrioritiesStep({
   }
 
   return (
-    <div className="space-y-2.5">
+    <div className="farm-priorities-step space-y-2">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {presets.map((p) => {
           const selected = activePresetId === p.id
@@ -1022,7 +1027,7 @@ function PrioritiesStep({
                   : 'border-white/15 bg-white/[0.04] hover:border-[#A3E635]/50'
               }`}
             >
-              <span className="block text-[13px] font-extrabold text-white">{p.name}</span>
+              <span className="block text-xs font-extrabold leading-tight text-white">{p.name}</span>
               <span className="mt-0.5 block text-[9px] leading-tight text-white/60">{p.subtitle}</span>
               {selected && (
                 <span className="absolute end-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#A3E635] text-[#17352D]">
@@ -1034,36 +1039,44 @@ function PrioritiesStep({
         })}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         <div className="flex items-center justify-between">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-white/45">{t('mixer.balanceNote')}</span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/30 px-3 py-1 font-mono text-xs font-bold text-white" data-testid="mixer-total">
             {t('mixer.total')}: <b className="text-[#A3E635]">{totalOf(priorities)}</b> %
           </span>
         </div>
-        <div className="flex h-6 w-full overflow-hidden rounded-full border border-white/15 bg-black/30 p-0.5" aria-hidden>
+        <div className="flex h-5 w-full overflow-hidden rounded-full border border-white/15 bg-black/30 p-0.5" aria-hidden>
           {keys.map((k) => (
             <div key={k} className="h-full transition-all duration-300 first:rounded-s-full last:rounded-e-full" style={{ width: `${priorities[k]}%`, backgroundColor: meta[k].accent }} />
           ))}
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="grid grid-cols-1 gap-1.5">
         {keys.map((k) => {
           const m = meta[k]
           const Icon = m.icon
           return (
-            <div key={k} className={`rounded-xl border p-2 transition-all ${priorities[k] >= 40 ? 'border-[#A3E635]/60 bg-[#12281E]/80' : 'border-white/12 bg-white/[0.04]'}`}>
+            <div
+              key={k}
+              className="rounded-xl border px-2.5 py-1.5 transition-all"
+              style={{
+                borderColor: `${m.accent}${priorities[k] >= 40 ? '66' : '2E'}`,
+                backgroundColor: priorities[k] >= 40 ? `${m.accent}0D` : 'rgba(255,255,255,0.025)',
+                boxShadow: priorities[k] >= 40 ? `0 0 18px ${m.accent}12` : undefined,
+              }}
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/5" style={{ color: m.accent }}>
-                    <Icon size={14} />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-white/5" style={{ color: m.accent }}>
+                    <Icon size={15} />
                   </span>
                   <div className="min-w-0">
                     <label htmlFor={`slider-${k}`} className="block text-xs font-extrabold leading-tight text-white">
                       {m.label}
                     </label>
-                    <p className="truncate text-[9px] leading-tight text-white/50">{m.desc}</p>
+                    <p className="truncate text-[9px] leading-tight text-white/55">{m.desc}</p>
                   </div>
                 </div>
                 <span className="min-w-[2.9rem] rounded-md border border-white/15 bg-black/30 px-1.5 py-0.5 text-center font-mono text-xs font-extrabold text-white">
@@ -1091,21 +1104,14 @@ function PrioritiesStep({
         })}
       </div>
 
-      <p className="flex items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-2.5 py-0.5 text-[9px] leading-snug text-white/55">
-        <CircleHelp size={13} className="shrink-0 text-[#A3E635]" />
-        <span className="truncate">
-          {isArabic ? 'زيادة أولوية → الموازنة تلقائية، المجموع ١٠٠٪.' : 'Increase one priority — the others rebalance automatically to keep 100%.'}
-        </span>
-      </p>
-
       {errorMessage && (
         <div className="rounded-xl border border-red-400/40 bg-red-500/10 p-3 text-xs text-red-200">
           {errorMessage}
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-1 flex items-center justify-between border-t border-white/10 bg-[#04120D]/85 px-1 pt-2.5 pb-1 backdrop-blur-sm">
-        <button type="button" onClick={onBack} className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-2.5 text-sm font-bold text-white/85 transition-colors hover:border-white/50 hover:text-white">
+      <div className="sticky bottom-0 -mx-1 flex items-center justify-between border-t border-transparent bg-transparent px-1 pt-1.5 pb-0.5">
+        <button type="button" onClick={onBack} className="inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2 text-[13px] font-bold text-white/85 transition-colors hover:border-white/50 hover:text-white">
           <ArrowLeft className="rtl:rotate-180" size={16} />
           {t('nav.back')}
         </button>
@@ -1113,7 +1119,7 @@ function PrioritiesStep({
           type="button"
           onClick={onStartAnalysis}
           disabled={totalOf(priorities) !== 100 || submitting}
-          className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-b from-[#4CC22B] to-[#2B8F1D] px-9 py-3 text-sm font-extrabold text-white shadow-[0_8px_28px_rgba(76,194,43,0.4)] transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center gap-2.5 rounded-full bg-gradient-to-b from-[#4CC22B] to-[#2B8F1D] px-8 py-2.5 text-[13px] font-extrabold text-white shadow-[0_8px_28px_rgba(76,194,43,0.4)] transition-transform hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
           data-testid="start-analysis"
         >
           {submitting ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <Sparkles size={16} />}

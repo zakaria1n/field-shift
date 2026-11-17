@@ -3,9 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import {
   Beef,
-  CloudRain,
-  HelpCircle,
-  Leaf,
+  Droplets,
   ShieldAlert,
   Sprout,
   Store,
@@ -41,23 +39,25 @@ export interface SceneEffectsProps {
  * decorative and never presented as observed data. */
 
 function RainLayer() {
-  const drops = Array.from({ length: 26 }, (_, i) => ({
-    left: 18 + ((i * 83) % 64),
-    delay: (i % 9) * 0.24,
-    duration: 0.9 + ((i * 7) % 5) * 0.12,
-    height: 14 + ((i * 13) % 12),
+  const drops = Array.from({ length: 22 }, (_, i) => ({
+    left: 8 + ((i * 47 + i * i * 13) % 84),
+    delay: -(((i * 17) % 39) / 10),
+    duration: 2.1 + ((i * 11) % 17) / 10,
+    height: 8 + ((i * 13) % 7),
+    opacity: 0.28 + ((i * 7) % 5) * 0.045,
   }))
   return (
-    <div className="absolute inset-x-[14%] top-[16%] h-[46%] overflow-visible" aria-hidden>
+    <div className="farm-weather-rain absolute left-[12%] top-[62%] h-[145%] w-[76%]" aria-hidden>
       {drops.map((drop, index) => (
         <span
           key={index}
-          className="farm-rain-drop absolute w-[2px] rounded-full bg-[#A8CCF0]/75"
+          className="farm-rain-drop absolute w-px rounded-full bg-[#B9D9E8]"
           style={{
             left: `${drop.left}%`,
             height: `${drop.height}px`,
             animationDelay: `${drop.delay}s`,
             animationDuration: `${drop.duration}s`,
+            opacity: drop.opacity,
           }}
         />
       ))}
@@ -66,24 +66,18 @@ function RainLayer() {
 }
 
 function WeatherLayer({ irrigationType }: { irrigationType: SceneEffectsProps['irrigationType'] }) {
-  if (irrigationType === 'unknown') return null
-  const rainfed = irrigationType === 'rainfed'
-  const mixed = irrigationType === 'mixed'
+  const showRain = irrigationType === 'rainfed' || irrigationType === 'mixed'
+  const neutral = irrigationType === 'unknown'
   return (
     <div className="absolute inset-0" aria-hidden>
-      <img
-        src={rainCloud}
-        alt=""
-        className="farm-cloud absolute left-[6%] top-[2%] w-[42%] drop-shadow-[0_10px_24px_rgba(0,0,0,0.4)]"
-      />
-      {(mixed || !rainfed) && (
+      <div className="farm-weather-cloud absolute left-[25%] top-[1%] w-[49%]">
+        {showRain && <RainLayer />}
         <img
-          src={softCloud}
+          src={showRain ? rainCloud : softCloud}
           alt=""
-          className="farm-cloud-delayed absolute right-[4%] top-[6%] w-[34%] opacity-80 drop-shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+          className={`farm-cloud-image relative z-10 block h-auto w-full drop-shadow-[0_8px_18px_rgba(0,0,0,0.24)] ${neutral ? 'opacity-60' : showRain ? 'opacity-[0.78]' : 'opacity-[0.68]'}`}
         />
-      )}
-      <RainLayer />
+      </div>
     </div>
   )
 }
@@ -122,7 +116,9 @@ function HistoryLayer({ cards }: { cards: HistoryCardData[] }) {
               style={{ transform: `perspective(700px) rotateY(${tilt}deg) rotateX(${index % 2 ? 3 : -2}deg)` }}
             >
               {planted ? (
-                <img src={card.image ?? undefined} alt="" className="h-[92px] w-full object-cover" />
+                <div className="flex h-[92px] items-center justify-center bg-[#0B2018] px-2">
+                  <img src={card.image ?? undefined} alt="" className="h-full w-full object-contain" />
+                </div>
               ) : card.cropId ? (
                 <div
                   className="flex h-[92px] w-full items-center justify-center text-4xl font-extrabold"
@@ -247,11 +243,11 @@ function ConstraintsLayer({ excludedCount }: { excludedCount: number }) {
   )
 }
 
-const PRIORITY_BADGES: Record<string, { icon: typeof CloudRain; color: string; position: string }> = {
-  water: { icon: CloudRain, color: '#7FB8D8', position: 'left-1/2 top-[0%] -translate-x-1/2' },
-  soil: { icon: Leaf, color: '#8FE627', position: 'left-[0%] top-[34%]' },
+const PRIORITY_BADGES: Record<string, { icon: typeof Droplets; color: string; position: string }> = {
+  water: { icon: Droplets, color: '#3B8EA5', position: 'left-1/2 top-[0%] -translate-x-1/2' },
+  soil: { icon: Sprout, color: '#229E65', position: 'left-[0%] top-[34%]' },
   yield: { icon: TrendingUp, color: '#EFC65A', position: 'right-[0%] top-[30%]' },
-  risk: { icon: HelpCircle, color: '#CFE3D8', position: 'left-1/2 bottom-[6%] -translate-x-1/2' },
+  risk: { icon: ShieldAlert, color: '#4E6E60', position: 'left-1/2 bottom-[6%] -translate-x-1/2' },
 }
 
 function PrioritiesLayer({ priorities }: { priorities: SceneEffectsProps['priorities'] }) {

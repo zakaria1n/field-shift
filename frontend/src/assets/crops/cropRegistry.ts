@@ -17,7 +17,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'قمح طري',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/bread_wheat.jpg',
+    image: '/assets/crops/bread_wheat.png',
     accent: '#D9943B',
     bgLight: '#FEF6E9',
   },
@@ -27,7 +27,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'قمح صلب',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/durum_wheat.jpg',
+    image: '/assets/crops/durum_wheat.png',
     accent: '#CA7D2B',
     bgLight: '#FDF4E5',
   },
@@ -37,7 +37,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'شعير',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/barley.jpg',
+    image: '/assets/crops/barley.png',
     accent: '#B08838',
     bgLight: '#FBF5E8',
   },
@@ -47,7 +47,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خرطال',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/barley.jpg',
+    image: '',
     accent: '#9A7D42',
     bgLight: '#FAF5EA',
   },
@@ -57,7 +57,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'ذرة',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/maize.jpg',
+    image: '/assets/crops/maize.png',
     accent: '#E0A320',
     bgLight: '#FFF8E6',
   },
@@ -67,7 +67,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'ذرة رفيعة',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/barley.jpg',
+    image: '/assets/crops/sorghum.png',
     accent: '#C46D32',
     bgLight: '#FDF1E9',
   },
@@ -77,7 +77,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'دخن',
     family: 'Poaceae',
     group: 'cereal',
-    image: '/assets/crops/barley.jpg',
+    image: '/assets/crops/pearl_millet.png',
     accent: '#A08044',
     bgLight: '#FBF5EC',
   },
@@ -87,7 +87,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'فول',
     family: 'Fabaceae',
     group: 'legume',
-    image: '/assets/crops/faba_bean.jpg',
+    image: '/assets/crops/faba_bean.png',
     accent: '#229E65',
     bgLight: '#E8F7F0',
     fixesNitrogen: true,
@@ -98,7 +98,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'حمص',
     family: 'Fabaceae',
     group: 'legume',
-    image: '/assets/crops/chickpea.jpg',
+    image: '/assets/crops/chickpea.png',
     accent: '#35A372',
     bgLight: '#EAF7F1',
     fixesNitrogen: true,
@@ -109,7 +109,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'عدس',
     family: 'Fabaceae',
     group: 'legume',
-    image: '/assets/crops/chickpea.jpg',
+    image: '',
     accent: '#3EA87B',
     bgLight: '#ECF8F3',
     fixesNitrogen: true,
@@ -120,7 +120,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'جلبانة',
     family: 'Fabaceae',
     group: 'legume',
-    image: '/assets/crops/faba_bean.jpg',
+    image: '',
     accent: '#2DA06D',
     bgLight: '#E9F7F1',
     fixesNitrogen: true,
@@ -131,7 +131,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'فاصوليا خضراء',
     family: 'Fabaceae',
     group: 'legume',
-    image: '/assets/crops/faba_bean.jpg',
+    image: '/assets/crops/green_bean.png',
     accent: '#289A65',
     bgLight: '#E7F6EF',
     fixesNitrogen: true,
@@ -142,7 +142,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'فصة',
     family: 'Fabaceae',
     group: 'forage',
-    image: '/assets/crops/faba_bean.jpg',
+    image: '',
     accent: '#479E78',
     bgLight: '#EDF7F2',
     fixesNitrogen: true,
@@ -153,7 +153,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'برسيم',
     family: 'Fabaceae',
     group: 'forage',
-    image: '/assets/crops/faba_bean.jpg',
+    image: '/assets/crops/berseem_clover.png',
     accent: '#3E9E72',
     bgLight: '#EBF6F1',
     fixesNitrogen: true,
@@ -164,7 +164,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'بيقية',
     family: 'Fabaceae',
     group: 'forage',
-    image: '/assets/crops/chickpea.jpg',
+    image: '/assets/crops/vetch.png',
     accent: '#3A9D6F',
     bgLight: '#EAF6F0',
     fixesNitrogen: true,
@@ -175,7 +175,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'فول سوداني',
     family: 'Fabaceae',
     group: 'oilseed',
-    image: '/assets/crops/chickpea.jpg',
+    image: '/assets/crops/groundnut.png',
     accent: '#C78536',
     bgLight: '#FDF3E8',
     fixesNitrogen: true,
@@ -186,7 +186,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'شمندر سكري',
     family: 'Amaranthaceae',
     group: 'tuber',
-    image: '/assets/crops/potato.jpg',
+    image: '/assets/crops/sugar_beet.png',
     accent: '#91538C',
     bgLight: '#F7EDF6',
   },
@@ -196,7 +196,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'بطاطس',
     family: 'Solanaceae',
     group: 'tuber',
-    image: '/assets/crops/potato.jpg',
+    image: '/assets/crops/potato.png',
     accent: '#8C5E39',
     bgLight: '#F8F1EB',
   },
@@ -206,7 +206,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'بطاطا حلوة',
     family: 'Convolvulaceae',
     group: 'tuber',
-    image: '/assets/crops/potato.jpg',
+    image: '/assets/crops/sweet_potato.png',
     accent: '#B85E32',
     bgLight: '#FBF0EB',
   },
@@ -216,7 +216,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'جزر',
     family: 'Apiaceae',
     group: 'vegetable',
-    image: '/assets/crops/potato.jpg',
+    image: '/assets/crops/carrot.png',
     accent: '#D9652B',
     bgLight: '#FEF1EA',
   },
@@ -226,7 +226,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'بصل',
     family: 'Amaryllidaceae',
     group: 'vegetable',
-    image: '/assets/crops/potato.jpg',
+    image: '/assets/crops/onion.png',
     accent: '#BF7836',
     bgLight: '#FCF2E9',
   },
@@ -236,7 +236,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'ثوم',
     family: 'Amaryllidaceae',
     group: 'vegetable',
-    image: '/assets/crops/potato.jpg',
+    image: '',
     accent: '#A17D4D',
     bgLight: '#FBF6EE',
   },
@@ -246,7 +246,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'طماطم',
     family: 'Solanaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '/assets/crops/tomato.png',
     accent: '#D94432',
     bgLight: '#FEEFEF',
   },
@@ -256,7 +256,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'فلفل',
     family: 'Solanaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '/assets/crops/pepper.png',
     accent: '#CC4129',
     bgLight: '#FEEDEB',
   },
@@ -266,7 +266,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'باذنجان',
     family: 'Solanaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#6E4282',
     bgLight: '#F5EDF9',
   },
@@ -276,7 +276,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'بطيخ أصفر',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#D6A024',
     bgLight: '#FEF9E9',
   },
@@ -286,7 +286,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'دلاح',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#268E56',
     bgLight: '#E8F6EF',
   },
@@ -296,7 +296,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خيار',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#2F965E',
     bgLight: '#E9F7F0',
   },
@@ -306,7 +306,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'كوسة',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#3D9B69',
     bgLight: '#EBF7F1',
   },
@@ -316,7 +316,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'كرنب',
     family: 'Brassicaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#479969',
     bgLight: '#EDF7F2',
   },
@@ -326,7 +326,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خس',
     family: 'Asteraceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#52A36F',
     bgLight: '#EEF8F2',
   },
@@ -336,7 +336,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'سبانخ',
     family: 'Amaranthaceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#398C5A',
     bgLight: '#EAF6EF',
   },
@@ -346,7 +346,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'كولزا',
     family: 'Brassicaceae',
     group: 'oilseed',
-    image: '/assets/crops/bread_wheat.jpg',
+    image: '/assets/crops/canola.png',
     accent: '#D4B022',
     bgLight: '#FEFBE8',
   },
@@ -356,7 +356,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'عباد الشمس',
     family: 'Asteraceae',
     group: 'oilseed',
-    image: '/assets/crops/sunflower.jpg',
+    image: '/assets/crops/sunflower.png',
     accent: '#DF9D18',
     bgLight: '#FFF7E7',
   },
@@ -366,19 +366,17 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'عصفر',
     family: 'Asteraceae',
     group: 'oilseed',
-    image: '/assets/crops/bread_wheat.jpg',
+    image: '',
     accent: '#DB7D25',
     bgLight: '#FEF3E8',
   },
-  // NOTE: safflower has no dedicated image (safflower.jpg is a duplicate of
-  // sunflower.jpg) — it renders the group-icon fallback.
   quinoa: {
     id: 'quinoa',
     nameEn: 'Quinoa',
     nameAr: 'كينوا',
     family: 'Amaranthaceae',
     group: 'cereal',
-    image: '/assets/crops/bread_wheat.jpg',
+    image: '/assets/crops/quinoa.png',
     accent: '#B8783B',
     bgLight: '#FAF2EA',
   },
@@ -388,9 +386,20 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خرشوف',
     family: 'Asteraceae',
     group: 'vegetable',
-    image: '/assets/crops/tomato.jpg',
+    image: '',
     accent: '#4B8766',
     bgLight: '#EDF6F1',
+  },
+  berseem_clover: {
+    id: 'berseem_clover',
+    nameEn: 'Berseem clover',
+    nameAr: 'برسيم',
+    family: 'Fabaceae',
+    group: 'forage',
+    image: '/assets/crops/berseem_clover.png',
+    accent: '#3E9E72',
+    bgLight: '#EBF6F1',
+    fixesNitrogen: true,
   },
 };
 
@@ -399,25 +408,32 @@ export function getCropAsset(cropId: string | null | undefined): CropAssetMeta |
   return CROP_REGISTRY[cropId] ?? null;
 }
 
-/** Only the first crop registered for a given photo keeps that photo; crops
- * without their own image render an accent-colored group icon instead, so no
- * two crops ever display the same picture. */
-const IMAGE_OWNERS: Set<string> = (() => {
-  const owners = new Set<string>()
-  for (const crop of Object.values(CROP_REGISTRY)) {
-    if (!owners.has(crop.image)) owners.add(crop.image)
-  }
-  return owners
-})()
-
 /** A crop displays a photo only when its registry path is its own dedicated
- * file (/<id>.jpg) that was visually verified to match the crop. Verified:
- * bread_wheat, durum_wheat (shared wheat), barley, oats→icon (oats.jpg is a
- * barley drawing), chickpea, lentil→icon (lentil.jpg is a chickpea drawing),
- * faba_bean, alfalfa→icon (alfalfa.jpg is a faba drawing), maize, potato,
- * carrot, onion (garlic.jpg is an onion drawing), garlic→icon, tomato,
- * sunflower (safflower→icon). */
+ * verified file (/<id>.png or /<id>.jpg).
+ * Verified:
+ * - Existing: bread_wheat, durum_wheat (shared wheat), barley, maize,
+ *   faba_bean, chickpea, potato, carrot, onion, tomato, sunflower.
+ * - Newly generated via Nano Banana: sorghum, pearl_millet, green_bean,
+ *   berseem (berseem_clover), vetch, groundnut, sugar_beet, sweet_potato,
+ *   canola, quinoa, pepper.
+ * Crops awaiting quota reset or without verified dedicated images render
+ * group fallback icons. */
 export function cropHasOwnImage(cropId: string): boolean {
   const crop = CROP_REGISTRY[cropId]
-  return Boolean(crop && crop.image === `/assets/crops/${cropId}.jpg`)
+  if (!crop || !crop.image) return false
+  const dedicatedPng = `/assets/crops/${cropId}.png`
+  const dedicatedJpg = `/assets/crops/${cropId}.jpg`
+  if (crop.image === dedicatedPng || crop.image === dedicatedJpg) {
+    return true
+  }
+  if (cropId === 'berseem' && (crop.image === '/assets/crops/berseem_clover.png' || crop.image === '/assets/crops/berseem_clover.jpg' || crop.image === '/assets/crops/berseem.png')) {
+    return true
+  }
+  if (cropId === 'berseem_clover' && (crop.image === '/assets/crops/berseem_clover.png' || crop.image === '/assets/crops/berseem.png')) {
+    return true
+  }
+  if (cropId === 'durum_wheat' && crop.image === '/assets/crops/durum_wheat.jpg') {
+    return true
+  }
+  return false
 }
