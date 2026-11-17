@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rebalance, totalOf } from './Priorities'
+import { rebalance, totalOf } from '../farm-profile/prioritiesMath'
 import type { Priorities } from '../../state/wizard'
 
 const KEYS = ['water', 'soil', 'yield', 'risk'] as const

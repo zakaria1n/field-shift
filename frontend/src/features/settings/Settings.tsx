@@ -15,7 +15,7 @@ import {
 import { clearAccessKey } from '../../state/accessKey'
 import { useWizard, type Priorities } from '../../state/wizard'
 import LanguageSwitch from '../../app/components/LanguageSwitch'
-import { rebalance } from '../priorities/Priorities'
+import { rebalance } from '../farm-profile/prioritiesMath'
 
 const PRIORITY_META = {
   water: { labelKey: 'mixer.water', color: 'bg-sky text-sky-900', barBg: 'bg-sky' },

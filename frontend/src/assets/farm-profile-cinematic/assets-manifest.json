@@ -1,0 +1,248 @@
+{
+  "assets": [
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/backgrounds/intro.png",
+      "dimensions_px": [
+        1672,
+        941
+      ],
+      "transparency": false,
+      "role": "Atmospheric introduction background",
+      "scene": "introduction",
+      "source": "built-in imagegen",
+      "status": "candidate"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/backgrounds/questionnaire.png",
+      "dimensions_px": [
+        1672,
+        941
+      ],
+      "transparency": false,
+      "role": "Atmospheric questionnaire background",
+      "scene": "irrigation/history/purpose/constraints",
+      "source": "built-in imagegen",
+      "status": "candidate"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/backgrounds/priorities.png",
+      "dimensions_px": [
+        1672,
+        941
+      ],
+      "transparency": false,
+      "role": "Atmospheric priorities background",
+      "scene": "priorities",
+      "source": "built-in imagegen",
+      "status": "candidate"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/weather/cloud.png",
+      "dimensions_px": [
+        1774,
+        887
+      ],
+      "transparency": true,
+      "role": "Soft cloud sprite",
+      "scene": "irrigation",
+      "source": "built-in imagegen",
+      "status": "candidate: inspect edge fringing"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/weather/rain-cloud.png",
+      "dimensions_px": [
+        1774,
+        887
+      ],
+      "transparency": true,
+      "role": "Rain cloud sprite",
+      "scene": "irrigation",
+      "source": "built-in imagegen",
+      "status": "candidate: inspect edge fringing"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/dry-soil.png",
+      "dimensions_px": [
+        1254,
+        1254
+      ],
+      "transparency": false,
+      "role": "Dry soil color texture",
+      "scene": "parcel terrain",
+      "source": "built-in imagegen",
+      "status": "candidate: visible repeat seams; not seamless"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground102/Ground102_1K-JPG_Color.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "Color PBR map; dry compacted surface / provisional side wall",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground102",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground102/Ground102_1K-JPG_NormalGL.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "NormalGL PBR map; dry compacted surface / provisional side wall",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground102",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground102/Ground102_1K-JPG_Roughness.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "Roughness PBR map; dry compacted surface / provisional side wall",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground102",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground103/Ground103_1K-JPG_Color.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "Color PBR map; soil surface",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground103",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground103/Ground103_1K-JPG_NormalGL.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "NormalGL PBR map; soil surface",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground103",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground103/Ground103_1K-JPG_Roughness.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "Roughness PBR map; soil surface",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground103",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground103/Ground103_1K-JPG_Displacement.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "Displacement PBR map; soil surface",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground103",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    },
+    {
+      "path": "frontend/src/assets/farm-profile-cinematic/terrain-materials/ground103/Ground103_1K-JPG_AmbientOcclusion.jpg",
+      "dimensions_px": [
+        1024,
+        1024
+      ],
+      "transparency": false,
+      "role": "AmbientOcclusion PBR map; soil surface",
+      "scene": "procedural parcel",
+      "source": "https://ambientcg.com/view?id=Ground103",
+      "license": "CC0 1.0",
+      "generation_method": "source photogrammetry, original 1K JPG",
+      "status": "available for Phase 2 testing; dry soil appearance is illustrative"
+    }
+  ],
+  "missing": [
+    {
+      "role": "cloud fringe cleanup",
+      "reason": "built-in imagegen usage limit reached; originals retained with colored edge artifacts"
+    },
+    {
+      "role": "realistic stratified side-wall soil",
+      "reason": "Ground102 is a photogrammetry ground material used as provisional side-wall only, not a photographed soil section"
+    },
+    {
+      "role": "cultivated row/vegetation asset",
+      "reason": "not generated; avoid false crop-specific illustration"
+    },
+    {
+      "role": "rich cultivated soil surface",
+      "reason": "not yet acquired"
+    },
+    {
+      "role": "seamless generated dry-soil.png",
+      "reason": "visible seams; use Ground102/103 candidates instead"
+    }
+  ],
+  "existing_crop_files_by_matching_filename": {
+    "alfalfa": "frontend/public/assets/crops/alfalfa.jpg",
+    "barley": "frontend/public/assets/crops/barley.jpg",
+    "bread_wheat": "frontend/public/assets/crops/bread_wheat.jpg",
+    "carrot": "frontend/public/assets/crops/carrot.jpg",
+    "chickpea": "frontend/public/assets/crops/chickpea.jpg",
+    "durum_wheat": "frontend/public/assets/crops/durum_wheat.jpg",
+    "faba_bean": "frontend/public/assets/crops/faba_bean.jpg",
+    "garlic": "frontend/public/assets/crops/garlic.jpg",
+    "lentil": "frontend/public/assets/crops/lentil.jpg",
+    "maize": "frontend/public/assets/crops/maize.jpg",
+    "oats": "frontend/public/assets/crops/oats.jpg",
+    "onion": "frontend/public/assets/crops/onion.jpg",
+    "pea": "frontend/public/assets/crops/pea.jpg",
+    "potato": "frontend/public/assets/crops/potato.jpg",
+    "safflower": "frontend/public/assets/crops/safflower.jpg",
+    "sunflower": "frontend/public/assets/crops/sunflower.jpg",
+    "tomato": "frontend/public/assets/crops/tomato.jpg"
+  },
+  "previews": [
+    "frontend/src/assets/farm-profile-cinematic/previews/contact-sheet.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/backgrounds.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/weather.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/terrain-tiling.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/ground103-material-contact.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/ground102-material-contact.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/ground103-irregular-parcel.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/ground103-ground102-irregular-parcel.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/ground103-tiling.png",
+    "frontend/src/assets/farm-profile-cinematic/previews/material-weather-review.png"
+  ],
+  "latest_review": {
+    "generation": "built-in imagegen returned HTTP 429 for side-wall, field rows and both cloud cleanup requests",
+    "status": "incomplete",
+    "preview": "material-weather-review.png",
+    "geometry": "illustrative Three.js extrusion, not real GeoJSON",
+    "no_new_pbr_maps": true
+  }
+}

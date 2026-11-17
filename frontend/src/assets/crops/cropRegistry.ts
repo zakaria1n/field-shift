@@ -356,7 +356,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'عباد الشمس',
     family: 'Asteraceae',
     group: 'oilseed',
-    image: '/assets/crops/bread_wheat.jpg',
+    image: '/assets/crops/sunflower.jpg',
     accent: '#DF9D18',
     bgLight: '#FFF7E7',
   },
@@ -370,6 +370,8 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     accent: '#DB7D25',
     bgLight: '#FEF3E8',
   },
+  // NOTE: safflower has no dedicated image (safflower.jpg is a duplicate of
+  // sunflower.jpg) — it renders the group-icon fallback.
   quinoa: {
     id: 'quinoa',
     nameEn: 'Quinoa',
@@ -395,4 +397,27 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
 export function getCropAsset(cropId: string | null | undefined): CropAssetMeta | null {
   if (!cropId) return null;
   return CROP_REGISTRY[cropId] ?? null;
+}
+
+/** Only the first crop registered for a given photo keeps that photo; crops
+ * without their own image render an accent-colored group icon instead, so no
+ * two crops ever display the same picture. */
+const IMAGE_OWNERS: Set<string> = (() => {
+  const owners = new Set<string>()
+  for (const crop of Object.values(CROP_REGISTRY)) {
+    if (!owners.has(crop.image)) owners.add(crop.image)
+  }
+  return owners
+})()
+
+/** A crop displays a photo only when its registry path is its own dedicated
+ * file (/<id>.jpg) that was visually verified to match the crop. Verified:
+ * bread_wheat, durum_wheat (shared wheat), barley, oats→icon (oats.jpg is a
+ * barley drawing), chickpea, lentil→icon (lentil.jpg is a chickpea drawing),
+ * faba_bean, alfalfa→icon (alfalfa.jpg is a faba drawing), maize, potato,
+ * carrot, onion (garlic.jpg is an onion drawing), garlic→icon, tomato,
+ * sunflower (safflower→icon). */
+export function cropHasOwnImage(cropId: string): boolean {
+  const crop = CROP_REGISTRY[cropId]
+  return Boolean(crop && crop.image === `/assets/crops/${cropId}.jpg`)
 }

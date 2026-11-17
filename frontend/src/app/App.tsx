@@ -1,11 +1,30 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
+import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom'
 
 import AppShell from './AppShell'
 import WizardShell from './WizardShell'
 import Welcome from '../features/welcome/Welcome'
 import EarthObservatoryPage from '../features/earth-observatory/EarthObservatoryPage'
-import Questions from '../features/farm-profile/Questions'
-import Priorities from '../features/priorities/Priorities'
+
+// The farm-profile page carries the WebGL parcel stack; load it on demand.
+const FarmProfilePage = lazy(() => import('../features/farm-profile/FarmProfilePage'))
+
+/** Old priorities route now lives inside the single 5-step profile page. */
+function PrioritiesRedirect() {
+  const [searchParams] = useSearchParams()
+  const field = searchParams.get('field')
+  const query = new URLSearchParams(field ? { field } : {})
+  query.set('step', 'priorities')
+  return <Navigate to={`/setup/questions?${query.toString()}`} replace />
+}
+
+function FarmProfileFallback() {
+  return (
+    <div className="earth-observatory flex min-h-[100svh] items-center justify-center bg-[#04120D]">
+      <span className="h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-[#A3E635]" />
+    </div>
+  )
+}
 import AnalysisProgress from '../features/analysis/AnalysisProgress'
 import RotationExplorer from '../features/rotations/RotationExplorer'
 import PlanDetails from '../features/rotations/PlanDetails'
@@ -42,8 +61,8 @@ export default function App() {
       <Route path="/welcome" element={<Welcome />} />
       <Route element={<WizardShell />}>
         <Route path="/fields/new" element={<EarthObservatoryPage />} />
-        <Route path="/setup/questions" element={<Questions />} />
-        <Route path="/setup/priorities" element={<Priorities />} />
+        <Route path="/setup/questions" element={<Suspense fallback={<FarmProfileFallback />}><FarmProfilePage /></Suspense>} />
+        <Route path="/setup/priorities" element={<PrioritiesRedirect />} />
         <Route path="/analyses/:jobId/progress" element={<AnalysisProgress />} />
         <Route path="/fields/:fieldId/rotations" element={<RotationExplorer />} />
         <Route path="/rotations/:ref" element={<PlanDetails />} />

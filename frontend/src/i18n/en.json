@@ -479,5 +479,20 @@
   "obs.location.error": "Location access was denied or unavailable — you can search for your area manually.",
   "obs.attribution.title": "Map data providers",
   "obs.attribution.expand": "Attribution",
-  "obs.location.primary": "Use My Location"
+  "obs.location.primary": "Use My Location",
+  "fp.brand.tagline": "Farm Profile — From your field to a personalized crop plan",
+  "fp.progress.irrigation": "Irrigation",
+  "fp.progress.history": "History",
+  "fp.progress.purpose": "Purpose",
+  "fp.progress.constraints": "Constraints",
+  "fp.progress.priorities": "Your Priorities",
+  "fp.step.kicker": "YOUR FARM PROFILE · STEP {{n}} OF 5",
+  "fp.intro.cta": "Start Farm Profile",
+  "fp.transition.extracting": "Extracting your field",
+  "fp.transition.preserved": "Exact geometry preserved",
+  "fp.transition.realPolyline": "Real GeoJSON boundary",
+  "fp.parcel.note": "This floating terrain is generated from the exact polygon you drew. Its look is illustrative — it does not show detected crops or soil conditions.",
+  "fp.parcel.realGeometry": "Real GeoJSON polygon",
+  "fp.history.searchCrops": "Search crops…",
+  "fp.history.noCropsFound": "No crops match your search"
 }

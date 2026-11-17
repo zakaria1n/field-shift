@@ -479,5 +479,20 @@
   "obs.location.error": "تعذّر الوصول إلى الموقع أو تم رفض الإذن — يمكنك البحث عن منطقتك يدويًا.",
   "obs.attribution.title": "مزودو بيانات الخريطة",
   "obs.attribution.expand": "نسب الصور",
-  "obs.location.primary": "استخدم موقعي"
+  "obs.location.primary": "استخدم موقعي",
+  "fp.brand.tagline": "الملف الزراعي — من حقلك إلى خطة زراعية مخصصة",
+  "fp.progress.irrigation": "الري",
+  "fp.progress.history": "السجل",
+  "fp.progress.purpose": "الهدف",
+  "fp.progress.constraints": "الاستثناءات",
+  "fp.progress.priorities": "أولوياتك",
+  "fp.step.kicker": "الملف الزراعي · الخطوة {{n}} من ٥",
+  "fp.intro.cta": "ابدأ الملف الزراعي",
+  "fp.transition.extracting": "جارٍ استخراج حقلك",
+  "fp.transition.preserved": "هندسة الحدود محفوظة بدقة",
+  "fp.transition.realPolyline": "حدود GeoJSON الحقيقية",
+  "fp.parcel.note": "هذا المجسم مرتفع مبني من المضلع الدقيق الذي رسمته. مظهره توضيحي — لا يعرض محاصيلًا أو خصوبة تربة مكتشفة.",
+  "fp.parcel.realGeometry": "مضلع GeoJSON حقيقي",
+  "fp.history.searchCrops": "ابحث عن المحاصيل…",
+  "fp.history.noCropsFound": "لا توجد محاصيل مطابقة"
 }
