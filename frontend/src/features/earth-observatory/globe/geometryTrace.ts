@@ -21,19 +21,43 @@ export interface TracePlan {
 export function boundsOfGeometry(geometry: unknown): [number, number, number, number] | null {
   const rings = flattenRings(geometry)
   if (rings.length === 0) return null
-  let west = 180
   let south = 90
-  let east = -180
   let north = -90
+  const longitudes: number[] = []
   for (const ring of rings) {
     for (const [lon, lat] of ring) {
-      if (lon < west) west = lon
-      if (lon > east) east = lon
+      longitudes.push(normalizeLongitude360(lon))
       if (lat < south) south = lat
       if (lat > north) north = lat
     }
   }
+  // Use the smallest circular interval. Ordinary min/max makes countries
+  // crossing ±180° appear almost world-wide (for example Russia or Fiji).
+  longitudes.sort((a, b) => a - b)
+  let largestGap = -1
+  let gapAfter = 0
+  for (let index = 0; index < longitudes.length; index += 1) {
+    const current = longitudes[index]
+    const next = index === longitudes.length - 1 ? longitudes[0] + 360 : longitudes[index + 1]
+    const gap = next - current
+    if (gap > largestGap) {
+      largestGap = gap
+      gapAfter = index
+    }
+  }
+  const west = normalizeLongitude180(longitudes[(gapAfter + 1) % longitudes.length])
+  let east = normalizeLongitude180(longitudes[gapAfter])
+  if (east < west) east += 360
   return [west, south, east, north]
+}
+
+function normalizeLongitude360(longitude: number): number {
+  return ((longitude % 360) + 360) % 360
+}
+
+function normalizeLongitude180(longitude: number): number {
+  const normalized = ((longitude + 180) % 360 + 360) % 360 - 180
+  return normalized === -180 && longitude > 0 ? 180 : normalized
 }
 
 function mercatorY(lat: number): number {

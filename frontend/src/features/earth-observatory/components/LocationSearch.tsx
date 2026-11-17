@@ -102,7 +102,7 @@ export default function LocationSearch({
                 }`}
                 onClick={() => pick({ lat: result.lat, lon: result.lon, displayName: result.display_name })}
               >
-                <MapPin size={16} className={index === 0 ? 'text-[#3E7A1F]' : 'text-[#4A6359]'} shrink-0 />
+                <MapPin size={16} className={index === 0 ? 'shrink-0 text-[#3E7A1F]' : 'shrink-0 text-[#4A6359]'} />
                 <bdi className="truncate">{result.display_name}</bdi>
               </button>
             </li>

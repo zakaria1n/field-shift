@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { boundsOfGeometry, buildTracePlan, easeInOutCubic, flattenRings, zoomToFitBounds } from './globe/geometryTrace'
-import { normalizeRows } from './globe/boundaryData'
+import { focusCountryGeometryNearPoint, normalizeRows } from './globe/boundaryData'
 import { buildGpsJourney, buildSearchJourney } from './globe/journeyPlan'
 
 describe('nominatim response normalization', () => {
@@ -17,6 +17,33 @@ describe('nominatim response normalization', () => {
     expect(normalizeRows(null)).toHaveLength(0)
     expect(normalizeRows('text')).toHaveLength(0)
     expect(normalizeRows({ error: 'Unable to geocode' })).toHaveLength(1)
+  })
+
+  it('frames the country region containing the search place and nearby islands', () => {
+    const country = {
+      type: 'MultiPolygon',
+      coordinates: [
+        [[[-5, 42], [8, 42], [8, 51], [-5, 51], [-5, 42]]],
+        [[[8.3, 41.2], [9.6, 41.2], [9.6, 43.2], [8.3, 43.2], [8.3, 41.2]]],
+        [[[-54, 2], [-51, 2], [-51, 6], [-54, 6], [-54, 2]]],
+      ],
+    }
+    const focused = focusCountryGeometryNearPoint(country, 48.86, 2.32) as typeof country
+    expect(focused.coordinates).toHaveLength(2)
+    expect(focused.coordinates).toContain(country.coordinates[0])
+    expect(focused.coordinates).toContain(country.coordinates[1])
+    expect(country.coordinates).toHaveLength(3)
+  })
+
+  it('handles country rings with more vertices than the JS argument limit', () => {
+    const ring: number[][] = Array.from({ length: 130_000 }, (_, index) => {
+      const angle = (index / 129_999) * Math.PI * 2
+      return [Math.cos(angle), Math.sin(angle)]
+    })
+    ring[ring.length - 1] = ring[0]
+    const geometry = { type: 'MultiPolygon', coordinates: [[ring]] }
+
+    expect(() => focusCountryGeometryNearPoint(geometry, 0, 0)).not.toThrow()
   })
 })
 
@@ -81,6 +108,17 @@ describe('geometryTrace', () => {
     expect(boundsOfGeometry(null)).toBeNull()
   })
 
+  it('uses the smallest longitude interval for a country crossing the antimeridian', () => {
+    const datelineCountry = {
+      type: 'MultiPolygon',
+      coordinates: [
+        [[[170, -10], [179, -10], [179, 10], [170, 10], [170, -10]]],
+        [[[-179, -8], [-170, -8], [-170, 8], [-179, 8], [-179, -8]]],
+      ],
+    }
+    expect(boundsOfGeometry(datelineCountry)).toEqual([170, -10, 190, 10])
+  })
+
   it('eases with a symmetric in-out curve', () => {
     expect(easeInOutCubic(0)).toBe(0)
     expect(easeInOutCubic(1)).toBe(1)
@@ -124,6 +162,9 @@ describe('journeyPlan', () => {
     })
     const kinds = stages.map((s) => s.kind)
     expect(kinds).toEqual(['fly', 'trace', 'dimTrace', 'fly', 'trace', 'fadeTrace', 'fly'])
+    expect(stages[0]).toMatchObject({ kind: 'fly', countryBounds: [0, 0, 2, 2] })
+    expect(stages[1].kind).toBe('trace')
+    expect(stages[3]).toMatchObject({ kind: 'fly', lat: 30.47, lon: -8.87, zoom: 9.8 })
     expect(stages.some((s) => s.kind === 'marker')).toBe(false)
   })
 

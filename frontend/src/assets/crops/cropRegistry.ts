@@ -47,7 +47,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خرطال',
     family: 'Poaceae',
     group: 'cereal',
-    image: '',
+    image: '/assets/crops/oats.png',
     accent: '#9A7D42',
     bgLight: '#FAF5EA',
   },
@@ -109,7 +109,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'عدس',
     family: 'Fabaceae',
     group: 'legume',
-    image: '',
+    image: '/assets/crops/lentil.png',
     accent: '#3EA87B',
     bgLight: '#ECF8F3',
     fixesNitrogen: true,
@@ -120,7 +120,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'جلبانة',
     family: 'Fabaceae',
     group: 'legume',
-    image: '',
+    image: '/assets/crops/pea.png',
     accent: '#2DA06D',
     bgLight: '#E9F7F1',
     fixesNitrogen: true,
@@ -142,7 +142,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'فصة',
     family: 'Fabaceae',
     group: 'forage',
-    image: '',
+    image: '/assets/crops/alfalfa.png',
     accent: '#479E78',
     bgLight: '#EDF7F2',
     fixesNitrogen: true,
@@ -236,7 +236,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'ثوم',
     family: 'Amaryllidaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/garlic.png',
     accent: '#A17D4D',
     bgLight: '#FBF6EE',
   },
@@ -266,7 +266,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'باذنجان',
     family: 'Solanaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/eggplant.png',
     accent: '#6E4282',
     bgLight: '#F5EDF9',
   },
@@ -276,7 +276,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'بطيخ أصفر',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/melon.png',
     accent: '#D6A024',
     bgLight: '#FEF9E9',
   },
@@ -286,7 +286,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'دلاح',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/watermelon.png',
     accent: '#268E56',
     bgLight: '#E8F6EF',
   },
@@ -296,7 +296,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خيار',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/cucumber.png',
     accent: '#2F965E',
     bgLight: '#E9F7F0',
   },
@@ -306,7 +306,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'كوسة',
     family: 'Cucurbitaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/zucchini.png',
     accent: '#3D9B69',
     bgLight: '#EBF7F1',
   },
@@ -316,7 +316,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'كرنب',
     family: 'Brassicaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/cabbage.png',
     accent: '#479969',
     bgLight: '#EDF7F2',
   },
@@ -326,7 +326,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خس',
     family: 'Asteraceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/lettuce.png',
     accent: '#52A36F',
     bgLight: '#EEF8F2',
   },
@@ -336,7 +336,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'سبانخ',
     family: 'Amaranthaceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/spinach.png',
     accent: '#398C5A',
     bgLight: '#EAF6EF',
   },
@@ -366,7 +366,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'عصفر',
     family: 'Asteraceae',
     group: 'oilseed',
-    image: '',
+    image: '/assets/crops/safflower.png',
     accent: '#DB7D25',
     bgLight: '#FEF3E8',
   },
@@ -386,7 +386,7 @@ export const CROP_REGISTRY: Record<string, CropAssetMeta> = {
     nameAr: 'خرشوف',
     family: 'Asteraceae',
     group: 'vegetable',
-    image: '',
+    image: '/assets/crops/artichoke.png',
     accent: '#4B8766',
     bgLight: '#EDF6F1',
   },
@@ -408,31 +408,30 @@ export function getCropAsset(cropId: string | null | undefined): CropAssetMeta |
   return CROP_REGISTRY[cropId] ?? null;
 }
 
-/** A crop displays a photo only when its registry path is its own dedicated
- * verified file (/<id>.png or /<id>.jpg).
+/** A crop displays an illustration only when its registry path is its own dedicated
+ * verified PNG file (/<id>.png).
  * Verified:
- * - Existing: bread_wheat, durum_wheat (shared wheat), barley, maize,
+ * - Baseline (11): bread_wheat, durum_wheat (shared wheat), barley, maize,
  *   faba_bean, chickpea, potato, carrot, onion, tomato, sunflower.
- * - Newly generated via Nano Banana: sorghum, pearl_millet, green_bean,
+ * - Nano Banana Generated (25): sorghum, pearl_millet, green_bean,
  *   berseem (berseem_clover), vetch, groundnut, sugar_beet, sweet_potato,
- *   canola, quinoa, pepper.
- * Crops awaiting quota reset or without verified dedicated images render
- * group fallback icons. */
+ *   canola, quinoa, pepper, oats, garlic, alfalfa, lentil, safflower, pea,
+ *   eggplant, melon, watermelon, cucumber, zucchini, cabbage, spinach, artichoke,
+ *   lettuce. Total dedicated: 37 catalogue crops. */
 export function cropHasOwnImage(cropId: string): boolean {
   const crop = CROP_REGISTRY[cropId]
   if (!crop || !crop.image) return false
   const dedicatedPng = `/assets/crops/${cropId}.png`
-  const dedicatedJpg = `/assets/crops/${cropId}.jpg`
-  if (crop.image === dedicatedPng || crop.image === dedicatedJpg) {
+  if (crop.image === dedicatedPng) {
     return true
   }
-  if (cropId === 'berseem' && (crop.image === '/assets/crops/berseem_clover.png' || crop.image === '/assets/crops/berseem_clover.jpg' || crop.image === '/assets/crops/berseem.png')) {
+  if (cropId === 'berseem' && (crop.image === '/assets/crops/berseem_clover.png' || crop.image === '/assets/crops/berseem.png')) {
     return true
   }
   if (cropId === 'berseem_clover' && (crop.image === '/assets/crops/berseem_clover.png' || crop.image === '/assets/crops/berseem.png')) {
     return true
   }
-  if (cropId === 'durum_wheat' && crop.image === '/assets/crops/durum_wheat.jpg') {
+  if (cropId === 'durum_wheat' && crop.image === '/assets/crops/durum_wheat.png') {
     return true
   }
   return false

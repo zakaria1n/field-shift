@@ -1,4 +1,4 @@
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import { LngLat, type Map as MapLibreMap } from 'maplibre-gl'
 
 import { createBoundaryDirector } from './boundaryLayers'
 import type { BoundaryDirector, Cancellation } from './boundaryLayers'
@@ -53,7 +53,44 @@ export async function runJourney(
     switch (stage.kind) {
       case 'fly': {
         hooks.onPhase(stage.zoom >= 12 ? 'arriving' : stage.zoom >= 7 ? 'city' : 'country')
-        await flyTo(map, { center: [stage.lon, stage.lat], zoom: stage.zoom, duration: stage.durationMs })
+        let center: [number, number] = [stage.lon, stage.lat]
+        let zoom = stage.zoom
+        if (stage.countryBounds) {
+          if (import.meta.env.DEV) {
+            const root = document.querySelector<HTMLElement>('[data-testid="observatory-root"]')
+            if (root) root.dataset.countryFrameBounds = stage.countryBounds.join(',')
+          }
+          const [west, south, east, north] = stage.countryBounds
+          const fitted = map.cameraForBounds([[west, south], [east, north]], {
+            padding: { top: 120, right: 150, bottom: 180, left: 150 },
+            maxZoom: stage.zoom,
+          })
+          if (fitted?.center) {
+            const fittedCenter = LngLat.convert(fitted.center)
+            center = [fittedCenter.lng, fittedCenter.lat]
+            // Keep the existing conservative fit and take the more distant
+            // camera if the live map viewport needs additional room.
+            zoom = Math.min(stage.zoom, fitted.zoom ?? stage.zoom)
+          }
+        }
+        await flyTo(map, { center, zoom, duration: stage.durationMs })
+        if (stage.countryBounds && import.meta.env.DEV) {
+          const root = document.querySelector<HTMLElement>('[data-testid="observatory-root"]')
+          if (root) {
+            const [west, south, east, north] = stage.countryBounds
+            const corners = [
+              map.project([west, south]),
+              map.project([west, north]),
+              map.project([east, south]),
+              map.project([east, north]),
+            ]
+            const xs = corners.map((point) => point.x)
+            const ys = corners.map((point) => point.y)
+            root.dataset.countryFramePixels = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]
+              .map((value) => value.toFixed(1))
+              .join(',')
+          }
+        }
         break
       }
       case 'trace': {

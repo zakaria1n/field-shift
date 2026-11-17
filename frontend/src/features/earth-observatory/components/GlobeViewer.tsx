@@ -49,6 +49,23 @@ export default function GlobeViewer({
     }
     mapRef.current = map
 
+    // Expose camera telemetry only in dev so browser checks can verify the
+    // animated geographic target instead of inferring it from the caption.
+    const syncCameraTelemetry = () => {
+      if (!import.meta.env.DEV || !containerRef.current) return
+      const center = map.getCenter()
+      containerRef.current.dataset.cameraLon = center.lng.toFixed(4)
+      containerRef.current.dataset.cameraLat = center.lat.toFixed(4)
+      containerRef.current.dataset.cameraZoom = map.getZoom().toFixed(3)
+      containerRef.current.dataset.cameraMoving = String(map.isMoving())
+      const bounds = map.getBounds()
+      containerRef.current.dataset.cameraBounds = bounds.toArray().flat().map((value) => value.toFixed(4)).join(',')
+    }
+    if (import.meta.env.DEV) {
+      map.on('move', syncCameraTelemetry)
+      map.on('moveend', syncCameraTelemetry)
+    }
+
     map.on('style.load', () => {
       map.setProjection({ type: 'globe' })
       map.setSky(GLOBE_SKY)
@@ -65,6 +82,8 @@ export default function GlobeViewer({
 
     return () => {
       disposed = true
+      map.off('move', syncCameraTelemetry)
+      map.off('moveend', syncCameraTelemetry)
       map.remove()
       mapRef.current = null
     }
@@ -74,7 +93,7 @@ export default function GlobeViewer({
   return (
     <div className="absolute inset-0" data-testid="globe-viewer">
       {/* Inline position wins over `.maplibregl-map`'s stylesheet `relative`. */}
-      <div ref={containerRef} dir="ltr" className="inset-0" style={{ position: 'absolute' }} aria-label="Interactive 3D Earth" />
+      <div ref={containerRef} dir="ltr" className="inset-0" style={{ position: 'absolute' }} aria-label="Interactive 3D Earth" data-testid="globe-camera-state" />
       {/* Starfield lives in front of the canvas space but behind all UI. */}
       <div className="observatory-stars pointer-events-none absolute inset-0" aria-hidden="true" />
       {loading && (

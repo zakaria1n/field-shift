@@ -31,6 +31,108 @@ export interface GpsBoundaries {
   local: BoundaryGeometry | null
 }
 
+/** Keep the country outline geographically coherent with the chosen place.
+ * Some country GeoJSONs contain distant overseas territories; fitting every
+ * component at once can move a city search to an unrelated ocean. Starting
+ * with the component containing the place, include nearby islands/land parts
+ * within 300 km (transitively), while leaving remote territories out of this
+ * local country-stage view. The underlying lookup/cache data is not mutated. */
+export function focusCountryGeometryNearPoint(geometry: unknown, lat: number, lon: number): unknown {
+  const geo = geometry as { type?: string; coordinates?: unknown } | null
+  if (geo?.type !== 'MultiPolygon' || !Array.isArray(geo.coordinates)) return geometry
+
+  const polygons = geo.coordinates as number[][][][]
+  const components = polygons.map((rings) => ({
+    rings,
+    bounds: polygonBounds(rings),
+  }))
+  const containing = components.flatMap((component, index) =>
+    component.rings[0] && pointInRing([lon, lat], component.rings[0]) &&
+    !component.rings.slice(1).some((hole) => pointInRing([lon, lat], hole)) ? [index] : [],
+  )
+  const chosen = new Set<number>(containing)
+  if (chosen.size === 0) {
+    let nearestIndex = -1
+    let nearestDistance = Infinity
+    components.forEach((component, index) => {
+      const distance = pointToBoundsKm(lon, lat, component.bounds)
+      if (distance < nearestDistance) {
+        nearestDistance = distance
+        nearestIndex = index
+      }
+    })
+    if (nearestIndex >= 0) chosen.add(nearestIndex)
+  }
+
+  let changed = true
+  while (changed) {
+    changed = false
+    for (let candidate = 0; candidate < components.length; candidate += 1) {
+      if (chosen.has(candidate)) continue
+      if ([...chosen].some((selected) => boundsDistanceKm(components[candidate].bounds, components[selected].bounds) <= 300)) {
+        chosen.add(candidate)
+        changed = true
+      }
+    }
+  }
+
+  const focused = polygons.filter((_, index) => chosen.has(index))
+  return focused.length > 0 ? { type: 'MultiPolygon', coordinates: focused } : geometry
+}
+
+type GeographicBounds = [number, number, number, number]
+
+function polygonBounds(rings: number[][][]): GeographicBounds {
+  // Country rings can contain tens of thousands of vertices. Avoid spreading
+  // those into Math.min/max, which exceeds the engine's argument limit on
+  // large countries and aborts the journey before its first camera stage.
+  let west = Infinity
+  let south = Infinity
+  let east = -Infinity
+  let north = -Infinity
+  for (const ring of rings) {
+    for (const point of ring) {
+      const [lon, lat] = point
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue
+      west = Math.min(west, lon)
+      south = Math.min(south, lat)
+      east = Math.max(east, lon)
+      north = Math.max(north, lat)
+    }
+  }
+  return [west, south, east, north]
+}
+
+function pointInRing(point: [number, number], ring: number[][]): boolean {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+    const [xi, yi] = ring[i]
+    const [xj, yj] = ring[j]
+    const crosses = (yi > point[1]) !== (yj > point[1]) &&
+      point[0] < ((xj - xi) * (point[1] - yi)) / ((yj - yi) || Number.EPSILON) + xi
+    if (crosses) inside = !inside
+  }
+  return inside
+}
+
+function pointToBoundsKm(lon: number, lat: number, bounds: GeographicBounds): number {
+  return boundsDistanceKm([lon, lat, lon, lat], bounds)
+}
+
+function boundsDistanceKm(a: GeographicBounds, b: GeographicBounds): number {
+  const latGap = Math.max(0, a[1] - b[3], b[1] - a[3])
+  let lonGap = Infinity
+  for (const shift of [-360, 0, 360]) {
+    const shiftedWest = b[0] + shift
+    const shiftedEast = b[2] + shift
+    lonGap = Math.min(lonGap, Math.max(0, a[0] - shiftedEast, shiftedWest - a[2]))
+  }
+  const centerLat = ((a[1] + a[3] + b[1] + b[3]) / 4) * Math.PI / 180
+  const dx = lonGap * 111.32 * Math.cos(centerLat)
+  const dy = latGap * 111.32
+  return Math.hypot(dx, dy)
+}
+
 interface NominatimRow {
   lat: string | number
   lon: string | number

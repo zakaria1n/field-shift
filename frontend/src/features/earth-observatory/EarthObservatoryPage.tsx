@@ -10,7 +10,7 @@ import { api, type FieldOut } from '../../api/client'
 import { useWizard } from '../../state/wizard'
 import { useFieldValidation } from '../field-map/useFieldValidation'
 import { FLIGHT_ZOOMS, MAP_DEFAULT, MAP_DRAW_ZOOM } from './config/observatory'
-import { fetchSelectionBoundaries, fetchGpsBoundaries, type SelectionBoundaries } from './globe/boundaryData'
+import { fetchSelectionBoundaries, fetchGpsBoundaries, focusCountryGeometryNearPoint, type SelectionBoundaries } from './globe/boundaryData'
 import { runJourney, createBoundaryDirector, type FlightPhase, type BoundaryDirector } from './globe/flight'
 import { buildSearchJourney, buildGpsJourney } from './globe/journeyPlan'
 import { buildTracePlan } from './globe/geometryTrace'
@@ -144,12 +144,15 @@ export default function EarthObservatoryPage() {
     setMapMounted(true)
     const director = directorRef.current
     if (!director) return
+    const countryForJourney = resolved.country
+      ? { ...resolved.country, geometry: focusCountryGeometryNearPoint(resolved.country.geometry, place.lat, place.lon) }
+      : null
     const stages = buildSearchJourney({
       isCountryLevel: resolved.isCountryLevel,
-      country: resolved.country,
+      country: countryForJourney,
       selected: resolved.selected,
       selectedPlace: place,
-      countryPlan: resolved.country ? buildTracePlan(resolved.country.geometry) : null,
+      countryPlan: countryForJourney ? buildTracePlan(countryForJourney.geometry) : null,
       selectedPlan: resolved.selected ? buildTracePlan(resolved.selected.geometry) : null,
       reducedMotion,
       viewport: { width: window.innerWidth, height: window.innerHeight },
@@ -207,11 +210,14 @@ export default function EarthObservatoryPage() {
 
       const director = directorRef.current
       if (!director) return
+      const countryForJourney = gps.country
+        ? { ...gps.country, geometry: focusCountryGeometryNearPoint(gps.country.geometry, lat, lon) }
+        : null
       const stages = buildGpsJourney({
         gps: { lat, lon },
-        country: gps.country,
+        country: countryForJourney,
         local: gps.local,
-        countryPlan: gps.country ? buildTracePlan(gps.country.geometry) : null,
+        countryPlan: countryForJourney ? buildTracePlan(countryForJourney.geometry) : null,
         localPlan: gps.local ? buildTracePlan(gps.local.geometry) : null,
         reducedMotion,
         viewport: { width: window.innerWidth, height: window.innerHeight },
@@ -335,7 +341,7 @@ export default function EarthObservatoryPage() {
       : 'obs.map.hintTrace'
 
   return (
-    <div className="earth-observatory relative h-[100svh] w-full overflow-hidden bg-[#04070C]">
+    <div className="earth-observatory relative h-[100svh] w-full overflow-hidden bg-[#04070C]" data-testid="observatory-root" data-flight-phase={flightPhase ?? 'idle'} data-page-phase={phase}>
       {/* ---- Layer 1: 3D globe (fades out during the handoff) */}
       {phase !== 'map' && (
         <motion.div

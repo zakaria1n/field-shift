@@ -11,7 +11,7 @@ export interface JourneyViewport {
  * fly → progressive boundary trace → fade → fly → trace → handoff. */
 
 export type JourneyStage =
-  | { kind: 'fly'; lat: number; lon: number; zoom: number; durationMs: number }
+  | { kind: 'fly'; lat: number; lon: number; zoom: number; durationMs: number; countryBounds?: [number, number, number, number] }
   | { kind: 'trace'; plan: TracePlan; durationMs: number; zoomDrift: number | null; geometry: unknown }
   | { kind: 'dimTrace'; opacity: number; durationMs: number }
   | { kind: 'fadeTrace'; durationMs: number }
@@ -61,12 +61,14 @@ export function buildSearchJourney(input: SearchJourneyInput): JourneyStage[] {
   const framing = frameCountry(country, input.viewport)
   const approach = country ?? input.selected
   if (approach) {
+    const countryBounds = country ? boundsOfGeometry(country.geometry) ?? undefined : undefined
     stages.push({
       kind: 'fly',
       lat: approach === country ? framing.lat : approach.lat,
       lon: approach === country ? framing.lon : approach.lon,
       zoom: approach === country ? framing.zoom : FLIGHT_ZOOMS.country,
       durationMs: durations.country,
+      ...(approach === country && countryBounds ? { countryBounds } : {}),
     })
   }
   if (input.countryPlan) {
@@ -141,12 +143,14 @@ export function buildGpsJourney(input: GpsJourneyInput): JourneyStage[] {
 
   const gpsCountryFraming = input.country ? frameCountry(input.country, input.viewport) : null
   if (input.country) {
+    const countryBounds = boundsOfGeometry(input.country.geometry) ?? undefined
     stages.push({
       kind: 'fly',
       lat: gpsCountryFraming!.lat,
       lon: gpsCountryFraming!.lon,
       zoom: gpsCountryFraming!.zoom,
       durationMs: durations.country,
+      ...(countryBounds ? { countryBounds } : {}),
     })
     if (input.countryPlan) {
       stages.push({
