@@ -35,10 +35,8 @@ import { api, type CropOut } from '../../api/client'
 import { useWizard, type CropHistoryRow } from '../../state/wizard'
 import { cropHasOwnImage, getCropAsset } from '../../assets/crops/cropRegistry'
 import CropCombobox, { type CropSelection } from './components/CropCombobox'
-import IntroMapPanel from './components/IntroMapPanel'
 import { rebalance, totalOf } from './prioritiesMath'
 import type { Priorities } from '../../state/wizard'
-import bgIntro from '../../assets/farm-profile-cinematic/backgrounds/intro.png'
 import bgQuestionnaire from '../../assets/farm-profile-cinematic/backgrounds/questionnaire.png'
 import bgPriorities from '../../assets/farm-profile-cinematic/backgrounds/priorities.png'
 import './farmProfile.css'
@@ -166,11 +164,10 @@ export default function FarmProfilePage() {
   } = useWizard()
   const isArabic = i18n.language === 'ar'
 
-  const routeState = (location.state as { fieldId?: string; areaHa?: number; fromMap?: boolean } | null) ?? {}
+  const routeState = (location.state as { fieldId?: string; areaHa?: number } | null) ?? {}
   const fieldId = routeState.fieldId || searchParams.get('field') || wizardFieldId
 
   const [step, setStep] = useState<Step>(0)
-  const [showIntro, setShowIntro] = useState(Boolean(routeState.fromMap))
 
   const years = useMemo(() => nextYears(3), [])
   const [showAllCrops, setShowAllCrops] = useState(false)
@@ -281,11 +278,6 @@ export default function FarmProfilePage() {
       setStep(target)
       setSearchParams(fieldId ? { field: fieldId } : {}, { replace: true })
     }
-  }
-
-  function jumpToSafe(target: Step) {
-    // On the introduction screen the profile has not started yet.
-    if (!showIntro) jumpTo(target)
   }
 
   function onLang(lang: 'en' | 'ar') {
@@ -446,113 +438,6 @@ export default function FarmProfilePage() {
       subtitle: isArabic ? 'عدّل التوازن بين العوامل الأربعة — المجموع يبقى ١٠٠٪.' : 'Adjust the balance between the four factors — the total always stays at 100%.',
     },
   ]
-
-  if (showIntro && routeState.fromMap) {
-    return (
-      <AnimatePresence mode="wait">
-        <>
-          <FarmProfileProgress step={0} isArabic={isArabic} onStepClick={jumpToSafe} onLang={onLang} />
-          <motion.div
-            key="extraction"
-            className="earth-observatory relative flex h-[100svh] flex-col overflow-hidden bg-[#04120D]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div
-              className="pointer-events-none absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${bgIntro})`, opacity: 0.5 }}
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{ background: 'linear-gradient(90deg, rgba(4,18,13,0.72) 0%, rgba(4,18,13,0.28) 46%, rgba(4,18,13,0.55) 100%)' }}
-              aria-hidden
-            />
-            <FarmProfileProgressSpacer />
-            <IntroMapPanel geometry={field?.geometry ?? null} />
-            <svg className="fp-extraction-arrow" viewBox="0 0 300 90" aria-hidden="true"><defs><marker id="extract-tip" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#c5f869" /></marker></defs><motion.path d="M10 24 C100 22 180 75 280 45" fill="none" stroke="#c5f869" strokeWidth="3" markerEnd="url(#extract-tip)" initial={{pathLength:0}} animate={{pathLength:1}} transition={{duration:1.6}} /></svg>
-
-            <motion.div
-              className="fp-intro-terrain pointer-events-none absolute z-10 hidden lg:block"
-              initial={{ x: '45%', opacity: 0, scale: 0.7 }}
-              animate={{ x: 0, opacity: 1, scale: 1 }}
-              transition={{ duration: 1.8, ease: [0.22, 0.9, 0.28, 1], delay: 0.25 }}
-            >
-              <FloatingFarmIllustration />
-            </motion.div>
-
-            <div className="fp-intro-copy relative z-20 mx-auto flex w-full max-w-3xl flex-1 flex-col items-center px-6 text-center">
-              <motion.span
-                className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#229E65] shadow-glow"
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <LeafIcon size={24} className="text-white" />
-              </motion.span>
-              <motion.h1
-                className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                {isArabic ? (
-                  <>
-                    أرضك، <span className="text-[#A3E635]">قصتك</span>
-                  </>
-                ) : (
-                  <>
-                    Your land, <span className="text-[#A3E635]">your story</span>
-                  </>
-                )}
-              </motion.h1>
-              <motion.p
-                className="mt-3 text-base text-white/75"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.75 }}
-              >
-                {isArabic ? (
-                  <>
-                    يستخدم فيلد شيفت <b className="text-white">الحقل الدقيق</b> الذي اخترته لبناء خطة زراعية مخصصة.
-                  </>
-                ) : (
-                  <>
-                    FieldShift uses the <b className="text-white">exact field</b> you selected to build a personalized crop plan.
-                  </>
-                )}
-              </motion.p>
-
-              <motion.span
-                className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#A3E635]/40 bg-[#0B1410]/70 px-4 py-1.5 text-[11px] font-bold text-white/75 backdrop-blur-sm"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.1 }}
-              >
-                <Sparkles size={12} className="text-[#A3E635]" />
-                {t('fp.transition.extracting')}
-                <span className="h-3 w-px bg-white/20" aria-hidden />
-                <span className="text-white/50">{t('fp.transition.preserved')}</span>
-              </motion.span>
-
-              <motion.button
-                type="button"
-                onClick={() => setShowIntro(false)}
-                className="mt-7 inline-flex items-center gap-2.5 rounded-full bg-gradient-to-b from-[#4CC22B] to-[#2B8F1D] px-9 py-3.5 text-base font-extrabold text-white shadow-[0_10px_36px_rgba(76,194,43,0.45)] transition-transform hover:scale-[1.03]"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9 }}
-              >
-                {t('fp.intro.cta')}
-                <ArrowRight className="rtl:rotate-180" size={18} />
-              </motion.button>
-            </div>
-          </motion.div>
-        </>
-      </AnimatePresence>
-    )
-  }
 
   return (
     <div className="earth-observatory relative flex min-h-[100svh] flex-col overflow-x-hidden bg-[#04120D] lg:h-[100svh] lg:overflow-hidden" data-testid="farm-profile-page">
