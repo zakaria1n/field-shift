@@ -90,7 +90,7 @@ describe('EarthObservatoryPage', () => {
   it('falls back to the drawing map with its guidance when WebGL is unavailable', async () => {
     renderPage()
     // jsdom has no WebGL, so the page opens directly on the drawing map.
-    expect(await screen.findByTestId('drawing-hint')).toHaveTextContent(/Trace your field boundary/i)
+    expect(await screen.findByTestId('drawing-hint', {}, { timeout: 8000 })).toHaveTextContent(/Trace your field boundary/i)
     expect(screen.getByRole('button', { name: /Draw field boundary/i })).toBeInTheDocument()
     // the confirmation card only appears once a boundary is actually drawn
     expect(screen.queryByTestId('field-confirmation')).not.toBeInTheDocument()

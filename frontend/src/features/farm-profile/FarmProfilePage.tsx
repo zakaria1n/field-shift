@@ -70,7 +70,7 @@ function FarmProfileProgress({
   const labels = STEP_KEYS.map((key) => t(`fp.progress.${key}`))
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-30">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-7 sm:py-4">
+      <div className="pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-7 sm:py-4">
         <span className="flex shrink-0 items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#229E65]">
             <LeafIcon size={18} className="text-white" />
@@ -698,9 +698,6 @@ export default function FarmProfilePage() {
               />
             </div>
 
-            <p className="pointer-events-none absolute bottom-0 end-0 z-10 max-w-[46%] text-end text-[9px] leading-snug text-white/30">
-              {t('fp.parcel.note')}
-            </p>
           </div>
         </aside>
       </div>
@@ -1124,7 +1121,7 @@ function PrioritiesStep({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {presets.map((p) => {
           const selected = activePresetId === p.id
@@ -1134,14 +1131,14 @@ function PrioritiesStep({
               type="button"
               onClick={() => setPriorities(p.weights)}
               aria-pressed={selected}
-              className={`relative rounded-2xl border p-2.5 text-start transition-all duration-200 ${
+              className={`relative rounded-xl border p-2 text-start transition-all duration-200 ${
                 selected
                   ? 'border-2 border-[#A3E635] bg-[#12281E]/90 shadow-[0_0_26px_rgba(143,230,39,0.16)]'
                   : 'border-white/15 bg-white/[0.04] hover:border-[#A3E635]/50'
               }`}
             >
-              <span className="block text-sm font-extrabold text-white">{p.name}</span>
-              <span className="mt-0.5 block text-[10px] leading-tight text-white/60">{p.subtitle}</span>
+              <span className="block text-[13px] font-extrabold text-white">{p.name}</span>
+              <span className="mt-0.5 block text-[9px] leading-tight text-white/60">{p.subtitle}</span>
               {selected && (
                 <span className="absolute end-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#A3E635] text-[#17352D]">
                   <Check size={12} strokeWidth={3} />
@@ -1171,24 +1168,24 @@ function PrioritiesStep({
           const m = meta[k]
           const Icon = m.icon
           return (
-            <div key={k} className={`rounded-xl border p-2.5 transition-all ${priorities[k] >= 40 ? 'border-[#A3E635]/60 bg-[#12281E]/80' : 'border-white/12 bg-white/[0.04]'}`}>
-              <div className="flex items-start justify-between gap-3">
+            <div key={k} className={`rounded-xl border p-2 transition-all ${priorities[k] >= 40 ? 'border-[#A3E635]/60 bg-[#12281E]/80' : 'border-white/12 bg-white/[0.04]'}`}>
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 bg-white/5" style={{ color: m.accent }}>
-                    <Icon size={15} />
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/5" style={{ color: m.accent }}>
+                    <Icon size={14} />
                   </span>
-                  <div>
-                    <label htmlFor={`slider-${k}`} className="block text-[13px] font-extrabold leading-tight text-white">
+                  <div className="min-w-0">
+                    <label htmlFor={`slider-${k}`} className="block text-xs font-extrabold leading-tight text-white">
                       {m.label}
                     </label>
-                    <p className="text-[9px] leading-tight text-white/50">{m.desc}</p>
+                    <p className="truncate text-[9px] leading-tight text-white/50">{m.desc}</p>
                   </div>
                 </div>
-                <span className="min-w-[3rem] rounded-lg border border-white/15 bg-black/30 px-1.5 py-0.5 text-center font-mono text-[13px] font-extrabold text-white">
+                <span className="min-w-[2.9rem] rounded-md border border-white/15 bg-black/30 px-1.5 py-0.5 text-center font-mono text-xs font-extrabold text-white">
                   <bdi>{priorities[k]}</bdi>%
                 </span>
               </div>
-              <div className="mt-1.5">
+              <div className="mt-1">
                 <input
                   id={`slider-${k}`}
                   data-testid={`slider-${k}`}
@@ -1209,7 +1206,7 @@ function PrioritiesStep({
         })}
       </div>
 
-      <p className="flex items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-3 py-1.5 text-[10px] leading-snug text-white/60">
+      <p className="flex items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-2.5 py-0.5 text-[9px] leading-snug text-white/55">
         <CircleHelp size={13} className="shrink-0 text-[#A3E635]" />
         <span className="truncate">
           {isArabic ? 'زيادة أولوية → الموازنة تلقائية، المجموع ١٠٠٪.' : 'Increase one priority — the others rebalance automatically to keep 100%.'}
