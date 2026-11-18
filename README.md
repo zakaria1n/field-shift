@@ -20,6 +20,10 @@
 
 </div>
 
+## Authors
+
+This project was developed by **[Zakaria Dahkoune](https://github.com/zakaria1n)** and **[Mounir Sanbouli](https://github.com/mounir-1-project)**.
+
 ## 🌍 The Mission
 
 Modern agriculture faces unprecedented climate volatility, water stress, and soil degradation. Continuous monocropping exhausts micronutrients and accelerates pest vulnerability, yet smallholder farmers often lack access to sophisticated agronomic decision support.
