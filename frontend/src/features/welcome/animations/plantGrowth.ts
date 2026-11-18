@@ -27,14 +27,14 @@ export const GROWTH_FRAMES = [
 ]
 
 /** Global progress slots per frame (adjacent frames crossfade). */
-export const GROWTH_SLOTS: Array<[number, number]> = [
-  [0.165, 0.335], // 00 seed        — scene 1 Land
-  [0.31, 0.43],   // 01 germination — scene 2 start
-  [0.40, 0.52],   // 02 emergence
-  [0.495, 0.60],  // 03 seedling    — scene 3 start
-  [0.575, 0.655], // 04 intermediate
-  [0.63, 0.705],  // 05 advanced    — scene 4 transition
-  [0.675, 0.73],  // 06 developed
+export const GROWTH_SLOTS: Array<[number, number, number, number]> = [
+  [0.145, 0.175, 0.30, 0.33],
+  [0.30, 0.33, 0.39, 0.42],
+  [0.39, 0.42, 0.475, 0.505],
+  [0.475, 0.505, 0.555, 0.585],
+  [0.555, 0.585, 0.60, 0.62],
+  [0.60, 0.62, 0.625, 0.645],
+  [0.625, 0.645, 0.695, 0.725],
 ]
 
 /** Ground line as a fraction of the plate height. */
@@ -43,8 +43,6 @@ export const GROUND_Y = 0.74
 export const PLANT_FRAME_H = 0.6
 
 /** Crossfade opacity window for one growth frame. */
-export function useStageOpacity(progress: MotionValue<number>, slot: [number, number]) {
-  const [start, end] = slot
-  const f = (end - start) * 0.38
-  return useTransform(progress, [start, start + f, end - f, end], [0, 1, 1, 0])
+export function useStageOpacity(progress: MotionValue<number>, slot: [number, number, number, number]) {
+  return useTransform(progress, slot, [0, 1, 1, 0])
 }

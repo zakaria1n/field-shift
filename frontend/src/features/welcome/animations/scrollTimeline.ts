@@ -25,15 +25,21 @@ export function useWindowOpacity(
 /** Reveal transform pair (opacity + vertical travel) for scene content. */
 export function useSceneReveal(
   progress: MotionValue<number> | null,
-  start: number,
-  end: number,
-): { opacity: MotionValue<number> | number; y: MotionValue<number> | number } {
-  if (!progress) return { opacity: 1, y: 0 }
-  const opacity = useWindowOpacity(progress, start, end, 0.32)
+  copyIn: readonly [number, number],
+  copyOut: readonly [number, number],
+): { opacity: MotionValue<number> | number; y: MotionValue<number> | number; visibility: MotionValue<'visible' | 'hidden'> | 'visible' } {
+  if (!progress) return { opacity: 1, y: 0, visibility: 'visible' }
+  const enter = (copyIn[0] + copyIn[1]) / 2
+  const exit = (copyOut[0] + copyOut[1]) / 2
+  const points = [copyIn[0], enter, exit, copyOut[1]]
+  const opacity = useTransform(progress, points, [0, 1, 1, 0])
+  // Two paragraphs occupy the same place. Only show the dominant scene so a
+  // stopped scroll cannot leave both sets of text superimposed and illegible.
+  const visibility = useTransform(progress, value => value >= enter && value < exit ? 'visible' : 'hidden')
   const y = useTransform(
     progress,
-    [start, start + (end - start) * 0.32, end - (end - start) * 0.32, end],
-    [36, 0, 0, -28],
+    points,
+    [14, 0, 0, -14],
   )
-  return { opacity, y }
+  return { opacity, y, visibility }
 }

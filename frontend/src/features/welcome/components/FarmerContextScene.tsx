@@ -10,7 +10,7 @@ export default function FarmerContextScene() {
   const c = SCENE_COPY.context
   return (
     <SceneCopy
-      step={<span className="font-mono">2</span>}
+      step={<SlidersHorizontal size={13} aria-hidden="true" />}
       kicker={t(c.kicker)}
       title={t(c.title)}
       accent={t(c.accent)}

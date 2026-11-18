@@ -9,7 +9,7 @@ export const HERO_W = 1672
 export const HERO_H = 941
 
 /** The parcel traced by geometry/hero-field.svg, in hero-bitmap pixels. */
-export const PARCEL = { x0: 736, y0: 332, x1: 1365, y1: 758 }
+export const PARCEL = { x0: 724, y0: 332, x1: 1365, y1: 758 }
 
 export interface CoverLayout {
   width: number

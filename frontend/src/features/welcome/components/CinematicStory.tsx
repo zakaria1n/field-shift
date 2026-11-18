@@ -10,7 +10,7 @@ import { useCoverLayout } from '../hooks/useCoverLayout'
 import { useWelcomeScroll } from '../hooks/useWelcomeScroll'
 import { OUTLINE_VISIBILITY } from '../animations/heroOutline'
 import { ASSETS, SCENES, SCENE_COUNT } from '../config/welcomeScenes'
-import { useSceneReveal, useWindowOpacity } from '../animations/scrollTimeline'
+import { useSceneReveal } from '../animations/scrollTimeline'
 
 import WelcomeNavbar from './WelcomeNavbar'
 import HeroScene from './HeroScene'
@@ -37,19 +37,21 @@ function useLayerPointerEvents(progress: MotionValue<number>, start: number, end
 /** Scene content wrapper: reveal transforms + standard placement. */
 function SceneLayer({
   progress,
-  start,
-  end,
+  copyIn,
+  copyOut,
+  name,
   children,
 }: {
   progress: ReturnType<typeof useWelcomeScroll>['progress']
-  start: number
-  end: number
+  copyIn: readonly [number, number]
+  copyOut: readonly [number, number]
+  name: string
   children: React.ReactNode
 }) {
-  const reveal = useSceneReveal(progress, start, end)
-  const pointerEvents = useLayerPointerEvents(progress, start, end)
+  const reveal = useSceneReveal(progress, copyIn, copyOut)
+  const pointerEvents = useLayerPointerEvents(progress, copyIn[0], copyOut[1])
   return (
-    <motion.div className="absolute inset-0" style={{ opacity: reveal.opacity, y: reveal.y, pointerEvents }}>
+    <motion.div data-welcome-scene={name} className="absolute inset-0" style={{ opacity: reveal.opacity, y: reveal.y, visibility: reveal.visibility, pointerEvents }}>
       <div className="absolute inset-0 flex items-center">
         <div className="mx-auto w-full max-w-7xl px-6 pt-16 sm:px-12">{children}</div>
       </div>
@@ -73,8 +75,8 @@ export default function CinematicStory() {
   const layout = useCoverLayout()
 
   /* background crossfades: aerial (0/4/5) ⇄ soil (1-3) */
-  const aerialOpacity = useTransform(progress, [0, 0.15, 0.28, 0.68, 0.8, 1], [1, 1, 0, 0, 1, 1])
-  const soilOpacity = useTransform(progress, [0, 0.15, 0.28, 0.68, 0.8, 1], [0, 0, 1, 1, 0, 0])
+  const aerialOpacity = useTransform(progress, [0, 0.145, 0.175, 0.695, 0.725, 1], [1, 1, 0, 0, 1, 1])
+  const soilOpacity = useTransform(progress, [0, 0.145, 0.175, 0.695, 0.725, 1], [0, 0, 1, 1, 0, 0])
 
   /* golden outline: draws automatically on entry (scroll-free), and stays
    * complete; the scroll-driven visibility windows re-show it later */
@@ -88,12 +90,14 @@ export default function CinematicStory() {
 
   const scrollHintOpacity = useTransform(progress, [0, 0.05, 0.1], [1, 1, 0])
   // closing scene: fades in and STAYS visible until the end of the page
-  const ctaOpacity = useTransform(progress, [0.86, 0.92], [0, 1])
-  const ctaY = useTransform(progress, [0.86, 0.94], [40, 0])
-  const ctaPointerEvents = useTransform(progress, [0.85, 0.88], ['none', 'auto'])
+  const ctaOpacity = useTransform(progress, [SCENES.cta.copyIn[0], (SCENES.cta.copyIn[0] + SCENES.cta.copyIn[1]) / 2], [0, 1])
+  const ctaY = useTransform(progress, SCENES.cta.copyIn, [14, 0])
+  const ctaPointerEvents = useTransform(progress, SCENES.cta.copyIn, ['none', 'auto'])
+  const ctaVisibility = useTransform(progress, value => value >= (SCENES.cta.copyIn[0] + SCENES.cta.copyIn[1]) / 2 ? 'visible' : 'hidden')
   // hero copy: fully visible at p=0, fades out as the outline scene closes
-  const heroCopyOpacity = useTransform(progress, [0, SCENES.hero.copyOut[0], SCENES.hero.copyOut[1]], [1, 1, 0])
-  const heroPointerEvents = useTransform(progress, [0.13, 0.17], ['auto', 'none'])
+  const heroCopyOpacity = useTransform(progress, [0, (SCENES.hero.copyOut[0] + SCENES.hero.copyOut[1]) / 2, SCENES.hero.copyOut[1]], [1, 1, 0])
+  const heroPointerEvents = useTransform(progress, SCENES.hero.copyOut, ['auto', 'none'])
+  const heroVisibility = useTransform(progress, value => value < (SCENES.hero.copyOut[0] + SCENES.hero.copyOut[1]) / 2 ? 'visible' : 'hidden')
 
   return (
     <div>
@@ -132,7 +136,7 @@ export default function CinematicStory() {
           {/* ------- scene content layers ------- */}
           <motion.div
             className="absolute inset-0 z-10"
-            style={{ opacity: heroCopyOpacity, pointerEvents: heroPointerEvents }}
+            style={{ opacity: heroCopyOpacity, visibility: heroVisibility, pointerEvents: heroPointerEvents }}
           >
             <div className="absolute inset-0 flex items-center">
               <div className="mx-auto w-full max-w-7xl px-6 pt-16 sm:px-12">
@@ -141,7 +145,7 @@ export default function CinematicStory() {
             </div>
           </motion.div>
 
-          <SceneLayer progress={progress} start={SCENES.land.copyIn[0]} end={SCENES.land.copyOut[1]}>
+          <SceneLayer name="land" progress={progress} copyIn={SCENES.land.copyIn} copyOut={SCENES.land.copyOut}>
             <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
               <LandScene />
               <div className="hidden w-[300px] lg:block">
@@ -150,7 +154,7 @@ export default function CinematicStory() {
             </div>
           </SceneLayer>
 
-          <SceneLayer progress={progress} start={SCENES.context.copyIn[0]} end={SCENES.context.copyOut[1]}>
+          <SceneLayer name="context" progress={progress} copyIn={SCENES.context.copyIn} copyOut={SCENES.context.copyOut}>
             <div className="grid gap-6 xl:grid-cols-[minmax(0,320px)_1fr_minmax(0,320px)] xl:items-center">
               <div className="xl:-translate-y-8">
                 <FarmerContextScene />
@@ -163,7 +167,7 @@ export default function CinematicStory() {
             </div>
           </SceneLayer>
 
-          <SceneLayer progress={progress} start={SCENES.conditions.copyIn[0]} end={SCENES.conditions.copyOut[1]}>
+          <SceneLayer name="conditions" progress={progress} copyIn={SCENES.conditions.copyIn} copyOut={SCENES.conditions.copyOut}>
             <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
               <ConditionsScene />
               <div className="w-[min(90vw,430px)]">
@@ -172,13 +176,13 @@ export default function CinematicStory() {
             </div>
           </SceneLayer>
 
-          <SceneLayer progress={progress} start={SCENES.rotation.copyIn[0]} end={SCENES.rotation.copyOut[1]}>
+          <SceneLayer name="rotation" progress={progress} copyIn={SCENES.rotation.copyIn} copyOut={SCENES.rotation.copyOut}>
             <RotationScene />
           </SceneLayer>
 
           <motion.div
             className="absolute inset-0"
-            style={{ opacity: ctaOpacity, y: ctaY, pointerEvents: ctaPointerEvents }}
+            style={{ opacity: ctaOpacity, y: ctaY, visibility: ctaVisibility, pointerEvents: ctaPointerEvents }}
           >
             <div className="absolute inset-0 bg-[#081A15]/70" />
             <div className="absolute inset-0 flex items-center">

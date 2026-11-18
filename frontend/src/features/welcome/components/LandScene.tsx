@@ -10,7 +10,7 @@ export default function LandScene() {
   const c = SCENE_COPY.land
   return (
     <SceneCopy
-      step={<span className="font-mono">1</span>}
+      step={<MapPin size={13} aria-hidden="true" />}
       kicker={t(c.kicker)}
       title={t(c.title)}
       accent={t(c.accent)}

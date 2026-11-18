@@ -57,7 +57,7 @@ function PlantStage({
   priority,
 }: {
   url: string
-  slot: [number, number]
+  slot: [number, number, number, number]
   progress: MotionValue<number>
   priority: boolean
 }) {
